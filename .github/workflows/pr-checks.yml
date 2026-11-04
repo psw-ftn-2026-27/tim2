@@ -6,7 +6,7 @@ name: pr-checks
 #   template        TVRDA   šablon opisa PRa popunjen po tipu
 #   description     MEKA    LLM razlikuje stvaran sadržaj od besmislice
 #   build           TVRDA   rešenje se prevodi i svi testovi prolaze
-#   coverage        TVRDA   pokrivenost novih izvršivih linija >= 80%
+#   coverage        TVRDA   pokrivenost novih izvršivih linija >= 70%
 #   maintainability MEKA    naš analizator (TT001–TT009) na dirnutom kodu
 #
 # PR prema main (development u main) se ovde ne proverava; build i testove za njega radi ci.yml.
