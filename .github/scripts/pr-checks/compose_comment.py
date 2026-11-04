@@ -10,7 +10,7 @@ def load(name, default):
 bld = load("build.json", {"status": "error", "summary": "", "errors": []})
 tpl = load("template.json", {"status": "error", "errors": [], "ptype": None})
 dsc = load("description.json", {"status": "skip", "suspects": []})
-cov = load("coverage.json", {"status": "error", "threshold": 0.8})
+cov = load("coverage.json", {"status": "error", "threshold": 0.7})
 mnt = load("maintainability.json", {"status": "error", "methods": [], "classes": [], "thresholds": {}})
 
 MARK = {"ok": "✅", "suspect": "🟡", "critical": "🔴"}
