@@ -40,7 +40,7 @@ internal sealed class SocialModuleInitializer : IHostedService
     {
         var domain = new Blog(SecondExplorer, "Šta je Explorer",
             "Explorer je platforma za istraživanje turističkih tura. Autori sastavljaju ture od ključnih tačaka, a istraživači ih prolaze, igraju igre na mapi i dele utiske u zajednici.",
-            []);
+            ["https://picsum.photos/seed/explorer-domen/800/600"]);
         domain.Publish();
         domain.AddComment(FirstExplorer, "Savet: pre kodiranja pročitajte opis svog modula i njegovih veza sa drugim modulima.");
         domain.AddComment(SecondExplorer, "Sinergije između modula su najzanimljiviji deo projekta. Srećno!");
@@ -48,7 +48,7 @@ internal sealed class SocialModuleInitializer : IHostedService
 
         var server = new Blog(SecondExplorer, "Kako je organizovan server",
             "Server je modularni monolit na ASP.NET Core platformi. Svaki modul ima svoju šemu u bazi, svoje slojeve i svoj javni ugovor prema drugim modulima.",
-            []);
+            ["https://picsum.photos/seed/explorer-server/800/600"]);
         server.Publish();
         server.AddComment(FirstExplorer, "Savet: poslovna pravila idu u agregat, a ne u servis ili kontroler.");
         server.AddComment(SecondExplorer, "Pokrenite integracione testove pre svakog slanja izmena. Srećno sa migracijama!");
@@ -56,7 +56,7 @@ internal sealed class SocialModuleInitializer : IHostedService
 
         var client = new Blog(ThirdExplorer, "Kako je organizovan klijent",
             "Klijent je Angular aplikacija čiji moduli prate module servera. Tipovi za komunikaciju sa serverom se pišu ručno, kao verni odraz DTO-ova sa servera.",
-            []);
+            ["https://picsum.photos/seed/explorer-klijent/800/600"]);
         client.Publish();
         client.AddComment(FirstExplorer, "Savet: držite se strukture referentnog modula, čak i kad deluje jednostavno.");
         client.AddComment(SecondExplorer, "Frontend nije strašan koliko izgleda. Srećno!");
@@ -64,7 +64,7 @@ internal sealed class SocialModuleInitializer : IHostedService
 
         var knowledgeBase = new Blog(ThirdExplorer, "Baza znanja kursa",
             "U direktorijumu docs/knowledge-base se nalaze lekcije koje objašnjavaju svaki koncept koji projekat koristi, od arhitekture modula do migracija baze.",
-            []);
+            ["https://picsum.photos/seed/explorer-baza-znanja/800/600"]);
         knowledgeBase.Publish();
         knowledgeBase.AddComment(FirstExplorer, "Savet: krenite od INDEX.md i pratite preduslove svake lekcije.");
         knowledgeBase.AddComment(SecondExplorer, "Primeri u lekcijama su pojednostavljeni i namerno se razlikuju od projekta.");

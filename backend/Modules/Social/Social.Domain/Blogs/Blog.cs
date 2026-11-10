@@ -9,6 +9,7 @@ public sealed class Blog : AggregateRoot
     public string Title { get; private set; }
     public string Description { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public DateTime? LastModifiedAt { get; private set; }
     public List<string> Images { get; private set; }
     public BlogStatus Status { get; private set; }
     private readonly List<Comment> _comments = [];
@@ -24,21 +25,29 @@ public sealed class Blog : AggregateRoot
     public Blog(Guid authorId, string title, string description, List<string>? images)
         : base(Guid.NewGuid())
     {
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            throw new DomainException("A blog requires a title.");
-        }
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw new DomainException("A blog requires a description.");
-        }
+        ValidateContent(title, description, images);
 
         AuthorId = authorId;
         Title = title;
         Description = description;
         CreatedAt = DateTime.UtcNow;
-        Images = images ?? [];
+        Images = images!;
         Status = BlogStatus.Draft;
+    }
+
+    public void Edit(string title, string description, List<string>? images)
+    {
+        var isEditable = Status == BlogStatus.Draft || Status == BlogStatus.Published;
+        if (!isEditable)
+        {
+            throw new DomainException("Only a draft or a published blog can be edited.");
+        }
+        ValidateContent(title, description, images);
+
+        Title = title;
+        Description = description;
+        Images = images!;
+        LastModifiedAt = DateTime.UtcNow;
     }
 
     public void Publish()
@@ -70,6 +79,26 @@ public sealed class Blog : AggregateRoot
         EnsurePublished();
 
         _comments.Remove(GetOwnComment(commentId, userId));
+    }
+
+    private static void ValidateContent(string title, string description, List<string>? images)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new DomainException("A blog requires a title.");
+        }
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new DomainException("A blog requires a description.");
+        }
+        if (images is null || images.Count == 0)
+        {
+            throw new DomainException("A blog requires at least one image.");
+        }
+        if (images.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new DomainException("An image address cannot be blank.");
+        }
     }
 
     private void EnsurePublished()
