@@ -8,7 +8,7 @@
     </p>
   }
 
-  <div class="filters">
+  <div class="filters" (input)="backToFirstPage()" (change)="backToFirstPage()">
     <div class="field">
       <label for="name-filter">Search by name</label>
       <input id="name-filter" type="search" [formField]="form.name" />
@@ -23,19 +23,53 @@
         <option value="Hard">Hard</option>
       </select>
     </div>
+
+    <div class="field">
+      <label for="tags-filter">Tags, separated by commas</label>
+      <input id="tags-filter" type="text" [formField]="form.tags" />
+    </div>
+
+    <fieldset class="field transport">
+      <legend>Transport</legend>
+      <label><input type="checkbox" [formField]="form.walking" /> Walking</label>
+      <label><input type="checkbox" [formField]="form.bicycle" /> Bicycle</label>
+      <label><input type="checkbox" [formField]="form.car" /> Car</label>
+    </fieldset>
+
+    <div class="field">
+      <label for="sort-filter">Sort</label>
+      <select id="sort-filter" [formField]="form.difficultySort">
+        <option value="None">No sorting</option>
+        <option value="Ascending">Difficulty ascending</option>
+        <option value="Descending">Difficulty descending</option>
+      </select>
+    </div>
   </div>
 
   @if (tours.isLoading()) {
     <p>Loading tours...</p>
   } @else if (tours.error()) {
     <p class="error">Could not load tours. Log in and try again.</p>
-  } @else if (visibleTours().length === 0) {
-    <p>No tours match the filter.</p>
+  } @else if ((tours.value()?.items ?? []).length === 0) {
+    <p>No tours match the selected criteria</p>
+    <p>
+      <button class="button" type="button" (click)="clearFilters()">Clear filters</button>
+    </p>
   } @else {
     <div class="grid">
-      @for (tour of visibleTours(); track tour.id) {
+      @for (tour of tours.value()?.items ?? []; track tour.id) {
         <app-tour-card [tour]="tour" />
       }
+    </div>
+
+    <div class="paging">
+      <button class="button" type="button" [disabled]="isFirstPage()" (click)="previousPage()">
+        Previous
+      </button>
+      <span>Page {{ page() }}</span>
+      <button class="button" type="button" [disabled]="isLastPage()" (click)="nextPage()">
+        Next
+      </button>
     </div>
   }
 </div>
