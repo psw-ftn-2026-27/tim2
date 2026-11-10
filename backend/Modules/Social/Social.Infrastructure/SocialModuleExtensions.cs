@@ -6,8 +6,12 @@ using Social.Application.BlogAuthoring;
 using Social.Application.BlogCommenting;
 using Social.Application.BlogReading;
 using Social.Application.Blogs;
+using Social.Application.FollowRequestSending;
+using Social.Application.FollowRequests;
+using Social.Domain.FollowRequests;
 using Social.Infrastructure.Persistence;
 using Social.Infrastructure.Persistence.Blogs;
+using Social.Infrastructure.Persistence.FollowRequests;
 
 namespace Social.Infrastructure;
 
@@ -22,11 +26,17 @@ public static class SocialModuleExtensions
         services.AddScoped<IBlogRepository, BlogRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<SocialDbContext>());
         services.AddScoped<IBlogReadRepository, BlogReadRepository>();
+        services.AddScoped<IFollowRequestRepository, FollowRequestRepository>();
+        services.AddScoped<IFollowRequestReadRepository, FollowRequestReadRepository>();
+
+        services.AddScoped<FollowRequestService>();
 
         services.AddScoped<BlogAuthoringService>();
         services.AddScoped<BlogAuthoringQueries>();
         services.AddScoped<BlogReadingQueries>();
         services.AddScoped<BlogCommentingService>();
+        services.AddScoped<FollowRequestSendingService>();
+        services.AddScoped<FollowRequestSendingQueries>();
 
         return services;
     }

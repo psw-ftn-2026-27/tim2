@@ -1,0 +1,49 @@
+<div class="stack">
+  <p><a routerLink="/social">Back to blogs</a></p>
+
+  <h1>My requests</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (requests.isLoading()) {
+    <p>Loading your requests...</p>
+  } @else if (requests.error()) {
+    <p class="error">Could not load your requests. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Receiver</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of requests.value() ?? []; track request.id) {
+          <tr>
+            <td>{{ request.receiverId }}</td>
+            <td>{{ request.status }}</td>
+            <td>
+              @if (request.status === 'Pending') {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="cancel(request.id)"
+                >
+                  Cancel request
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3">You have not sent any requests yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
