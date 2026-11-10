@@ -16,6 +16,7 @@ public sealed class Tour : AggregateRoot
     public List<string> Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public DateTime? PublishedAt { get; private set; }
+    public RecommendedGroupSize? RecommendedGroupSize { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
 
     private Tour()
@@ -25,7 +26,8 @@ public sealed class Tour : AggregateRoot
         Tags = null!;
     }
 
-    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags)
+    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags,
+        RecommendedGroupSize? recommendedGroupSize = null)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -46,6 +48,7 @@ public sealed class Tour : AggregateRoot
         Description = description;
         Difficulty = difficulty;
         Tags = tags;
+        RecommendedGroupSize = recommendedGroupSize;
         Status = TourStatus.Draft;
     }
 
@@ -57,6 +60,16 @@ public sealed class Tour : AggregateRoot
         }
 
         _transportTimes.Add(new TransportTime(transport, minutes));
+    }
+
+    public void ChangeRecommendedGroupSize(int min, int max)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("The recommended group size can be changed only while the tour is a draft.");
+        }
+
+        RecommendedGroupSize = new RecommendedGroupSize(min, max);
     }
 
     public void Publish()
@@ -72,6 +85,10 @@ public sealed class Tour : AggregateRoot
         if (_transportTimes.Count == 0)
         {
             throw new DomainException("A tour can be published only with at least one transport time.");
+        }
+        if (RecommendedGroupSize is null)
+        {
+            throw new DomainException("A tour can be published only with a recommended group size.");
         }
 
         Status = TourStatus.Published;

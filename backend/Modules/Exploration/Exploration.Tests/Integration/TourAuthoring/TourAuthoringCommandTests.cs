@@ -36,6 +36,23 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Explorer_creates_a_tour_with_a_recommended_group_size()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"],
+            new RecommendedGroupSizeDto(2, 8));
+
+        var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var created = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
+        created!.RecommendedGroupSize.Should().Be(new RecommendedGroupSizeDto(2, 8));
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == created.Id);
+        stored.RecommendedGroupSize.Should().Be(new RecommendedGroupSize(2, 8));
+    }
+
+    [Fact]
     public async Task Explorer_cannot_create_a_tour_without_a_name()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
@@ -85,6 +102,75 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
         using var assertContext = Factory.CreateContext<ExplorationDbContext>();
         var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.FortressWalk.Id);
         stored.TransportTimes.Should().ContainSingle(time => time.Transport == TransportMode.Walking && time.Minutes == 120);
+    }
+
+    [Fact]
+    public async Task Author_changes_the_recommended_group_size_of_a_draft_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new RecommendedGroupSizeDto(3, 6);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/recommended-group-size", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
+        stored.RecommendedGroupSize.Should().Be(new RecommendedGroupSize(3, 6));
+    }
+
+    [Fact]
+    public async Task Invalid_recommended_group_size_leaves_the_stored_one_unchanged()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new RecommendedGroupSizeDto(6, 3);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/recommended-group-size", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
+        stored.RecommendedGroupSize.Should().Be(TourSeed.PublishableRiverside.RecommendedGroupSize);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_change_the_recommended_group_size_of_another_authors_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new RecommendedGroupSizeDto(3, 6);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.SecondExplorersTrail.Id}/recommended-group-size", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.SecondExplorersTrail.Id);
+        stored.RecommendedGroupSize.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_change_the_recommended_group_size()
+    {
+        var client = Factory.CreateClient();
+        var request = new RecommendedGroupSizeDto(3, 6);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/recommended-group-size", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_change_the_recommended_group_size()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = new RecommendedGroupSizeDto(3, 6);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/recommended-group-size", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
