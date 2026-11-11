@@ -1,0 +1,56 @@
+<div class="stack">
+  <h1>Moj novčanik</h1>
+
+  @if (balance.isLoading()) {
+    <p>Učitavanje stanja...</p>
+  } @else if (balance.error()) {
+    <p class="error">Stanje nije moguće učitati. Prijavite se i pokušajte ponovo.</p>
+  } @else {
+    <p class="balance">Stanje: {{ balance.value()?.balance ?? 0 }} EC</p>
+  }
+
+  <h2>Transakcije</h2>
+
+  @if (transactions.isLoading()) {
+    <p>Učitavanje transakcija...</p>
+  } @else if (transactions.error()) {
+    <p class="error">Transakcije nije moguće učitati. Prijavite se i pokušajte ponovo.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Iznos</th>
+          <th>Vreme</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
+          <tr>
+            <td>{{ transaction.amount }} EC</td>
+            <td>{{ transaction.createdAt }}</td>
+            <td>
+              @if (transaction.isCancelled) {
+                stornirano
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="meta">Još nema transakcija.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+        Prethodna
+      </button>
+      <span class="meta">Strana {{ page() }}</span>
+      <button class="button" type="button" [disabled]="!hasNextPage()" (click)="nextPage()">
+        Sledeća
+      </button>
+    </p>
+  }
+</div>

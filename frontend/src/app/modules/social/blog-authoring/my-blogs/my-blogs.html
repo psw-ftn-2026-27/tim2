@@ -18,6 +18,7 @@
           <th scope="col">Title</th>
           <th scope="col">Status</th>
           <th scope="col">Comments</th>
+          <th scope="col">Last modified</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -27,6 +28,7 @@
             <td>{{ blog.title }}</td>
             <td>{{ blog.status }}</td>
             <td>{{ blog.comments.length }}</td>
+            <td>{{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}</td>
             <td>
               @if (blog.status === 'Draft') {
                 <button
@@ -38,14 +40,66 @@
                   Publish
                 </button>
               }
+              @if (blog.status === 'Draft' || blog.status === 'Published') {
+                <button class="button" type="button" (click)="startEdit(blog)">Edit</button>
+              }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="4">You have no blogs yet.</td>
+            <td colspan="5">You have no blogs yet.</td>
           </tr>
         }
       </tbody>
     </table>
+  }
+
+  @if (editingBlogId(); as blogId) {
+    <div class="card stack edit-blog">
+      <h2>Edit blog</h2>
+
+      <form class="stack" (submit)="saveEdit($event, blogId)">
+        <div class="field">
+          <label for="edit-title">Title</label>
+          <input id="edit-title" type="text" [formField]="editForm.title" />
+          @if (editForm.title().touched()) {
+            @for (message of editForm.title().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="edit-description">Description</label>
+          <textarea id="edit-description" rows="6" [formField]="editForm.description"></textarea>
+          @if (editForm.description().touched()) {
+            @for (message of editForm.description().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <app-image-list
+          [images]="editForm.images().value()"
+          (addImage)="addImage($event)"
+          (removeImage)="removeImage($event)"
+        />
+
+        @if (editError()) {
+          <p class="error">{{ editError() }}</p>
+        }
+
+        <div class="edit-actions">
+          <button
+            class="button button--primary"
+            type="submit"
+            [disabled]="!editForm().valid() || pending()"
+          >
+            Save
+          </button>
+          <button class="button" type="button" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
   }
 </div>
