@@ -1,4 +1,4 @@
-namespace Social.Application.FollowRequestSending;
+namespace Social.Application.FollowRequests;
 
 public enum FollowRelationshipState
 {

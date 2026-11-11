@@ -42,6 +42,17 @@ public sealed class FollowRequest : AggregateRoot
         Status = FollowRequestStatus.Accepted;
     }
 
+    public void Accept(Guid userId)
+    {
+        if (userId != ReceiverId)
+        {
+            throw new DomainException("Only the receiver can accept a follow request.");
+        }
+        EnsurePending();
+
+        Status = FollowRequestStatus.Accepted;
+    }
+
     public void RemoveFollower(Guid userId)
     {
         if (userId != ReceiverId)
