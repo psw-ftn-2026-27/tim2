@@ -16,6 +16,7 @@ export interface CommentEdit {
 export class BlogComments {
   readonly comments = input.required<CommentDto[]>();
   readonly currentUserId = input<string | null>(null);
+  readonly commentingAllowed = input.required<boolean>();
 
   readonly addComment = output<string>();
   readonly editComment = output<CommentEdit>();
