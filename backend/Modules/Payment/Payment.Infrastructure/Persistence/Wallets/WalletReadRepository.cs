@@ -47,4 +47,26 @@ internal sealed class WalletReadRepository : IWalletReadRepository
                     .Sum(transaction => transaction.Amount)))
             .ToListAsync();
     }
+
+    public async Task<PageResult<UserTransactionDto>> GetUserTransactionsAsync(Guid userId, int page, int pageSize)
+    {
+        var transactions = _dbContext.Wallets
+            .Where(wallet => wallet.UserId == userId)
+            .SelectMany(wallet => wallet.Transactions)
+            .OrderByDescending(transaction => transaction.CreatedAt);
+
+        var totalCount = await transactions.CountAsync();
+        var items = await transactions
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(transaction => new UserTransactionDto(
+                transaction.Id,
+                transaction.Amount,
+                transaction.CreatedAt,
+                transaction.AdminId,
+                transaction.IsCancelled))
+            .ToListAsync();
+
+        return new PageResult<UserTransactionDto>(items, totalCount);
+    }
 }

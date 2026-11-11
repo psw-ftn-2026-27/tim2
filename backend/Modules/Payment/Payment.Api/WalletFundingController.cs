@@ -32,4 +32,23 @@ public sealed class WalletFundingController : ControllerBase
         await _fundingService.DepositAsync(User.GetUserId(), userId, dto);
         return NoContent();
     }
+
+    [HttpGet("users/{userId:guid}")]
+    public async Task<ActionResult<UserWalletDto>> GetWallet(Guid userId)
+    {
+        return await _fundingQueries.GetWalletAsync(userId);
+    }
+
+    [HttpGet("users/{userId:guid}/transactions")]
+    public async Task<ActionResult<PageResult<UserTransactionDto>>> GetWalletTransactions(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        return await _fundingQueries.GetWalletTransactionsAsync(userId, page, pageSize);
+    }
+
+    [HttpPost("users/{userId:guid}/transactions/{transactionId:guid}/cancellation")]
+    public async Task<ActionResult> CancelDeposit(Guid userId, Guid transactionId)
+    {
+        await _fundingService.CancelDepositAsync(User.GetUserId(), userId, transactionId);
+        return NoContent();
+    }
 }

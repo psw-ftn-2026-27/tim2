@@ -36,4 +36,16 @@ public sealed class WalletFundingService
         wallet.Deposit(adminId, dto.Amount);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task CancelDepositAsync(Guid adminId, Guid userId, Guid transactionId)
+    {
+        var wallet = await _walletRepository.GetByUserIdAsync(userId);
+        if (wallet is null)
+        {
+            throw new NotFoundException($"Wallet of user {userId} does not exist.");
+        }
+
+        wallet.CancelDeposit(transactionId, adminId, DateTime.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

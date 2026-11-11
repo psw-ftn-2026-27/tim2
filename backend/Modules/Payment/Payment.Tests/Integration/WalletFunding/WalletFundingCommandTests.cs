@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Payment.Application.WalletFunding;
 using Payment.Infrastructure.Persistence;
+using Payment.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
 
@@ -74,6 +75,70 @@ public class WalletFundingCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var response = await client.PostAsJsonAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/deposits", new DepositDto(100));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Administrator_cancels_their_own_deposit_and_it_is_stored_as_cancelled()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var depositId = WalletSeed.ExplorersFundedWallet.Transactions[0].Id;
+
+        var response = await client.PostAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/transactions/{depositId}/cancellation", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.Wallets.Single(wallet => wallet.UserId == WellKnownUsers.Explorer)
+            .Transactions.Single(transaction => transaction.Id == depositId)
+            .IsCancelled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Cancelling_a_deposit_of_a_user_without_a_wallet_is_rejected_and_creates_no_wallet()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsync($"/api/payment/wallet/users/{WellKnownUsers.SecondExplorer}/transactions/{Guid.NewGuid()}/cancellation", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.Wallets.Any(wallet => wallet.UserId == WellKnownUsers.SecondExplorer).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Cancelling_another_administrators_deposit_is_rejected_and_the_deposit_stays_active()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "administrator");
+        var depositId = WalletSeed.ExplorersFundedWallet.Transactions[0].Id;
+
+        var response = await client.PostAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/transactions/{depositId}/cancellation", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.Wallets.Single(wallet => wallet.UserId == WellKnownUsers.Explorer)
+            .Transactions.Single(transaction => transaction.Id == depositId)
+            .IsCancelled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_cancel_a_deposit()
+    {
+        var client = Factory.CreateClient();
+        var depositId = WalletSeed.ExplorersFundedWallet.Transactions[0].Id;
+
+        var response = await client.PostAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/transactions/{depositId}/cancellation", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_cancel_a_deposit()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var depositId = WalletSeed.ExplorersFundedWallet.Transactions[0].Id;
+
+        var response = await client.PostAsync($"/api/payment/wallet/users/{WellKnownUsers.Explorer}/transactions/{depositId}/cancellation", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
