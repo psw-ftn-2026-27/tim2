@@ -42,6 +42,18 @@ public class FollowRequestSendingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Accepted_request_gives_following_state_without_a_pending_request()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var relationship = await client.GetFromJsonAsync<FollowRelationshipDto>(
+            $"/api/social/follow-requests/relationship/{FollowRequestSeed.FollowedUser}", JsonOptions);
+
+        relationship!.State.Should().Be(FollowRelationshipState.Following);
+        relationship.PendingRequestId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Removed_follower_is_no_longer_following()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");

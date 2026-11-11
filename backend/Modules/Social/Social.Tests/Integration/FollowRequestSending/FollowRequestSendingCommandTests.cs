@@ -75,6 +75,20 @@ public class FollowRequestSendingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Withdrawing_a_nonexistent_request_is_not_found_and_nothing_is_deleted()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        using var arrangeContext = Factory.CreateContext<SocialDbContext>();
+        var requestCountBefore = arrangeContext.FollowRequests.Count();
+
+        var response = await client.DeleteAsync($"/api/social/follow-requests/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        assertContext.FollowRequests.Count().Should().Be(requestCountBefore);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_withdraw_a_request()
     {
         var client = Factory.CreateClient();
