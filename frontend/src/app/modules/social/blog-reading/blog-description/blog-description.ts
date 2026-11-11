@@ -23,6 +23,32 @@ function asWritten(raw: string, plain: boolean): string {
   return plain ? text : escapeHtml(text).replaceAll('\n', '<br>');
 }
 
+// On the card, a piece that is not formatted loses its markers too: only its words stay.
+function withoutMarkers(token: Token): string {
+  switch (token.type) {
+    case 'table': {
+      const table = token as Tokens.Table;
+      const cells = [...table.header, ...table.rows.flat()];
+      return cells.map((cell) => renderInlines(cell.tokens, true)).join(' ');
+    }
+    case 'blockquote':
+      return renderBlocks((token as Tokens.Blockquote).tokens, true);
+    case 'image':
+      return (token as Tokens.Image).text;
+    case 'code':
+      return (token as Tokens.Code).text;
+    case 'codespan':
+      return (token as Tokens.Codespan).text;
+    case 'del':
+      return renderInlines((token as Tokens.Del).tokens, true);
+    case 'hr':
+    case 'checkbox':
+      return '';
+    default:
+      return token.raw;
+  }
+}
+
 // Blocks are the pieces that stand on their own lines: headings, paragraphs, lists...
 function renderBlocks(tokens: Token[], plain: boolean): string {
   return tokens.map((token) => renderBlock(token, plain)).join('');
@@ -58,12 +84,12 @@ function renderBlock(token: Token, plain: boolean): string {
       return text.tokens ? renderInlines(text.tokens, plain) : asWritten(text.text, plain);
     }
     case 'checkbox':
-      // "[ ]" of a task list item stays as written, on the same line as the item.
-      return asWritten(token.raw, plain);
+      // On the page, "[ ]" of a task list item stays as written, on the same line as the item.
+      return plain ? withoutMarkers(token) : asWritten(token.raw, plain);
     case 'space':
       return plain ? ' ' : '';
     default:
-      return plain ? `${asWritten(token.raw, plain)} ` : `<p>${asWritten(token.raw, plain)}</p>`;
+      return plain ? `${withoutMarkers(token)} ` : `<p>${asWritten(token.raw, plain)}</p>`;
   }
 }
 
@@ -84,8 +110,8 @@ function renderInline(token: Token, plain: boolean): string {
     }
     case 'link': {
       const link = token as Tokens.Link;
-      // "javascript:" and other kinds of links stay as written.
-      if (!/^(https?:|mailto:)/i.test(link.href)) {
+      // On the page, "javascript:" and other kinds of links stay as written.
+      if (!plain && !/^(https?:|mailto:)/i.test(link.href)) {
         return asWritten(link.raw, plain);
       }
       const text = renderInlines(link.tokens, plain);
@@ -100,7 +126,7 @@ function renderInline(token: Token, plain: boolean): string {
     case 'br':
       return plain ? ' ' : '<br>';
     default:
-      return asWritten(token.raw, plain);
+      return plain ? withoutMarkers(token) : asWritten(token.raw, plain);
   }
 }
 
@@ -111,7 +137,7 @@ function renderInline(token: Token, plain: boolean): string {
 })
 export class BlogDescription {
   readonly description = input.required<string>();
-  // True on the blog card: the same text as on the blog page, without formatting, in one line.
+  // True on the blog card: only the words of the description, without any markers, in one line.
   readonly plain = input(false);
 
   protected readonly html = computed(() => renderBlocks(markdown.lexer(this.description()), false));
