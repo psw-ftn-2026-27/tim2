@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using Shared.Tests;
+using Social.Application.FollowRequests;
 using Social.Application.FollowRequestSending;
 using Social.Tests.Integration.Seeds;
 using Xunit;

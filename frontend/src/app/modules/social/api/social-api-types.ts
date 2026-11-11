@@ -58,3 +58,19 @@ export interface SentFollowRequestDto {
   status: FollowRequestStatus;
   createdAt: string;
 }
+
+export interface ReceivedFollowRequestDto {
+  id: string;
+  senderId: string;
+  createdAt: string;
+}
+
+export interface FollowerDto {
+  userId: string;
+  state: FollowRelationshipState;
+  pendingRequestId: string | null;
+}
+
+export interface FollowedUserDto {
+  userId: string;
+}
