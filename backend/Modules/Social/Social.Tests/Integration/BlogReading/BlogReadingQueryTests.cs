@@ -15,16 +15,32 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     public BlogReadingQueryTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Only_published_blogs_are_listed()
+    public async Task Published_and_archived_blogs_are_listed_without_drafts()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
+        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/visible", JsonOptions);
 
-        blogs!.Items.Should().OnlyContain(blog => blog.Status == BlogStatus.Published);
+        blogs!.Items.Should().OnlyContain(blog => blog.Status != BlogStatus.Draft);
         blogs.Items.Should().Contain(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        blogs.Items.Should().Contain(blog => blog.Id == BlogSeed.ArchivedOldTownWalk.Id);
         blogs.Items.Should().NotContain(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        blogs.TotalCount.Should().Be(BlogSeed.All.Count(blog => blog.Status == BlogStatus.Published));
+        blogs.TotalCount.Should().Be(BlogSeed.All.Count(blog => blog.Status != BlogStatus.Draft));
+    }
+
+    [Fact]
+    public async Task Archived_blog_is_shown_with_its_content()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var blog = await client.GetFromJsonAsync<BlogDto>(
+            $"/api/social/blogs/{BlogSeed.ArchivedOldTownWalk.Id}", JsonOptions);
+
+        blog!.Id.Should().Be(BlogSeed.ArchivedOldTownWalk.Id);
+        blog.Title.Should().Be(BlogSeed.ArchivedOldTownWalk.Title);
+        blog.Description.Should().Be(BlogSeed.ArchivedOldTownWalk.Description);
+        blog.Images.Should().Equal(BlogSeed.ArchivedOldTownWalk.Images);
+        blog.Status.Should().Be(BlogStatus.Archived);
     }
 
     [Fact]
