@@ -8,4 +8,5 @@ public sealed record CreateTourDto(
     string Description,
     TourDifficulty Difficulty,
     List<string> Tags,
-    RecommendedGroupSizeDto? RecommendedGroupSize = null);
+    RecommendedGroupSizeDto? RecommendedGroupSize = null,
+    int Price = 0);

@@ -20,10 +20,15 @@ public sealed class TourAuthoringService
 
     public async Task<TourDto> CreateAsync(Guid authorId, CreateTourDto dto)
     {
-        var recommendedGroupSize = dto.RecommendedGroupSize is null
-            ? null
-            : new RecommendedGroupSize(dto.RecommendedGroupSize.Min, dto.RecommendedGroupSize.Max);
-        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags, recommendedGroupSize);
+        var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags);
+        if (dto.RecommendedGroupSize is not null)
+        {
+            tour.ChangeRecommendedGroupSize(dto.RecommendedGroupSize.Min, dto.RecommendedGroupSize.Max);
+        }
+        if (dto.Price != 0)
+        {
+            tour.ChangePrice(dto.Price);
+        }
 
         _tourRepository.Add(tour);
         await _unitOfWork.SaveChangesAsync();
@@ -44,6 +49,14 @@ public sealed class TourAuthoringService
         var tour = await GetOwnedTourAsync(tourId, authorId);
 
         tour.ChangeRecommendedGroupSize(dto.Min, dto.Max);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ChangePriceAsync(Guid tourId, Guid authorId, TourPriceDto dto)
+    {
+        var tour = await GetOwnedTourAsync(tourId, authorId);
+
+        tour.ChangePrice(dto.Price);
         await _unitOfWork.SaveChangesAsync();
     }
 
