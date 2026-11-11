@@ -43,6 +43,16 @@
               @if (blog.status === 'Draft' || blog.status === 'Published') {
                 <button class="button" type="button" (click)="startEdit(blog)">Edit</button>
               }
+              @if (blog.status === 'Published') {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="archive(blog.id)"
+                >
+                  Archive
+                </button>
+              }
             </td>
           </tr>
         } @empty {
