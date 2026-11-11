@@ -185,6 +185,21 @@ public class SocialChallengeManagementCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Deleting_a_published_challenge_is_rejected_and_it_stays_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.SocialChallenges.Count();
+
+        var response = await client.DeleteAsync($"/api/games/challenges/{SocialChallengeSeed.PublishedParkPicnic.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.SocialChallenges.Count().Should().Be(challengeCountBefore);
+        assertContext.SocialChallenges.Should().Contain(challenge => challenge.Id == SocialChallengeSeed.PublishedParkPicnic.Id);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_delete_a_challenge()
     {
         var client = Factory.CreateClient();
