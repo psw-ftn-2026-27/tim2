@@ -45,6 +45,19 @@ export class MyBlogs {
     }
   }
 
+  protected async archive(blogId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.blogAuthoring.archive(blogId);
+      this.blogs.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not archive the blog.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
   protected formatDate(value: string): string {
     return new Date(value).toLocaleString('sr-RS');
   }
