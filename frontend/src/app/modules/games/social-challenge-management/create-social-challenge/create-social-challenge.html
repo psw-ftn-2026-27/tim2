@@ -1,0 +1,83 @@
+<div class="card stack">
+  <h1>New challenge</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" [formField]="form.name" />
+      @if (form.name().touched()) {
+        @for (message of form.name().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="start">Start time</label>
+      <input id="start" type="time" [formField]="form.start" />
+      @if (form.start().touched()) {
+        @for (message of form.start().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="durationMinutes">Duration in minutes</label>
+      <input id="durationMinutes" type="number" step="1" [formField]="form.durationMinutes" />
+      @if (form.durationMinutes().touched()) {
+        @for (message of form.durationMinutes().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="requiredParticipants">Number of people</label>
+      <input id="requiredParticipants" type="number" step="1" [formField]="form.requiredParticipants" />
+      @if (form.requiredParticipants().touched()) {
+        @for (message of form.requiredParticipants().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="rangeInMeters">Range in meters</label>
+      <input id="rangeInMeters" type="number" step="1" [formField]="form.rangeInMeters" />
+      @if (form.rangeInMeters().touched()) {
+        @for (message of form.rangeInMeters().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="xp">XP</label>
+      <input id="xp" type="number" step="1" [formField]="form.xp" />
+      @if (form.xp().touched()) {
+        @for (message of form.xp().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="completionMessage">Completion message</label>
+      <textarea id="completionMessage" rows="3" [formField]="form.completionMessage"></textarea>
+      @if (form.completionMessage().touched()) {
+        @for (message of form.completionMessage().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+      Create
+    </button>
+  </form>
+</div>
