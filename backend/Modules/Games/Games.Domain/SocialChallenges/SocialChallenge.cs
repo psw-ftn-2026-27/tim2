@@ -86,6 +86,42 @@ public sealed class SocialChallenge : AggregateRoot
         }
     }
 
+    public void Publish()
+    {
+        EnsureStatusIsOneOf(SocialChallengeStatus.Draft);
+
+        Status = SocialChallengeStatus.Published;
+    }
+
+    public void Retire()
+    {
+        EnsureStatusIsOneOf(SocialChallengeStatus.Published);
+
+        Status = SocialChallengeStatus.Retired;
+    }
+
+    public void Archive()
+    {
+        EnsureStatusIsOneOf(SocialChallengeStatus.Retired);
+
+        Status = SocialChallengeStatus.Archived;
+    }
+
+    public SocialChallenge Repeat()
+    {
+        EnsureStatusIsOneOf(SocialChallengeStatus.Retired, SocialChallengeStatus.Archived);
+
+        return new SocialChallenge(Name, Window.Start, Window.Duration, RequiredParticipants, RangeInMeters, Xp, CompletionMessage);
+    }
+
+    private void EnsureStatusIsOneOf(params SocialChallengeStatus[] allowedStatuses)
+    {
+        if (!allowedStatuses.Contains(Status))
+        {
+            throw new DomainException($"This action is not allowed for a social challenge in the {Status} state.");
+        }
+    }
+
     private static void Validate(string name, int requiredParticipants, int rangeInMeters, int xp, string completionMessage)
     {
         var trimmedName = name?.Trim() ?? string.Empty;
