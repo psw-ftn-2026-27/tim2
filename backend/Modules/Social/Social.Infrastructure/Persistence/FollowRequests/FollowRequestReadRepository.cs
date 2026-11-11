@@ -22,19 +22,13 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
         var sentRequests = _dbContext.FollowRequests
             .Where(request => request.SenderId == userId && request.ReceiverId == otherUserId);
 
-        if (await sentRequests.AnyAsync(request => request.Status == FollowRequestStatus.Accepted))
-        {
-            return new FollowRelationshipDto(FollowRelationshipState.Following, null);
-        }
-
+        var isFollowing = await sentRequests.AnyAsync(request => request.Status == FollowRequestStatus.Accepted);
         var pendingRequestId = await sentRequests
             .Where(request => request.Status == FollowRequestStatus.Pending)
             .Select(request => (Guid?)request.Id)
             .FirstOrDefaultAsync();
 
-        return pendingRequestId is null
-            ? new FollowRelationshipDto(FollowRelationshipState.Follow, null)
-            : new FollowRelationshipDto(FollowRelationshipState.Pending, pendingRequestId);
+        return ToRelationship(isFollowing, pendingRequestId);
     }
 
     public Task<List<SentFollowRequestDto>> GetSentAsync(Guid senderId)
@@ -74,30 +68,22 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
         var rows = await followers
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(request => new
-            {
-                FollowerId = request.SenderId,
-                IsFollowedBack = _dbContext.FollowRequests.Any(sent =>
+            .Select(request => new FollowerRow(
+                request.SenderId,
+                _dbContext.FollowRequests.Any(sent =>
                     sent.SenderId == userId &&
                     sent.ReceiverId == request.SenderId &&
                     sent.Status == FollowRequestStatus.Accepted),
-                PendingRequestId = _dbContext.FollowRequests
+                _dbContext.FollowRequests
                     .Where(sent =>
                         sent.SenderId == userId &&
                         sent.ReceiverId == request.SenderId &&
                         sent.Status == FollowRequestStatus.Pending)
                     .Select(sent => (Guid?)sent.Id)
-                    .FirstOrDefault()
-            })
+                    .FirstOrDefault()))
             .ToListAsync();
 
-        var items = rows
-            .Select(row => row.IsFollowedBack
-                ? new FollowerDto(row.FollowerId, FollowRelationshipState.Following, null)
-                : row.PendingRequestId is null
-                    ? new FollowerDto(row.FollowerId, FollowRelationshipState.Follow, null)
-                    : new FollowerDto(row.FollowerId, FollowRelationshipState.Pending, row.PendingRequestId))
-            .ToList();
+        var items = rows.Select(ToFollowerDto).ToList();
 
         return new PageResult<FollowerDto>(items, totalCount);
     }
@@ -118,4 +104,24 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
 
         return new PageResult<FollowedUserDto>(items, totalCount);
     }
+
+    private static FollowerDto ToFollowerDto(FollowerRow row)
+    {
+        var relationship = ToRelationship(row.IsFollowedBack, row.PendingRequestId);
+        return new FollowerDto(row.FollowerId, relationship.State, relationship.PendingRequestId);
+    }
+
+    private static FollowRelationshipDto ToRelationship(bool isFollowing, Guid? pendingRequestId)
+    {
+        if (isFollowing)
+        {
+            return new FollowRelationshipDto(FollowRelationshipState.Following, null);
+        }
+
+        return pendingRequestId is null
+            ? new FollowRelationshipDto(FollowRelationshipState.Follow, null)
+            : new FollowRelationshipDto(FollowRelationshipState.Pending, pendingRequestId);
+    }
+
+    private sealed record FollowerRow(Guid FollowerId, bool IsFollowedBack, Guid? PendingRequestId);
 }
