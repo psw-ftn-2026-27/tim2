@@ -2,7 +2,8 @@ using Xunit;
 
 namespace Host.Tests.DependencyTests;
 
-// Another module is reachable only through its Contracts project, and Identity only through Identity.Contracts.
+// Another module is reachable only through its Contracts project, Identity only through Identity.Contracts,
+// and Images not at all: modules keep only the address of an uploaded image.
 public class ModuleIsolationTests : BaseArchitectureTests
 {
     [Theory]
@@ -29,6 +30,27 @@ public class ModuleIsolationTests : BaseArchitectureTests
         {
             AssertNoDependency(assembly, "Identity");
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(ModuleNames))]
+    public void Module_does_not_depend_on_images(string module)
+    {
+        foreach (var assembly in Layers.Select(layer => $"{module}.{layer}"))
+        {
+            AssertNoDependency(assembly, "Images");
+        }
+    }
+
+    [Fact]
+    public void Images_does_not_depend_on_any_module()
+    {
+        var moduleAssemblies = Modules
+            .SelectMany(module => Layers.Select(layer => $"{module}.{layer}"))
+            .Append("Identity")
+            .Append("Identity.Contracts")
+            .ToArray();
+        AssertNoDependency("Images", moduleAssemblies);
     }
 
     [Fact]

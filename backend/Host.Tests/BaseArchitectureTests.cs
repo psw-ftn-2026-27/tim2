@@ -18,6 +18,7 @@ public abstract class BaseArchitectureTests
             .SelectMany(module => Layers.Select(layer => Assembly.Load($"{module}.{layer}")))
             .Append(Assembly.Load("Identity"))
             .Append(Assembly.Load("Identity.Contracts"))
+            .Append(Assembly.Load("Images"))
             .Append(Assembly.Load("Host.Api"))
             .Concat(SharedProjects.Select(Assembly.Load))
             .ToArray())
