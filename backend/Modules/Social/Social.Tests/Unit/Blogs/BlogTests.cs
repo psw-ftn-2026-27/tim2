@@ -117,6 +117,26 @@ public class BlogTests
     }
 
     [Fact]
+    public void New_blog_stores_image_addresses_without_surrounding_spaces()
+    {
+        var blog = new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", "Opis obilaska tvrđave.", ["  https://example.com/tvrdjava.jpg  "]);
+
+        blog.Images.Should().Equal("https://example.com/tvrdjava.jpg");
+    }
+
+    [Fact]
+    public void Edited_blog_keeps_its_images_when_the_given_list_changes_later()
+    {
+        var blog = CreateBlog();
+        List<string> images = ["https://example.com/kula.jpg"];
+        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", images);
+
+        images.Clear();
+
+        blog.Images.Should().Equal("https://example.com/kula.jpg");
+    }
+
+    [Fact]
     public void Draft_blog_is_published()
     {
         var blog = CreateBlog();

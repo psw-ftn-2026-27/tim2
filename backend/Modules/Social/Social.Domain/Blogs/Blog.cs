@@ -31,7 +31,7 @@ public sealed class Blog : AggregateRoot
         Title = title;
         Description = description;
         CreatedAt = DateTime.UtcNow;
-        Images = images!;
+        Images = CopyTrimmed(images!);
         Status = BlogStatus.Draft;
     }
 
@@ -46,7 +46,7 @@ public sealed class Blog : AggregateRoot
 
         Title = title;
         Description = description;
-        Images = images!;
+        Images = CopyTrimmed(images!);
         LastModifiedAt = DateTime.UtcNow;
     }
 
@@ -99,6 +99,11 @@ public sealed class Blog : AggregateRoot
         {
             throw new DomainException("An image address cannot be blank.");
         }
+    }
+
+    private static List<string> CopyTrimmed(List<string> images)
+    {
+        return images.Select(image => image.Trim()).ToList();
     }
 
     private void EnsurePublished()

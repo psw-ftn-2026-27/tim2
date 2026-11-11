@@ -74,6 +74,10 @@ export class MyBlogs {
 
   protected async saveEdit(event: Event, blogId: string): Promise<void> {
     event.preventDefault();
+    if (this.editForm.images().value().length === 0) {
+      this.editError.set('Add at least one image.');
+      return;
+    }
     this.pending.set(true);
     this.editError.set(null);
     try {

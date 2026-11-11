@@ -36,6 +36,10 @@ export class CreateBlog {
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    if (this.form.images().value().length === 0) {
+      this.error.set('Add at least one image.');
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {
