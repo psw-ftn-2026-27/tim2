@@ -36,11 +36,15 @@
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
             <td>{{ transaction.amount }} EC</td>
-            <td>{{ transaction.createdAt }}</td>
-            <td>{{ transaction.adminId }}</td>
+            <td>{{ formatTime(transaction.createdAt) }}</td>
+            <td>{{ isOwnDeposit(transaction) ? 'Vi' : 'Drugi administrator' }}</td>
             <td>
               @if (transaction.isCancelled) {
                 stornirano
+              } @else if (!isOwnDeposit(transaction)) {
+                <span class="meta">Storno može samo administrator koji je uplatio.</span>
+              } @else if (!isWithinCancellationWindow(transaction)) {
+                <span class="meta">Rok od 24h za storno je istekao.</span>
               } @else {
                 <button
                   class="button"

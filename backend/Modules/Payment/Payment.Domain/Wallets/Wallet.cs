@@ -41,7 +41,7 @@ public sealed class Wallet : AggregateRoot
             throw new NotFoundException($"Transaction {transactionId} does not exist.");
         }
 
-        if (Balance() - transaction.Amount < 0)
+        if (!transaction.IsCancelled && Balance() - transaction.Amount < 0)
         {
             throw new DomainException("Cancelling the deposit would make the wallet balance negative.");
         }
