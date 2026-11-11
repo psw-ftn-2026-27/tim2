@@ -53,7 +53,7 @@ public class FollowRequestTests
 
         var withdrawal = () => request.Withdraw(Receiver);
 
-        withdrawal.Should().Throw<DomainException>();
+        withdrawal.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class FollowRequestTests
 
         var removal = () => request.RemoveFollower(Sender);
 
-        removal.Should().Throw<DomainException>();
+        removal.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class FollowRequestTests
 
         var acceptance = () => request.Accept(Sender);
 
-        acceptance.Should().Throw<DomainException>();
+        acceptance.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class FollowRequestTests
 
         var rejection = () => request.Reject(Sender);
 
-        rejection.Should().Throw<DomainException>();
+        rejection.Should().Throw<NotFoundException>();
     }
 
     [Fact]
