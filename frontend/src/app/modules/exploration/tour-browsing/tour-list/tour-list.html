@@ -37,14 +37,47 @@
     </fieldset>
 
     <div class="field">
-      <label for="sort-filter">Sort</label>
-      <select id="sort-filter" [formField]="form.difficultySort">
+      <label for="min-price-filter">Lowest price (EC)</label>
+      <input id="min-price-filter" type="number" step="1" [formField]="form.minPrice" />
+      @if (form.minPrice().touched()) {
+        @for (message of form.minPrice().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="max-price-filter">Highest price (EC)</label>
+      <input id="max-price-filter" type="number" step="1" [formField]="form.maxPrice" />
+      @if (form.maxPrice().touched()) {
+        @for (message of form.maxPrice().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="difficulty-sort">Sort by difficulty</label>
+      <select id="difficulty-sort" [formField]="form.difficultySort">
         <option value="None">No sorting</option>
-        <option value="Ascending">Difficulty ascending</option>
-        <option value="Descending">Difficulty descending</option>
+        <option value="Ascending">Ascending</option>
+        <option value="Descending">Descending</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="price-sort">Then sort by price</label>
+      <select id="price-sort" [formField]="form.priceSort">
+        <option value="None">No sorting</option>
+        <option value="Ascending">Ascending</option>
+        <option value="Descending">Descending</option>
       </select>
     </div>
   </div>
+
+  <p>
+    <button class="button" type="button" (click)="clearFilters()">Clear filters</button>
+  </p>
 
   @if (tours.isLoading()) {
     <p>Loading tours...</p>
@@ -52,9 +85,6 @@
     <p class="error">Could not load tours. Log in and try again.</p>
   } @else if ((tours.value()?.items ?? []).length === 0) {
     <p>No tours match the selected criteria</p>
-    <p>
-      <button class="button" type="button" (click)="clearFilters()">Clear filters</button>
-    </p>
   } @else {
     <div class="grid">
       @for (tour of tours.value()?.items ?? []; track tour.id) {

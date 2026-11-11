@@ -1,6 +1,6 @@
 namespace Exploration.Application.TourBrowsing;
 
-public enum DifficultySort
+public enum SortDirection
 {
     None,
     Ascending,
