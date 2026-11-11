@@ -1,0 +1,17 @@
+.table td:last-child {
+  width: 12rem;
+}
+
+.edit-club {
+  max-width: 32rem;
+}
+
+.edit-actions,
+.delete-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.delete-question {
+  margin: 0 0 var(--space-2);
+}
