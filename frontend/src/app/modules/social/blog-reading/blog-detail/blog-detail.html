@@ -41,7 +41,7 @@
         </p>
       }
 
-      <p>{{ blog.description }}</p>
+      <div [innerHTML]="descriptionHtml()"></div>
 
       <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
       <p class="meta">
