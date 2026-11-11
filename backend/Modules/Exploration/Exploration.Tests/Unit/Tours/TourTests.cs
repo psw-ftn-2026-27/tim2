@@ -10,9 +10,12 @@ public class TourTests
 {
     private static readonly string LongDescription = new('o', 100);
 
-    private static Tour CreateTour(string description) =>
-        new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"],
-            new RecommendedGroupSize(2, 8));
+    private static Tour CreateTour(string description)
+    {
+        var tour = new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"]);
+        tour.ChangeRecommendedGroupSize(2, 8);
+        return tour;
+    }
 
     [Fact]
     public void New_tour_starts_as_a_draft()
@@ -138,6 +141,30 @@ public class TourTests
         tour.Publish();
 
         var change = () => tour.ChangeRecommendedGroupSize(3, 6);
+
+        change.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(-500)]
+    public void Tour_price_cannot_be_negative(int price)
+    {
+        var tour = CreateTour(LongDescription);
+
+        var change = () => tour.ChangePrice(price);
+
+        change.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Tour_that_is_not_a_draft_cannot_change_its_price()
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddTransportTime(TransportMode.Walking, 120);
+        tour.Publish();
+
+        var change = () => tour.ChangePrice(800);
 
         change.Should().Throw<DomainException>();
     }

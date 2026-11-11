@@ -15,18 +15,23 @@ internal static class TourSeed
 
     static TourSeed()
     {
-        PublishableRiverside = new(WellKnownUsers.Explorer, "Staza uz Dunav", "Staza kreće od Ribarskog ostrva, prati obalu Dunava pored gradske plaže Štrand i završava se kod Mosta slobode, uz više mesta za predah.", TourDifficulty.Easy, ["priroda"], new RecommendedGroupSize(2, 10));
+        PublishableRiverside = new(WellKnownUsers.Explorer, "Staza uz Dunav", "Staza kreće od Ribarskog ostrva, prati obalu Dunava pored gradske plaže Štrand i završava se kod Mosta slobode, uz više mesta za predah.", TourDifficulty.Easy, ["priroda"]);
+        PublishableRiverside.ChangeRecommendedGroupSize(2, 10);
         PublishableRiverside.AddTransportTime(TransportMode.Walking, 90);
+        PublishableRiverside.ChangePrice(1500);
 
-        PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"], new RecommendedGroupSize(4, 12));
+        PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"]);
+        PublishedVineyards.ChangeRecommendedGroupSize(4, 12);
         PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
         PublishedVineyards.Publish();
 
-        PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"], new RecommendedGroupSize(1, 8));
+        PublishedMonasteries = new(WellKnownUsers.Explorer, "Fruškogorski manastiri", "Tura obilazi tri fruškogorska manastira: Krušedol, Grgeteg i Novo Hopovo, sa pauzom za ručak u podnožju nacionalnog parka.", TourDifficulty.Hard, ["istorija"]);
+        PublishedMonasteries.ChangeRecommendedGroupSize(1, 8);
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.Publish();
 
-        PublishedLakeside = new(WellKnownUsers.SecondExplorer, "Staza oko Palićkog jezera", "Staza obilazi Palićko jezero od Velike terase do Ženskog štranda, pored Vodotornja i Muzičkog paviljona, uz odmor u parku kraj obale.", TourDifficulty.Easy, ["priroda", "jezero"], new RecommendedGroupSize(2, 20));
+        PublishedLakeside = new(WellKnownUsers.SecondExplorer, "Staza oko Palićkog jezera", "Staza obilazi Palićko jezero od Velike terase do Ženskog štranda, pored Vodotornja i Muzičkog paviljona, uz odmor u parku kraj obale.", TourDifficulty.Easy, ["priroda", "jezero"]);
+        PublishedLakeside.ChangeRecommendedGroupSize(2, 20);
         PublishedLakeside.AddTransportTime(TransportMode.Walking, 120);
         PublishedLakeside.Publish();
     }

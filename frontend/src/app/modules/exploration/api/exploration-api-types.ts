@@ -25,6 +25,7 @@ export interface TourDto {
   publishedAt: string | null;
   transportTimes: TransportTimeDto[];
   recommendedGroupSize: RecommendedGroupSizeDto | null;
+  price: number;
 }
 
 export type DifficultySort = 'None' | 'Ascending' | 'Descending';
@@ -43,4 +44,9 @@ export interface CreateTourDto {
   difficulty: TourDifficulty;
   tags: string[];
   recommendedGroupSize: RecommendedGroupSizeDto | null;
+  price: number;
+}
+
+export interface TourPriceDto {
+  price: number;
 }

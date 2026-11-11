@@ -20,6 +20,7 @@
           <th scope="col">Status</th>
           <th scope="col">Transport times</th>
           <th scope="col">Recommended group size</th>
+          <th scope="col">Price</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -43,11 +44,21 @@
                 <span class="meta">Not specified</span>
               }
             </td>
+            <td>
+              @if (tour.price === 0) {
+                Free
+              } @else {
+                {{ tour.price }} EC
+              }
+            </td>
             <td class="actions">
               <button class="button" type="button" (click)="select(tour.id)">Add time</button>
               @if (tour.status === 'Draft') {
                 <button class="button" type="button" (click)="selectGroupSize(tour)">
                   Group size
+                </button>
+                <button class="button" type="button" (click)="selectPrice(tour)">
+                  Change price
                 </button>
                 <button
                   class="button button--primary"
@@ -62,7 +73,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">You have no tours yet.</td>
+            <td colspan="7">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -130,6 +141,30 @@
         class="button button--primary"
         type="submit"
         [disabled]="!groupSizeForm().valid() || pending()"
+      >
+        Save
+      </button>
+    </form>
+  }
+
+  @if (priceTourId()) {
+    <form class="card stack" (submit)="changePrice($event)">
+      <h2>Change price</h2>
+
+      <div class="field">
+        <label for="price">Price (EC)</label>
+        <input id="price" type="number" [formField]="priceForm.price" />
+        @if (priceForm.price().touched()) {
+          @for (message of priceForm.price().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!priceForm().valid() || pending()"
       >
         Save
       </button>

@@ -19,6 +19,7 @@ export class MyTours {
 
   protected readonly selectedTourId = signal<string | null>(null);
   protected readonly groupSizeTourId = signal<string | null>(null);
+  protected readonly priceTourId = signal<string | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -41,9 +42,17 @@ export class MyTours {
     min(path.max, 1, { message: 'Maximum must be at least 1.' });
   });
 
+  private readonly priceModel = signal({ price: 0 });
+
+  protected readonly priceForm = form(this.priceModel, (path) => {
+    required(path.price, { message: 'Price is required.' });
+    min(path.price, 0, { message: 'Price cannot be negative.' });
+  });
+
   protected select(tourId: string): void {
     this.error.set(null);
     this.groupSizeTourId.set(null);
+    this.priceTourId.set(null);
     this.selectedTourId.set(tourId);
     this.form().reset({ transport: 'Walking', minutes: 30 });
   }
@@ -86,6 +95,7 @@ export class MyTours {
   protected selectGroupSize(tour: TourDto): void {
     this.error.set(null);
     this.selectedTourId.set(null);
+    this.priceTourId.set(null);
     this.groupSizeTourId.set(tour.id);
     this.groupSizeForm().reset({
       min: tour.recommendedGroupSize?.min ?? null,
@@ -112,6 +122,33 @@ export class MyTours {
       this.groupSizeTourId.set(null);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not change the recommended group size.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected selectPrice(tour: TourDto): void {
+    this.error.set(null);
+    this.selectedTourId.set(null);
+    this.groupSizeTourId.set(null);
+    this.priceTourId.set(tour.id);
+    this.priceForm().reset({ price: tour.price });
+  }
+
+  protected async changePrice(event: Event): Promise<void> {
+    event.preventDefault();
+    const tourId = this.priceTourId();
+    if (tourId === null) {
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.tourAuthoring.changePrice(tourId, { price: this.priceForm.price().value() });
+      this.tours.reload();
+      this.priceTourId.set(null);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not change the price.'));
     } finally {
       this.pending.set(false);
     }
