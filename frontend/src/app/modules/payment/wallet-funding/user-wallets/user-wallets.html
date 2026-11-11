@@ -1,0 +1,58 @@
+<div class="stack">
+  <h1>Novčanici korisnika</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (wallets.isLoading()) {
+    <p>Učitavanje novčanika...</p>
+  } @else if (wallets.error()) {
+    <p class="error">Novčanike nije moguće učitati. Prijavite se kao administrator.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Imejl</th>
+          <th scope="col">Stanje</th>
+          <th scope="col">Uplata</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (wallet of wallets.value()?.items ?? []; track wallet.userId) {
+          <tr>
+            <td>{{ wallet.email }}</td>
+            <td>{{ wallet.balance }} EC</td>
+            <td>
+              <app-deposit-form [disabled]="pending()" (deposit)="deposit(wallet.userId, $event)" />
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="meta">Nema registrovanih korisnika.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button
+        class="button"
+        type="button"
+        [disabled]="page() === 1 || pending()"
+        (click)="previousPage()"
+      >
+        Prethodna
+      </button>
+      <span class="meta">Strana {{ page() }}</span>
+      <button
+        class="button"
+        type="button"
+        [disabled]="!hasNextPage() || pending()"
+        (click)="nextPage()"
+      >
+        Sledeća
+      </button>
+    </p>
+  }
+</div>
