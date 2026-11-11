@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain;
 using Social.Application.Clubs;
 using Social.Domain.Clubs;
 
@@ -16,6 +17,17 @@ internal sealed class ClubReadRepository : IClubReadRepository
     public Task<List<ClubDto>> GetByOwnerAsync(Guid ownerId)
     {
         return ProjectToDtos(_dbContext.Clubs.Where(club => club.OwnerId == ownerId)).ToListAsync();
+    }
+
+    public async Task<PageResult<ClubDto>> GetAllAsync(int page, int pageSize)
+    {
+        var totalCount = await _dbContext.Clubs.CountAsync();
+        var items = await ProjectToDtos(_dbContext.Clubs)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PageResult<ClubDto>(items, totalCount);
     }
 
     private static IQueryable<ClubDto> ProjectToDtos(IQueryable<Club> clubs)
