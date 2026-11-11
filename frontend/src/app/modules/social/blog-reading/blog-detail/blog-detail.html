@@ -15,6 +15,11 @@
 
       <p>{{ blog.description }}</p>
 
+      <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
+      <p class="meta">
+        Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
+      </p>
+
       <p class="meta">Status: {{ blog.status }}</p>
 
       <app-blog-comments

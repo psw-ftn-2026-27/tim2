@@ -22,6 +22,12 @@
       }
     </div>
 
+    <app-image-list
+      [images]="form.images().value()"
+      (addImage)="addImage($event)"
+      (removeImage)="removeImage($event)"
+    />
+
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
