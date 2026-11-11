@@ -41,7 +41,7 @@
         </p>
       }
 
-      <p>{{ blog.description }}</p>
+      <app-blog-description [description]="blog.description" />
 
       <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
       <p class="meta">

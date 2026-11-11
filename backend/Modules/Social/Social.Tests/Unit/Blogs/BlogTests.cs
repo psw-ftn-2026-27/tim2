@@ -66,6 +66,27 @@ public class BlogTests
     }
 
     [Fact]
+    public void New_blog_keeps_a_markdown_description_exactly_as_written()
+    {
+        var description = "# Utisci sa tvrđave\n\n- **Kula** sa pogledom\n- *Kapija* iz 18. veka\n\n";
+
+        var blog = new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", description, ["https://example.com/tvrdjava.jpg"]);
+
+        blog.Description.Should().Be(description);
+    }
+
+    [Fact]
+    public void Edited_blog_keeps_a_markdown_description_exactly_as_written()
+    {
+        var blog = CreateBlog();
+        var description = "## Dopunjen opis\n\n1. **Kula** sa pogledom\n2. [Mapa](https://example.com/mapa)\n\n";
+
+        blog.Edit("Novi utisci sa tvrđave", description, ["https://example.com/kula.jpg"]);
+
+        blog.Description.Should().Be(description);
+    }
+
+    [Fact]
     public void Edited_blog_records_when_it_was_last_modified_and_keeps_its_creation_date()
     {
         var blog = CreatePublishedBlog();
