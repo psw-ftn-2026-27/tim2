@@ -3,7 +3,7 @@
 
   <p>{{ blog().description }}</p>
 
-  <p class="meta">Status: {{ blog().status }}</p>
+  <p class="meta">Status: {{ blog().status === 'Closed' ? 'Archived' : blog().status }}</p>
 
   <p class="meta">Comments: {{ blog().comments.length }}</p>
 

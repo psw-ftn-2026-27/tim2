@@ -19,7 +19,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
+        var blogs = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/visible", JsonOptions);
 
         blogs!.Items.Should().OnlyContain(blog => blog.Status != BlogStatus.Draft);
         blogs.Items.Should().Contain(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
