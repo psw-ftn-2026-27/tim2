@@ -66,6 +66,25 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
+                    b.OwnsOne("Exploration.Domain.Tours.RecommendedGroupSize", "RecommendedGroupSize", b1 =>
+                        {
+                            b1.Property<Guid>("TourId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Max")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Min")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("TourId");
+
+                            b1.ToTable("Tours", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourId");
+                        });
+
                     b.OwnsMany("Exploration.Domain.Tours.TransportTime", "TransportTimes", b1 =>
                         {
                             b1.Property<Guid>("TourId");
@@ -89,6 +108,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourId");
                         });
+
+                    b.Navigation("RecommendedGroupSize");
 
                     b.Navigation("TransportTimes");
                 });
