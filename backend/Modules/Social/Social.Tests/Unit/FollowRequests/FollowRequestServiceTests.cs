@@ -37,6 +37,14 @@ public class FollowRequestServiceTests
         return request;
     }
 
+    private static FollowRequest CreateUnfollowedRequest(Guid senderId, Guid receiverId, DateTime sentAt)
+    {
+        var request = new FollowRequest(senderId, receiverId, sentAt);
+        request.Accept(receiverId);
+        request.Unfollow(senderId);
+        return request;
+    }
+
     [Fact]
     public void Second_request_while_the_first_is_pending_is_rejected()
     {
@@ -114,6 +122,31 @@ public class FollowRequestServiceTests
             CreateRejectedRequest(Sender, Receiver, LaterAt),
             CreateAcceptedRequest(Receiver, Sender, EarlierAt)
         };
+
+        var request = _service.Send(Sender, Receiver, existing, NowAt);
+
+        request.Status.Should().Be(FollowRequestStatus.Pending);
+    }
+
+    [Fact]
+    public void After_removal_a_new_manually_accepted_request_and_unfollowing_the_next_request_is_accepted_automatically()
+    {
+        var existing = new List<FollowRequest>
+        {
+            CreateRemovedRequest(Sender, Receiver, EarlierAt),
+            CreateUnfollowedRequest(Sender, Receiver, LaterAt),
+            CreateAcceptedRequest(Receiver, Sender, EarlierAt)
+        };
+
+        var request = _service.Send(Sender, Receiver, existing, NowAt);
+
+        request.Status.Should().Be(FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public void Request_to_a_user_who_unfollowed_the_sender_stays_pending()
+    {
+        var existing = new List<FollowRequest> { CreateUnfollowedRequest(Receiver, Sender, EarlierAt) };
 
         var request = _service.Send(Sender, Receiver, existing, NowAt);
 

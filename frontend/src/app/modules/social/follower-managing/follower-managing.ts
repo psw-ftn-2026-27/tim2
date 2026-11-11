@@ -24,4 +24,16 @@ export class FollowerManaging {
   async rejectFollowRequest(requestId: string): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${FOLLOW_REQUESTS_URL}/${requestId}/reject`, null));
   }
+
+  async removeFollower(followRequestId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${FOLLOW_REQUESTS_URL}/followers/${followRequestId}/remove`, null),
+    );
+  }
+
+  async unfollow(followRequestId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${FOLLOW_REQUESTS_URL}/following/${followRequestId}/unfollow`, null),
+    );
+  }
 }

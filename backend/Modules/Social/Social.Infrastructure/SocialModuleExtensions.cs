@@ -48,6 +48,7 @@ public static class SocialModuleExtensions
         services.AddScoped<FollowRequestSendingQueries>();
         services.AddScoped<FollowRequestRespondingService>();
         services.AddScoped<FollowRequestRespondingQueries>();
+        services.AddScoped<FollowerManagingService>();
         services.AddScoped<FollowerManagingQueries>();
 
         return services;

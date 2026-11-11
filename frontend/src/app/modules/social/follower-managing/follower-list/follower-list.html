@@ -56,11 +56,17 @@
                 @switch (follower.state) {
                   @case ('Following') {
                     <td>you follow each other</td>
-                    <td class="actions"></td>
                   }
                   @case ('Follow') {
                     <td>follows you · you don't follow them</td>
-                    <td class="actions">
+                  }
+                  @case ('Pending') {
+                    <td>follows you · request pending</td>
+                  }
+                }
+                <td class="actions">
+                  @switch (follower.state) {
+                    @case ('Follow') {
                       <button
                         class="button button--primary"
                         type="button"
@@ -69,11 +75,8 @@
                       >
                         Follow back
                       </button>
-                    </td>
-                  }
-                  @case ('Pending') {
-                    <td>follows you · request pending</td>
-                    <td class="actions">
+                    }
+                    @case ('Pending') {
                       @if (follower.pendingRequestId; as requestId) {
                         <button
                           class="button"
@@ -84,9 +87,17 @@
                           Cancel request
                         </button>
                       }
-                    </td>
+                    }
                   }
-                }
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="removeFollower(follower.followRequestId)"
+                  >
+                    Remove
+                  </button>
+                </td>
               </tr>
             } @empty {
               <tr>
@@ -128,16 +139,27 @@
           <thead>
             <tr>
               <th scope="col">User</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (user of following.value()?.items ?? []; track user.userId) {
               <tr>
                 <td>{{ user.userId }}</td>
+                <td class="actions">
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="unfollow(user.followRequestId)"
+                  >
+                    Unfollow
+                  </button>
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td>You do not follow anyone yet.</td>
+                <td colspan="2">You do not follow anyone yet.</td>
               </tr>
             }
           </tbody>

@@ -11,10 +11,14 @@ namespace Social.Api;
 [Authorize]
 public sealed class FollowerManagingController : ControllerBase
 {
+    private readonly FollowerManagingService _followerManagingService;
     private readonly FollowerManagingQueries _followerManagingQueries;
 
-    public FollowerManagingController(FollowerManagingQueries followerManagingQueries)
+    public FollowerManagingController(
+        FollowerManagingService followerManagingService,
+        FollowerManagingQueries followerManagingQueries)
     {
+        _followerManagingService = followerManagingService;
         _followerManagingQueries = followerManagingQueries;
     }
 
@@ -28,5 +32,19 @@ public sealed class FollowerManagingController : ControllerBase
     public async Task<ActionResult<PageResult<FollowedUserDto>>> GetFollowing([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         return await _followerManagingQueries.GetFollowingAsync(User.GetUserId(), page, pageSize);
+    }
+
+    [HttpPost("followers/{id:guid}/remove")]
+    public async Task<ActionResult> RemoveFollower(Guid id)
+    {
+        await _followerManagingService.RemoveFollowerAsync(id, User.GetUserId());
+        return NoContent();
+    }
+
+    [HttpPost("following/{id:guid}/unfollow")]
+    public async Task<ActionResult> Unfollow(Guid id)
+    {
+        await _followerManagingService.UnfollowAsync(id, User.GetUserId());
+        return NoContent();
     }
 }

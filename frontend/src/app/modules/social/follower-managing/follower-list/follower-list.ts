@@ -139,6 +139,40 @@ export class FollowerList {
     }
   }
 
+  protected async removeFollower(followRequestId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.followerManaging.removeFollower(followRequestId);
+      // The removed row was the last one on a page after the first: show the previous page.
+      if (this.followers.value()?.items.length === 1 && this.followersPage() > 1) {
+        this.previousFollowersPage();
+      }
+      this.reloadAll();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not remove the follower.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async unfollow(followRequestId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.followerManaging.unfollow(followRequestId);
+      // The unfollowed row was the last one on a page after the first: show the previous page.
+      if (this.following.value()?.items.length === 1 && this.followingPage() > 1) {
+        this.previousFollowingPage();
+      }
+      this.reloadAll();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not unfollow the user.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
   private reloadAll(): void {
     this.followers.reload();
     this.following.reload();

@@ -67,6 +67,20 @@ public sealed class FollowRequest : AggregateRoot
         Status = FollowRequestStatus.Removed;
     }
 
+    public void Unfollow(Guid userId)
+    {
+        if (userId != SenderId)
+        {
+            throw new NotFoundException($"Follow request {Id} does not exist.");
+        }
+        if (Status != FollowRequestStatus.Accepted)
+        {
+            throw new DomainException("Only an accepted follow request can be unfollowed.");
+        }
+
+        Status = FollowRequestStatus.Unfollowed;
+    }
+
     public void Reject(Guid userId)
     {
         if (userId != ReceiverId)

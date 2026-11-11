@@ -70,6 +70,7 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
             .Take(pageSize)
             .Select(request => new FollowerRow(
                 request.SenderId,
+                request.Id,
                 _dbContext.FollowRequests.Any(sent =>
                     sent.SenderId == userId &&
                     sent.ReceiverId == request.SenderId &&
@@ -99,7 +100,7 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
         var items = await following
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(request => new FollowedUserDto(request.ReceiverId))
+            .Select(request => new FollowedUserDto(request.ReceiverId, request.Id))
             .ToListAsync();
 
         return new PageResult<FollowedUserDto>(items, totalCount);
@@ -108,7 +109,7 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
     private static FollowerDto ToFollowerDto(FollowerRow row)
     {
         var relationship = ToRelationship(row.IsFollowedBack, row.PendingRequestId);
-        return new FollowerDto(row.FollowerId, relationship.State, relationship.PendingRequestId);
+        return new FollowerDto(row.FollowerId, relationship.State, row.FollowRequestId, relationship.PendingRequestId);
     }
 
     private static FollowRelationshipDto ToRelationship(bool isFollowing, Guid? pendingRequestId)
@@ -123,5 +124,5 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
             : new FollowRelationshipDto(FollowRelationshipState.Pending, pendingRequestId);
     }
 
-    private sealed record FollowerRow(Guid FollowerId, bool IsFollowedBack, Guid? PendingRequestId);
+    private sealed record FollowerRow(Guid FollowerId, Guid FollowRequestId, bool IsFollowedBack, Guid? PendingRequestId);
 }
