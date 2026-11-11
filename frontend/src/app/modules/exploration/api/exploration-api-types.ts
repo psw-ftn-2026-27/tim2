@@ -32,7 +32,7 @@ export type SortDirection = 'None' | 'Ascending' | 'Descending';
 
 export interface TourSearchDto {
   name: string | null;
-  difficulty: TourDifficulty | null;
+  difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transportModes: TransportMode[] | null;
   minPrice: number | null;

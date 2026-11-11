@@ -76,12 +76,24 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Tour_with_any_of_the_chosen_difficulties_is_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&difficulties=Hard&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedLakeside.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+    }
+
+    [Fact]
     public async Task Only_tours_meeting_every_given_filter_category_are_listed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var tours = await client.GetFromJsonAsync<PageResult<TourDto>>(
-            "/api/exploration/tours/published?difficulty=Moderate&tags=priroda&tags=istorija&transportModes=Walking&transportModes=Bicycle", JsonOptions);
+            "/api/exploration/tours/published?difficulties=Moderate&tags=priroda&tags=istorija&transportModes=Walking&transportModes=Bicycle", JsonOptions);
 
         tours!.Items.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedVineyards.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedLakeside.Id);
@@ -144,7 +156,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulty=Easy&minPrice=500&maxPrice=3000", JsonOptions);
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&minPrice=500&maxPrice=3000", JsonOptions);
 
         tours!.Items.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedCheapGallery.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedModeratelyPricedFortress.Id);

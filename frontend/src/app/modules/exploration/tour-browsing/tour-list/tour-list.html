@@ -14,22 +14,19 @@
       <input id="name-filter" type="search" [formField]="form.name" />
     </div>
 
-    <div class="field">
-      <label for="difficulty-filter">Difficulty</label>
-      <select id="difficulty-filter" [formField]="form.difficulty">
-        <option value="">All</option>
-        <option value="Easy">Easy</option>
-        <option value="Moderate">Moderate</option>
-        <option value="Hard">Hard</option>
-      </select>
-    </div>
+    <fieldset class="field checkbox-group">
+      <legend>Difficulty</legend>
+      <label><input type="checkbox" [formField]="form.easy" /> Easy</label>
+      <label><input type="checkbox" [formField]="form.moderate" /> Moderate</label>
+      <label><input type="checkbox" [formField]="form.hard" /> Hard</label>
+    </fieldset>
 
     <div class="field">
       <label for="tags-filter">Tags, separated by commas</label>
       <input id="tags-filter" type="text" [formField]="form.tags" />
     </div>
 
-    <fieldset class="field transport">
+    <fieldset class="field checkbox-group">
       <legend>Transport</legend>
       <label><input type="checkbox" [formField]="form.walking" /> Walking</label>
       <label><input type="checkbox" [formField]="form.bicycle" /> Bicycle</label>

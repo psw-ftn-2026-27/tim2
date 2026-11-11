@@ -48,10 +48,10 @@ internal sealed class TourReadRepository : ITourReadRepository
             var name = search.Name.ToLower();
             tours = tours.Where(tour => tour.Name.ToLower().Contains(name));
         }
-        if (search.Difficulty is not null)
+        if (search.Difficulties is { Count: > 0 })
         {
-            var difficulty = search.Difficulty.Value;
-            tours = tours.Where(tour => tour.Difficulty == difficulty);
+            var difficulties = search.Difficulties;
+            tours = tours.Where(tour => difficulties.Contains(tour.Difficulty));
         }
         return tours;
     }

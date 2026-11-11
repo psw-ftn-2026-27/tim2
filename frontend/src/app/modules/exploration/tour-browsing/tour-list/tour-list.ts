@@ -4,14 +4,16 @@ import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
-import { SortDirection, TourDifficulty, TourDto } from '../../api/exploration-api-types';
+import { SortDirection, TourDto } from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
 
 const pageSize = 10;
 
 const emptyCriteria = {
   name: '',
-  difficulty: '' as TourDifficulty | '',
+  easy: false,
+  moderate: false,
+  hard: false,
   tags: '',
   walking: false,
   bicycle: false,
@@ -57,8 +59,14 @@ export class TourList {
     if (criteria.name.trim() !== '') {
       params.append('name', criteria.name.trim());
     }
-    if (criteria.difficulty !== '') {
-      params.append('difficulty', criteria.difficulty);
+    if (criteria.easy) {
+      params.append('difficulties', 'Easy');
+    }
+    if (criteria.moderate) {
+      params.append('difficulties', 'Moderate');
+    }
+    if (criteria.hard) {
+      params.append('difficulties', 'Hard');
     }
     const tags = criteria.tags
       .split(',')
