@@ -28,5 +28,33 @@ internal static class UserSeed
 
     public static readonly IdentityUserRole<Guid> ExplorerRole = new() { UserId = WellKnownUsers.Explorer, RoleId = RoleSeed.Explorer.Id };
 
-    public static object[] All => [Explorer, ExplorerRole];
+    public static readonly ApplicationUser SecondExplorer = new()
+    {
+        Id = WellKnownUsers.SecondExplorer,
+        UserName = "second-explorer@test.com",
+        NormalizedUserName = "SECOND-EXPLORER@TEST.COM",
+        Email = "second-explorer@test.com",
+        NormalizedEmail = "SECOND-EXPLORER@TEST.COM",
+        PasswordHash = Hasher.HashPassword(null!, Password),
+        SecurityStamp = "8c3b6d1a-2e4f-4a7b-9c0d-1e2f3a4b5c6d"
+    };
+
+    public static readonly IdentityUserRole<Guid> SecondExplorerRole = new() { UserId = WellKnownUsers.SecondExplorer, RoleId = RoleSeed.Explorer.Id };
+
+    public static readonly ApplicationUser Administrator = new()
+    {
+        Id = WellKnownUsers.Administrator,
+        UserName = "administrator@test.com",
+        NormalizedUserName = "ADMINISTRATOR@TEST.COM",
+        Email = "administrator@test.com",
+        NormalizedEmail = "ADMINISTRATOR@TEST.COM",
+        PasswordHash = Hasher.HashPassword(null!, Password),
+        SecurityStamp = "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+    };
+
+    public static readonly IdentityUserRole<Guid> AdministratorRole = new() { UserId = WellKnownUsers.Administrator, RoleId = RoleSeed.Administrator.Id };
+
+    public static ApplicationUser[] Explorers => [Explorer, SecondExplorer];
+
+    public static object[] All => [Explorer, ExplorerRole, SecondExplorer, SecondExplorerRole, Administrator, AdministratorRole];
 }
