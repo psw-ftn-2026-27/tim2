@@ -1,0 +1,10 @@
+<div class="card stack">
+  <h1>Otpremanje slike</h1>
+
+  <app-image-upload
+    [pending]="pending()"
+    [error]="error()"
+    [uploadedUrl]="uploadedUrl()"
+    (upload)="upload($event)"
+  />
+</div>

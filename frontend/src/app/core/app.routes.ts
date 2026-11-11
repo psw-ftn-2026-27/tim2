@@ -2,11 +2,13 @@ import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
+import { ImageUploadDemo } from './images/image-upload-demo/image-upload-demo';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
+  { path: 'images', component: ImageUploadDemo },
   {
     path: 'exploration',
     loadChildren: () =>
