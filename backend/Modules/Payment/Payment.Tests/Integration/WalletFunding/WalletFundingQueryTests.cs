@@ -28,6 +28,32 @@ public class WalletFundingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Administrator_sees_one_explorers_email_and_balance()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var wallet = await client.GetFromJsonAsync<UserWalletDto>($"/api/payment/wallet/users/{WellKnownUsers.Explorer}", JsonOptions);
+
+        wallet!.UserId.Should().Be(WellKnownUsers.Explorer);
+        wallet.Email.Should().NotBeNullOrEmpty();
+        wallet.Balance.Should().Be(WalletSeed.ExplorersFundedWallet.Balance());
+    }
+
+    [Fact]
+    public async Task Administrator_sees_an_explorers_transactions_newest_first_with_their_cancellation_state()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var transactions = await client.GetFromJsonAsync<PageResult<UserTransactionDto>>(
+            $"/api/payment/wallet/users/{WellKnownUsers.Explorer}/transactions", JsonOptions);
+
+        transactions!.Items.Select(transaction => (transaction.Id, transaction.IsCancelled)).Should()
+            .BeEquivalentTo(WalletSeed.ExplorersFundedWallet.Transactions.Select(transaction => (transaction.Id, transaction.IsCancelled)));
+        transactions.Items.Should().BeInDescendingOrder(transaction => transaction.CreatedAt);
+        transactions.TotalCount.Should().Be(WalletSeed.ExplorersFundedWallet.Transactions.Count);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_see_user_wallets()
     {
         var client = Factory.CreateClient();
