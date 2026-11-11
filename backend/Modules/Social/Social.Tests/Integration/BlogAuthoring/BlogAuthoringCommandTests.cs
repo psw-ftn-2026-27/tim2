@@ -100,6 +100,52 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Author_archives_their_own_published_blog()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/archive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        stored.Status.Should().Be(BlogStatus.Closed);
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_archive_another_authors_blog()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+
+        var response = await client.PostAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/archive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        stored.Status.Should().Be(BlogStatus.Published);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_archive_a_blog()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/archive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_archive_a_blog()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/archive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Author_edits_their_own_published_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");

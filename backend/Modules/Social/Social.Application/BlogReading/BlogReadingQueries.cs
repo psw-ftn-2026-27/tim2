@@ -17,7 +17,7 @@ public sealed class BlogReadingQueries
     public async Task<BlogDto> GetByIdAsync(Guid id)
     {
         var blog = await _blogReadRepository.GetByIdAsync(id);
-        if (blog is null || blog.Status != BlogStatus.Published)
+        if (blog is null || blog.Status == BlogStatus.Draft)
         {
             throw new NotFoundException($"Blog {id} does not exist.");
         }
@@ -25,11 +25,11 @@ public sealed class BlogReadingQueries
         return blog;
     }
 
-    public Task<PageResult<BlogDto>> GetPublishedAsync(int page, int pageSize)
+    public Task<PageResult<BlogDto>> GetVisibleAsync(int page, int pageSize)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        return _blogReadRepository.GetPublishedAsync(page, pageSize);
+        return _blogReadRepository.GetVisibleAsync(page, pageSize);
     }
 }

@@ -20,11 +20,12 @@
         Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
       </p>
 
-      <p class="meta">Status: {{ blog.status }}</p>
+      <p class="meta">Status: {{ blog.status === 'Closed' ? 'Archived' : blog.status }}</p>
 
       <app-blog-comments
         [comments]="blog.comments"
         [currentUserId]="auth.user()?.id ?? null"
+        [commentingAllowed]="blog.status !== 'Closed'"
         (addComment)="add($event)"
         (editComment)="edit($event)"
         (deleteComment)="remove($event)"

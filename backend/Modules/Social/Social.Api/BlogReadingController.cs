@@ -19,9 +19,9 @@ public sealed class BlogReadingController : ControllerBase
     }
 
     [HttpGet("published")]
-    public async Task<ActionResult<PageResult<BlogDto>>> GetPublished([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<PageResult<BlogDto>>> GetVisible([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        return await _readingQueries.GetPublishedAsync(page, pageSize);
+        return await _readingQueries.GetVisibleAsync(page, pageSize);
     }
 
     [HttpGet("{id:guid}")]
