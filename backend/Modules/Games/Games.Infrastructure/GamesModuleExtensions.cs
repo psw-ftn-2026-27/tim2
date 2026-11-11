@@ -1,4 +1,5 @@
 using Games.Application;
+using Games.Application.SocialChallengeLifecycle;
 using Games.Application.SocialChallengeManagement;
 using Games.Application.SocialChallenges;
 using Games.Infrastructure.Persistence;
@@ -23,6 +24,7 @@ public static class GamesModuleExtensions
 
         services.AddScoped<SocialChallengeManagementService>();
         services.AddScoped<SocialChallengeManagementQueries>();
+        services.AddScoped<SocialChallengeLifecycleService>();
 
         return services;
     }
