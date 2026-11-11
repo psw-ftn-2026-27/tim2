@@ -13,6 +13,6 @@ internal static class ClubConfiguration
 
     private static void ConfigureClub(EntityTypeBuilder<Club> builder)
     {
-        builder.Property(club => club.Name).HasMaxLength(200);
+        builder.Property(club => club.Name).HasMaxLength(Club.MaxNameLength);
     }
 }

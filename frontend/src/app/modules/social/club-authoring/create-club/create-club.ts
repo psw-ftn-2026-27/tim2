@@ -24,13 +24,18 @@ export class CreateClub {
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    const images = this.toImageList(this.form.images().value());
+    if (images.length === 0) {
+      this.error.set('Add at least one image.');
+      return;
+    }
     this.pending.set(true);
     this.error.set(null);
     try {
       await this.clubAuthoring.create({
         name: this.form.name().value(),
         description: this.form.description().value(),
-        images: this.toImageList(this.form.images().value()),
+        images,
       });
       await this.router.navigate(['/social/clubs/mine']);
     } catch (failure) {

@@ -31,6 +31,7 @@ export class MyClubs {
   });
 
   protected startDelete(clubId: string): void {
+    this.editingClubId.set(null);
     this.deletingClubId.set(clubId);
   }
 
@@ -53,6 +54,7 @@ export class MyClubs {
   }
 
   protected startEdit(club: ClubDto): void {
+    this.deletingClubId.set(null);
     this.editingClubId.set(club.id);
     this.editError.set(null);
     this.editForm().reset({
@@ -69,13 +71,18 @@ export class MyClubs {
 
   protected async saveEdit(event: Event, clubId: string): Promise<void> {
     event.preventDefault();
+    const images = this.toImageList(this.editForm.images().value());
+    if (images.length === 0) {
+      this.editError.set('Add at least one image.');
+      return;
+    }
     this.pending.set(true);
     this.editError.set(null);
     try {
       await this.clubAuthoring.update(clubId, {
         name: this.editForm.name().value(),
         description: this.editForm.description().value(),
-        images: this.toImageList(this.editForm.images().value()),
+        images,
       });
       this.editingClubId.set(null);
       this.clubs.reload();

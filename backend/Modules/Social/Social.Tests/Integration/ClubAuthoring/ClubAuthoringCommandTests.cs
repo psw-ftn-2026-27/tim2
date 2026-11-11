@@ -36,6 +36,21 @@ public class ClubAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Club_without_an_image_is_not_founded()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new CreateClubDto("Ljubitelji muzeja", "Zajedničke posete muzejima Novog Sada.", []);
+        using var arrangeContext = Factory.CreateContext<SocialDbContext>();
+        var clubCountBefore = arrangeContext.Clubs.Count();
+
+        var response = await client.PostAsJsonAsync("/api/social/clubs", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        assertContext.Clubs.Count().Should().Be(clubCountBefore);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_found_a_club()
     {
         var client = Factory.CreateClient();
@@ -72,6 +87,22 @@ public class ClubAuthoringCommandTests : BaseIntegrationTest
         stored.Name.Should().Be("Planinari Fruške gore i okoline");
         stored.Description.Should().Be("Vikend i praznične ture po Fruškoj gori.");
         stored.Images.Should().Equal("https://example.com/vrdnik.jpg", "https://example.com/stazar.jpg");
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_change_another_owners_club()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var request = new UpdateClubDto("Tuđi klub", "Izmena tuđeg kluba.", ["https://example.com/tudji.jpg"]);
+
+        var response = await client.PutAsJsonAsync($"/api/social/clubs/{ClubSeed.HikingClub.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Clubs.Single(club => club.Id == ClubSeed.HikingClub.Id);
+        stored.Name.Should().Be(ClubSeed.HikingClub.Name);
+        stored.Description.Should().Be(ClubSeed.HikingClub.Description);
+        stored.Images.Should().Equal(ClubSeed.HikingClub.Images);
     }
 
     [Fact]

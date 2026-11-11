@@ -5,6 +5,8 @@ namespace Social.Domain.Clubs;
 
 public sealed class Club : AggregateRoot
 {
+    public const int MaxNameLength = 200;
+
     public Guid OwnerId { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }
@@ -23,8 +25,8 @@ public sealed class Club : AggregateRoot
         ValidateContent(name, description, images);
 
         OwnerId = ownerId;
-        Name = name;
-        Description = description;
+        Name = name.Trim();
+        Description = description.Trim();
         Images = CopyTrimmed(images!);
     }
 
@@ -33,8 +35,8 @@ public sealed class Club : AggregateRoot
         EnsureOwnedBy(userId);
         ValidateContent(name, description, images);
 
-        Name = name;
-        Description = description;
+        Name = name.Trim();
+        Description = description.Trim();
         Images = CopyTrimmed(images!);
     }
 
@@ -51,6 +53,10 @@ public sealed class Club : AggregateRoot
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new DomainException("A club requires a name.");
+        }
+        if (name.Trim().Length > MaxNameLength)
+        {
+            throw new DomainException($"A club name can have at most {MaxNameLength} characters.");
         }
         if (string.IsNullOrWhiteSpace(description))
         {

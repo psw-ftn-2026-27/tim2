@@ -21,6 +21,7 @@ internal sealed class ClubReadRepository : IClubReadRepository
     private static IQueryable<ClubDto> ProjectToDtos(IQueryable<Club> clubs)
     {
         return clubs
+            .OrderBy(club => club.Name)
             .Select(club => new ClubDto(club.Id, club.OwnerId, club.Name, club.Description, club.Images));
     }
 }
