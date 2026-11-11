@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
-using Social.Application.Connections;
+using Social.Application.FollowerManaging;
 using Social.Application.FollowRequestResponding;
 using Social.Application.FollowRequestSending;
 using Social.Application.FollowRequests;

@@ -2,16 +2,16 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Shared.Domain;
 using Shared.Tests;
-using Social.Application.Connections;
+using Social.Application.FollowerManaging;
 using Social.Application.FollowRequests;
 using Social.Tests.Integration.Seeds;
 using Xunit;
 
-namespace Social.Tests.Integration.Connections;
+namespace Social.Tests.Integration.FollowerManaging;
 
-public class ConnectionsQueryTests : BaseIntegrationTest
+public class FollowerManagingQueryTests : BaseIntegrationTest
 {
-    public ConnectionsQueryTests(SocialApiFactory factory) : base(factory) { }
+    public FollowerManagingQueryTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
     public async Task Followers_are_shown_with_the_relationship_from_the_signed_in_user_to_them()
@@ -19,7 +19,7 @@ public class ConnectionsQueryTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var followers = await client.GetFromJsonAsync<PageResult<FollowerDto>>(
-            "/api/social/connections/followers", JsonOptions);
+            "/api/social/follow-requests/followers", JsonOptions);
 
         followers!.Items.Should().ContainEquivalentOf(
             new FollowerDto(FollowRequestSeed.FollowedUser, FollowRelationshipState.Following, null));
@@ -36,7 +36,7 @@ public class ConnectionsQueryTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var followers = await client.GetFromJsonAsync<PageResult<FollowerDto>>(
-            "/api/social/connections/followers", JsonOptions);
+            "/api/social/follow-requests/followers", JsonOptions);
 
         followers!.Items.Should().NotContain(follower => follower.UserId == WellKnownUsers.Administrator);
         followers.Items.Should().Contain(follower => follower.UserId == FollowRequestSeed.NotFollowedFollower);
@@ -48,7 +48,7 @@ public class ConnectionsQueryTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var following = await client.GetFromJsonAsync<PageResult<FollowedUserDto>>(
-            "/api/social/connections/following", JsonOptions);
+            "/api/social/follow-requests/following", JsonOptions);
 
         following!.Items.Should().NotContain(followed => followed.UserId == FollowRequestSeed.FormerlyFollowedUser);
         following.Items.Should().Contain(followed => followed.UserId == FollowRequestSeed.FollowedUser);

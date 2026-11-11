@@ -1,3 +1,3 @@
-namespace Social.Application.Connections;
+namespace Social.Application.FollowerManaging;
 
 public sealed record FollowedUserDto(Guid UserId);

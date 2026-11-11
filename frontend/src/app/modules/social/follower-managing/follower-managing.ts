@@ -6,7 +6,7 @@ import { SendFollowRequestDto } from '../api/social-api-types';
 const FOLLOW_REQUESTS_URL = '/api/social/follow-requests';
 
 @Injectable({ providedIn: 'root' })
-export class Connections {
+export class FollowerManaging {
   private readonly http = inject(HttpClient);
 
   async sendFollowRequest(dto: SendFollowRequestDto): Promise<void> {
