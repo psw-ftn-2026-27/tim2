@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { TourDto } from '../../api/exploration-api-types';
 
 @Component({
@@ -8,4 +8,9 @@ import { TourDto } from '../../api/exploration-api-types';
 })
 export class TourCard {
   readonly tour = input.required<TourDto>();
+
+  protected readonly excerpt = computed(() => {
+    const description = this.tour().description;
+    return description.length > 150 ? `${description.slice(0, 150)}…` : description;
+  });
 }

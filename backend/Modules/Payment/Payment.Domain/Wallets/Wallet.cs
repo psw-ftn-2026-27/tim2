@@ -1,4 +1,5 @@
 using Shared.Domain;
+using Shared.Domain.Exceptions;
 
 namespace Payment.Domain.Wallets;
 
@@ -24,6 +25,11 @@ public sealed class Wallet : AggregateRoot
 
     public void Deposit(Guid adminId, int amount)
     {
+        if (amount <= 0)
+        {
+            throw new DomainException("Deposit amount must be a positive whole number.");
+        }
+
         _transactions.Add(new Transaction(adminId, amount));
     }
 }

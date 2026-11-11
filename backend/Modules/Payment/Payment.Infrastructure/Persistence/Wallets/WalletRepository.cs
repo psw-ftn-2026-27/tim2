@@ -17,4 +17,9 @@ internal sealed class WalletRepository : IWalletRepository
     {
         return _dbContext.Wallets.FirstOrDefaultAsync(wallet => wallet.UserId == userId);
     }
+
+    public void Add(Wallet wallet)
+    {
+        _dbContext.Wallets.Add(wallet);
+    }
 }

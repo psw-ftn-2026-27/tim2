@@ -8,3 +8,13 @@ export interface TransactionDto {
   createdAt: string;
   isCancelled: boolean;
 }
+
+export interface UserWalletDto {
+  userId: string;
+  email: string;
+  balance: number;
+}
+
+export interface DepositDto {
+  amount: number;
+}
