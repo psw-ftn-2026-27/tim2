@@ -109,7 +109,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<SocialDbContext>();
         var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
-        stored.Status.Should().Be(BlogStatus.Closed);
+        stored.Status.Should().Be(BlogStatus.Archived);
     }
 
     [Fact]

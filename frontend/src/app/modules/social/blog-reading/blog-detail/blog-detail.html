@@ -20,7 +20,7 @@
         Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
       </p>
 
-      <p class="meta">Status: {{ blog.status === 'Closed' ? 'Archived' : blog.status }}</p>
+      <p class="meta">Status: {{ blog.status }}</p>
 
       <app-blog-comments
         [comments]="blog.comments"

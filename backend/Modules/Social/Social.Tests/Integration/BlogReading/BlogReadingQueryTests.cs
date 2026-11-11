@@ -40,7 +40,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
         blog.Title.Should().Be(BlogSeed.ArchivedOldTownWalk.Title);
         blog.Description.Should().Be(BlogSeed.ArchivedOldTownWalk.Description);
         blog.Images.Should().Equal(BlogSeed.ArchivedOldTownWalk.Images);
-        blog.Status.Should().Be(BlogStatus.Closed);
+        blog.Status.Should().Be(BlogStatus.Archived);
     }
 
     [Fact]

@@ -26,7 +26,7 @@
         @for (blog of blogs.value() ?? []; track blog.id) {
           <tr>
             <td>{{ blog.title }}</td>
-            <td>{{ blog.status === 'Closed' ? 'Archived' : blog.status }}</td>
+            <td>{{ blog.status }}</td>
             <td>{{ blog.comments.length }}</td>
             <td>{{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}</td>
             <td>

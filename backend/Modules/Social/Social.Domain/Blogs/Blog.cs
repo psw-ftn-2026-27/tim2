@@ -67,7 +67,7 @@ public sealed class Blog : AggregateRoot
             throw new DomainException("Only a published blog can be archived.");
         }
 
-        Status = BlogStatus.Closed;
+        Status = BlogStatus.Archived;
     }
 
     public void AddComment(Guid userId, string text)
