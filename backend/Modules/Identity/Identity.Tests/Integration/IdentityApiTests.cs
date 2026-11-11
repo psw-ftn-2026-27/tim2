@@ -32,7 +32,8 @@ public sealed class IdentityApiTests : BaseIntegrationTest
 
         var explorers = await identityApi.GetExplorersAsync(2, 1);
 
-        explorers.Items.Should().ContainSingle();
+        explorers.Items.Should().ContainSingle().Which.Should().Be(
+            new ExplorerSummary(UserSeed.SecondExplorer.Id, UserSeed.SecondExplorer.Email!));
         explorers.TotalCount.Should().Be(UserSeed.Explorers.Length);
     }
 
