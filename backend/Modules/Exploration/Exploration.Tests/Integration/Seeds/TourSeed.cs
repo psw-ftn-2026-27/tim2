@@ -26,7 +26,7 @@ internal static class TourSeed
         PublishedMonasteries.AddTransportTime(TransportMode.Car, 45);
         PublishedMonasteries.Publish();
 
-        PublishedLakeside = new(WellKnownUsers.SecondExplorer, "Staza oko Palićkog jezera", "Staza obilazi Palićko jezero od Velike terase do Ženskog štranda, pored Vodotornja i Muzičkog paviljona, uz odmor u parku kraj obale.", TourDifficulty.Easy, ["priroda", "jezero"]);
+        PublishedLakeside = new(WellKnownUsers.SecondExplorer, "Staza oko Palićkog jezera", "Staza obilazi Palićko jezero od Velike terase do Ženskog štranda, pored Vodotornja i Muzičkog paviljona, uz odmor u parku kraj obale.", TourDifficulty.Easy, ["priroda", "jezero"], new RecommendedGroupSize(2, 20));
         PublishedLakeside.AddTransportTime(TransportMode.Walking, 120);
         PublishedLakeside.Publish();
     }
