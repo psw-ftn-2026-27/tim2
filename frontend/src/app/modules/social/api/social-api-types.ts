@@ -13,12 +13,19 @@ export interface BlogDto {
   title: string;
   description: string;
   createdAt: string;
+  lastModifiedAt: string | null;
   images: string[];
   status: BlogStatus;
   comments: CommentDto[];
 }
 
 export interface CreateBlogDto {
+  title: string;
+  description: string;
+  images: string[] | null;
+}
+
+export interface EditBlogDto {
   title: string;
   description: string;
   images: string[] | null;

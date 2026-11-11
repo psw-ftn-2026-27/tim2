@@ -1,0 +1,21 @@
+<div class="field">
+  <label for="image-address">Images</label>
+
+  <ul class="images">
+    @for (image of images(); track $index) {
+      <li class="image-row">
+        <span class="image-address">{{ image }}</span>
+        <button class="button" type="button" (click)="removeImage.emit($index)">Remove</button>
+      </li>
+    } @empty {
+      <li class="meta">No images yet.</li>
+    }
+  </ul>
+
+  <div class="image-row">
+    <input id="image-address" type="text" [formField]="form.address" />
+    <button class="button" type="button" [disabled]="!canAdd()" (click)="add()">
+      Add image
+    </button>
+  </div>
+</div>

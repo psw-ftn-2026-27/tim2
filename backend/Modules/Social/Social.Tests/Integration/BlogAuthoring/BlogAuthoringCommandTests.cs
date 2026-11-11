@@ -40,7 +40,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public async Task Explorer_cannot_create_a_blog_without_a_title()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        var request = new CreateBlogDto("   ", "Opis novog bloga.", []);
+        var request = new CreateBlogDto("   ", "Opis novog bloga.", ["https://example.com/slika.jpg"]);
         using var arrangeContext = Factory.CreateContext<SocialDbContext>();
         var blogCountBefore = arrangeContext.Blogs.Count();
 
@@ -97,5 +97,62 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
         using var assertContext = Factory.CreateContext<SocialDbContext>();
         var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
         stored.Status.Should().Be(BlogStatus.Draft);
+    }
+
+    [Fact]
+    public async Task Author_edits_their_own_published_blog()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var request = new EditBlogDto("Zalasci na keju, dopunjeno", "Dopunjeni utisci sa večernje šetnje kejom.",
+            ["https://example.com/kej-novi.jpg", "https://example.com/most.jpg"]);
+
+        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        stored.Title.Should().Be("Zalasci na keju, dopunjeno");
+        stored.Description.Should().Be("Dopunjeni utisci sa večernje šetnje kejom.");
+        stored.Images.Should().Equal("https://example.com/kej-novi.jpg", "https://example.com/most.jpg");
+        stored.LastModifiedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task Explorer_cannot_edit_another_authors_blog()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+        var request = new EditBlogDto("Izmena tuđeg bloga", "Opis tuđeg bloga.", ["https://example.com/slika.jpg"]);
+
+        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        stored.Title.Should().Be(BlogSeed.PublishedRiverbank.Title);
+        stored.Description.Should().Be(BlogSeed.PublishedRiverbank.Description);
+        stored.Images.Should().Equal(BlogSeed.PublishedRiverbank.Images);
+        stored.LastModifiedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_edit_a_blog()
+    {
+        var client = Factory.CreateClient();
+        var request = new EditBlogDto("Izmena bloga", "Opis bloga.", ["https://example.com/slika.jpg"]);
+
+        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_edit_a_blog()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = new EditBlogDto("Izmena bloga", "Opis bloga.", ["https://example.com/slika.jpg"]);
+
+        var response = await client.PutAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
