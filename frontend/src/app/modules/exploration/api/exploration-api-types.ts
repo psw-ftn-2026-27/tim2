@@ -21,6 +21,16 @@ export interface TourDto {
   transportTimes: TransportTimeDto[];
 }
 
+export type DifficultySort = 'None' | 'Ascending' | 'Descending';
+
+export interface TourSearchDto {
+  name: string | null;
+  difficulty: TourDifficulty | null;
+  tags: string[] | null;
+  transportModes: TransportMode[] | null;
+  difficultySort: DifficultySort;
+}
+
 export interface CreateTourDto {
   name: string;
   description: string;
