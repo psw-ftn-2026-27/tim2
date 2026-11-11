@@ -6,7 +6,7 @@ import { BlogList } from './blog-reading/blog-list/blog-list';
 import { CreateClub } from './club-authoring/create-club/create-club';
 import { MyClubs } from './club-authoring/my-clubs/my-clubs';
 import { ClubList } from './club-reading/club-list/club-list';
-import { ConnectionList } from './connections/connection-list/connection-list';
+import { FollowerList } from './follower-managing/follower-list/follower-list';
 
 export const socialRoutes: Routes = [
   { path: '', component: BlogList },
@@ -15,6 +15,6 @@ export const socialRoutes: Routes = [
   { path: 'clubs', component: ClubList },
   { path: 'clubs/mine', component: MyClubs },
   { path: 'clubs/create', component: CreateClub },
-  { path: 'connections', component: ConnectionList },
+  { path: 'connections', component: FollowerList },
   { path: ':id', component: BlogDetail },
 ];

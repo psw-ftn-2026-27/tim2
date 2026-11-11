@@ -9,7 +9,7 @@ import {
   ReceivedFollowRequestDto,
   SentFollowRequestDto,
 } from '../../api/social-api-types';
-import { Connections } from '../connections';
+import { FollowerManaging } from '../follower-managing';
 
 const pageSize = 20;
 
@@ -17,23 +17,23 @@ type ConnectionTab = 'followers' | 'following' | 'requests';
 
 @Component({
   imports: [RouterLink],
-  selector: 'app-connection-list',
-  styleUrl: './connection-list.scss',
-  templateUrl: './connection-list.html',
+  selector: 'app-follower-list',
+  styleUrl: './follower-list.scss',
+  templateUrl: './follower-list.html',
 })
-export class ConnectionList {
-  private readonly connections = inject(Connections);
+export class FollowerList {
+  private readonly followerManaging = inject(FollowerManaging);
 
   protected readonly activeTab = signal<ConnectionTab>('followers');
   protected readonly followersPage = signal(1);
   protected readonly followingPage = signal(1);
 
   protected readonly followers = httpResource<PageResult<FollowerDto>>(
-    () => `/api/social/connections/followers?page=${this.followersPage()}&pageSize=${pageSize}`,
+    () => `/api/social/follow-requests/followers?page=${this.followersPage()}&pageSize=${pageSize}`,
   );
 
   protected readonly following = httpResource<PageResult<FollowedUserDto>>(
-    () => `/api/social/connections/following?page=${this.followingPage()}&pageSize=${pageSize}`,
+    () => `/api/social/follow-requests/following?page=${this.followingPage()}&pageSize=${pageSize}`,
   );
 
   protected readonly receivedRequests = httpResource<ReceivedFollowRequestDto[]>(
@@ -91,7 +91,7 @@ export class ConnectionList {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.connections.sendFollowRequest({ receiverId: userId });
+      await this.followerManaging.sendFollowRequest({ receiverId: userId });
       this.reloadAll();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not send the follow request.'));
@@ -104,7 +104,7 @@ export class ConnectionList {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.connections.withdrawFollowRequest(requestId);
+      await this.followerManaging.withdrawFollowRequest(requestId);
       this.reloadAll();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not cancel the follow request.'));
@@ -117,7 +117,7 @@ export class ConnectionList {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.connections.acceptFollowRequest(requestId);
+      await this.followerManaging.acceptFollowRequest(requestId);
       this.reloadAll();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not accept the follow request.'));
@@ -130,10 +130,44 @@ export class ConnectionList {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.connections.rejectFollowRequest(requestId);
+      await this.followerManaging.rejectFollowRequest(requestId);
       this.reloadAll();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not decline the follow request.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async removeFollower(followRequestId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.followerManaging.removeFollower(followRequestId);
+      // The removed row was the last one on a page after the first: show the previous page.
+      if (this.followers.value()?.items.length === 1 && this.followersPage() > 1) {
+        this.previousFollowersPage();
+      }
+      this.reloadAll();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not remove the follower.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected async unfollow(followRequestId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.followerManaging.unfollow(followRequestId);
+      // The unfollowed row was the last one on a page after the first: show the previous page.
+      if (this.following.value()?.items.length === 1 && this.followingPage() > 1) {
+        this.previousFollowingPage();
+      }
+      this.reloadAll();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not unfollow the user.'));
     } finally {
       this.pending.set(false);
     }

@@ -1,13 +1,13 @@
 using Shared.Domain;
 using Social.Application.FollowRequests;
 
-namespace Social.Application.Connections;
+namespace Social.Application.FollowerManaging;
 
-public sealed class ConnectionsQueries
+public sealed class FollowerManagingQueries
 {
     private readonly IFollowRequestReadRepository _followRequestReadRepository;
 
-    public ConnectionsQueries(IFollowRequestReadRepository followRequestReadRepository)
+    public FollowerManagingQueries(IFollowRequestReadRepository followRequestReadRepository)
     {
         _followRequestReadRepository = followRequestReadRepository;
     }
