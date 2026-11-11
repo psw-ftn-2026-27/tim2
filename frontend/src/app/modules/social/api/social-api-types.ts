@@ -49,4 +49,5 @@ export interface SentFollowRequestDto {
   id: string;
   receiverId: string;
   status: FollowRequestStatus;
+  createdAt: string;
 }

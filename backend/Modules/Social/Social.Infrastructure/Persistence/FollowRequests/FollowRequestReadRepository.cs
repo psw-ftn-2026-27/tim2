@@ -43,10 +43,11 @@ internal sealed class FollowRequestReadRepository : IFollowRequestReadRepository
                 newer.ReceiverId == request.ReceiverId &&
                 newer.CreatedAt > request.CreatedAt))
             .Where(request =>
-                request.Status != FollowRequestStatus.Removed &&
-                request.Status != FollowRequestStatus.Unfollowed)
+                request.Status == FollowRequestStatus.Pending ||
+                request.Status == FollowRequestStatus.Rejected)
             .OrderByDescending(request => request.CreatedAt)
-            .Select(request => new SentFollowRequestDto(request.Id, request.ReceiverId, request.Status))
+            .Select(request => new SentFollowRequestDto(
+                request.Id, request.ReceiverId, request.Status, request.CreatedAt))
             .ToListAsync();
     }
 }

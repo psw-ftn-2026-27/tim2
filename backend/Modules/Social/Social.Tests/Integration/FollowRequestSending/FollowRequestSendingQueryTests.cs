@@ -29,7 +29,7 @@ public class FollowRequestSendingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Sent_requests_list_shows_only_the_latest_request_per_receiver_without_ended_connections()
+    public async Task Sent_requests_list_shows_only_the_latest_request_per_receiver_without_accepted_requests_or_ended_connections()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
@@ -37,6 +37,7 @@ public class FollowRequestSendingQueryTests : BaseIntegrationTest
             "/api/social/follow-requests/sent", JsonOptions);
 
         sent.Should().NotContain(followRequest => followRequest.ReceiverId == FollowRequestSeed.FormerlyFollowedUser);
+        sent.Should().NotContain(followRequest => followRequest.Id == FollowRequestSeed.ExplorerAcceptedByFollowedUser.Id);
         sent.Should().Contain(followRequest => followRequest.Id == FollowRequestSeed.ExplorerRejectedByRejectingUser.Id);
     }
 

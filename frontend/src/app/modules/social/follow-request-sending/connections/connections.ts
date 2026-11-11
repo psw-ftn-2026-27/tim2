@@ -7,11 +7,11 @@ import { FollowRequestSending } from '../follow-request-sending';
 
 @Component({
   imports: [RouterLink],
-  selector: 'app-sent-requests',
-  styleUrl: './sent-requests.scss',
-  templateUrl: './sent-requests.html',
+  selector: 'app-connections',
+  styleUrl: './connections.scss',
+  templateUrl: './connections.html',
 })
-export class SentRequests {
+export class Connections {
   private readonly followRequestSending = inject(FollowRequestSending);
 
   protected readonly requests = httpResource<SentFollowRequestDto[]>(

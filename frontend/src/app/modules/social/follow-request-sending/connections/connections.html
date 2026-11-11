@@ -1,7 +1,13 @@
 <div class="stack">
   <p><a routerLink="/social">Back to blogs</a></p>
 
-  <h1>My requests</h1>
+  <h1>Connections</h1>
+
+  <nav class="tabs">
+    <a class="tab active" routerLink="/social/connections">Requests</a>
+  </nav>
+
+  <h2>Sent requests</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -17,6 +23,7 @@
         <tr>
           <th scope="col">Receiver</th>
           <th scope="col">Status</th>
+          <th scope="col">Sent</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -25,6 +32,7 @@
           <tr>
             <td>{{ request.receiverId }}</td>
             <td>{{ request.status }}</td>
+            <td>{{ request.createdAt }}</td>
             <td>
               @if (request.status === 'Pending') {
                 <button
@@ -40,7 +48,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="3">You have not sent any requests yet.</td>
+            <td colspan="4">You have no pending or rejected requests.</td>
           </tr>
         }
       </tbody>

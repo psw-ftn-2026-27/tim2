@@ -7,6 +7,7 @@ internal static class FollowRequestSeed
 {
     public static readonly Guid FormerlyFollowedUser = Guid.Parse("00000000-0000-0000-0000-0000000000f1");
     public static readonly Guid RejectingUser = Guid.Parse("00000000-0000-0000-0000-0000000000f2");
+    public static readonly Guid FollowedUser = Guid.Parse("00000000-0000-0000-0000-0000000000f3");
 
     public static readonly FollowRequest ExplorerToSecondExplorerPending;
     public static readonly FollowRequest SecondExplorerToAdministratorPending;
@@ -14,6 +15,7 @@ internal static class FollowRequestSeed
     public static readonly FollowRequest ExplorerRejectedByFormerlyFollowedUser;
     public static readonly FollowRequest ExplorerRemovedByFormerlyFollowedUser;
     public static readonly FollowRequest ExplorerRejectedByRejectingUser;
+    public static readonly FollowRequest ExplorerAcceptedByFollowedUser;
 
     static FollowRequestSeed()
     {
@@ -40,6 +42,10 @@ internal static class FollowRequestSeed
         ExplorerRejectedByRejectingUser = new(WellKnownUsers.Explorer, RejectingUser,
             new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
         ExplorerRejectedByRejectingUser.Reject(RejectingUser);
+
+        ExplorerAcceptedByFollowedUser = new(WellKnownUsers.Explorer, FollowedUser,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        ExplorerAcceptedByFollowedUser.AcceptAutomatically();
     }
 
     public static FollowRequest[] All =>
@@ -49,6 +55,7 @@ internal static class FollowRequestSeed
         AdministratorRemovedByExplorer,
         ExplorerRejectedByFormerlyFollowedUser,
         ExplorerRemovedByFormerlyFollowedUser,
-        ExplorerRejectedByRejectingUser
+        ExplorerRejectedByRejectingUser,
+        ExplorerAcceptedByFollowedUser
     ];
 }
