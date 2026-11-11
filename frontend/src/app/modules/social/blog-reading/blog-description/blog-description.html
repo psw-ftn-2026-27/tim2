@@ -1,0 +1,5 @@
+@if (plain()) {
+  <p>{{ text() }}</p>
+} @else {
+  <div [innerHTML]="html()"></div>
+}

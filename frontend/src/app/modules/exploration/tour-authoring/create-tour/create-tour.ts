@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { Component, computed, inject, signal } from '@angular/core';
+import { FormField, form, min, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDifficulty } from '../../api/exploration-api-types';
@@ -15,12 +15,27 @@ export class CreateTour {
   private readonly tourAuthoring = inject(TourAuthoring);
   private readonly router = inject(Router);
 
-  protected readonly form = form(
-    signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
-    (path) => {
-      required(path.name, { message: 'Name is required.' });
-      required(path.description, { message: 'Description is required.' });
-    },
+  private readonly model = signal({
+    name: '',
+    description: '',
+    difficulty: 'Easy' as TourDifficulty,
+    tags: '',
+    minPeople: null as number | null,
+    maxPeople: null as number | null,
+    price: 0,
+  });
+
+  protected readonly form = form(this.model, (path) => {
+    required(path.name, { message: 'Name is required.' });
+    required(path.description, { message: 'Description is required.' });
+    min(path.minPeople, 1, { message: 'Minimum must be at least 1.' });
+    min(path.maxPeople, 1, { message: 'Maximum must be at least 1.' });
+    required(path.price, { message: 'Price is required.' });
+    min(path.price, 0, { message: 'Price cannot be negative.' });
+  });
+
+  protected readonly onlyOneGroupSizeFilled = computed(
+    () => (this.model().minPeople === null) !== (this.model().maxPeople === null),
   );
 
   protected readonly pending = signal(false);
@@ -28,6 +43,8 @@ export class CreateTour {
 
   protected async submit(event: Event): Promise<void> {
     event.preventDefault();
+    const minPeople = this.form.minPeople().value();
+    const maxPeople = this.form.maxPeople().value();
     this.pending.set(true);
     this.error.set(null);
     try {
@@ -41,6 +58,9 @@ export class CreateTour {
           .split(',')
           .map((tag) => tag.trim())
           .filter((tag) => tag !== ''),
+        recommendedGroupSize:
+          minPeople !== null && maxPeople !== null ? { min: minPeople, max: maxPeople } : null,
+        price: this.form.price().value(),
       });
       await this.router.navigate(['/exploration/mine']);
     } catch (failure) {

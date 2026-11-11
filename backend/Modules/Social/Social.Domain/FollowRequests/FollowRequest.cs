@@ -30,7 +30,7 @@ public sealed class FollowRequest : AggregateRoot
     {
         if (userId != SenderId)
         {
-            throw new DomainException("Only the sender can withdraw a follow request.");
+            throw new NotFoundException($"Follow request {Id} does not exist.");
         }
         EnsurePending();
     }
@@ -42,11 +42,22 @@ public sealed class FollowRequest : AggregateRoot
         Status = FollowRequestStatus.Accepted;
     }
 
+    public void Accept(Guid userId)
+    {
+        if (userId != ReceiverId)
+        {
+            throw new NotFoundException($"Follow request {Id} does not exist.");
+        }
+        EnsurePending();
+
+        Status = FollowRequestStatus.Accepted;
+    }
+
     public void RemoveFollower(Guid userId)
     {
         if (userId != ReceiverId)
         {
-            throw new DomainException("Only the followed user can remove a follower.");
+            throw new NotFoundException($"Follow request {Id} does not exist.");
         }
         if (Status != FollowRequestStatus.Accepted)
         {
@@ -60,7 +71,7 @@ public sealed class FollowRequest : AggregateRoot
     {
         if (userId != ReceiverId)
         {
-            throw new DomainException("Only the receiver can reject a follow request.");
+            throw new NotFoundException($"Follow request {Id} does not exist.");
         }
         EnsurePending();
 

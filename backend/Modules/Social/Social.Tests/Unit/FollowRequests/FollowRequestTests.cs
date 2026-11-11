@@ -53,7 +53,7 @@ public class FollowRequestTests
 
         var withdrawal = () => request.Withdraw(Receiver);
 
-        withdrawal.Should().Throw<DomainException>();
+        withdrawal.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class FollowRequestTests
 
         var removal = () => request.RemoveFollower(Sender);
 
-        removal.Should().Throw<DomainException>();
+        removal.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -94,6 +94,36 @@ public class FollowRequestTests
         var removal = () => request.RemoveFollower(Receiver);
 
         removal.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Receiver_accepts_a_pending_request()
+    {
+        var request = CreatePendingRequest();
+
+        request.Accept(Receiver);
+
+        request.Status.Should().Be(FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public void Only_the_receiver_can_accept_a_request()
+    {
+        var request = CreatePendingRequest();
+
+        var acceptance = () => request.Accept(Sender);
+
+        acceptance.Should().Throw<NotFoundException>();
+    }
+
+    [Fact]
+    public void Request_that_is_no_longer_pending_cannot_be_accepted()
+    {
+        var request = CreateRejectedRequest();
+
+        var acceptance = () => request.Accept(Receiver);
+
+        acceptance.Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -113,7 +143,7 @@ public class FollowRequestTests
 
         var rejection = () => request.Reject(Sender);
 
-        rejection.Should().Throw<DomainException>();
+        rejection.Should().Throw<NotFoundException>();
     }
 
     [Fact]
