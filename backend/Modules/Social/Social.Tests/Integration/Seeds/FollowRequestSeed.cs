@@ -8,6 +8,9 @@ internal static class FollowRequestSeed
     public static readonly Guid FormerlyFollowedUser = Guid.Parse("00000000-0000-0000-0000-0000000000f1");
     public static readonly Guid RejectingUser = Guid.Parse("00000000-0000-0000-0000-0000000000f2");
     public static readonly Guid FollowedUser = Guid.Parse("00000000-0000-0000-0000-0000000000f3");
+    public static readonly Guid PendingFollower = Guid.Parse("00000000-0000-0000-0000-0000000000f4");
+    public static readonly Guid NotFollowedFollower = Guid.Parse("00000000-0000-0000-0000-0000000000f5");
+    public static readonly Guid RequestingUser = Guid.Parse("00000000-0000-0000-0000-0000000000f6");
 
     public static readonly FollowRequest ExplorerToSecondExplorerPending;
     public static readonly FollowRequest SecondExplorerToAdministratorPending;
@@ -16,6 +19,11 @@ internal static class FollowRequestSeed
     public static readonly FollowRequest ExplorerRemovedByFormerlyFollowedUser;
     public static readonly FollowRequest ExplorerRejectedByRejectingUser;
     public static readonly FollowRequest ExplorerAcceptedByFollowedUser;
+    public static readonly FollowRequest FollowedUserAcceptedByExplorer;
+    public static readonly FollowRequest PendingFollowerAcceptedByExplorer;
+    public static readonly FollowRequest ExplorerToPendingFollowerPending;
+    public static readonly FollowRequest NotFollowedFollowerAcceptedByExplorer;
+    public static readonly FollowRequest RequestingUserToExplorerPending;
 
     static FollowRequestSeed()
     {
@@ -46,6 +54,24 @@ internal static class FollowRequestSeed
         ExplorerAcceptedByFollowedUser = new(WellKnownUsers.Explorer, FollowedUser,
             new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
         ExplorerAcceptedByFollowedUser.AcceptAutomatically();
+
+        FollowedUserAcceptedByExplorer = new(FollowedUser, WellKnownUsers.Explorer,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        FollowedUserAcceptedByExplorer.Accept(WellKnownUsers.Explorer);
+
+        PendingFollowerAcceptedByExplorer = new(PendingFollower, WellKnownUsers.Explorer,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        PendingFollowerAcceptedByExplorer.Accept(WellKnownUsers.Explorer);
+
+        ExplorerToPendingFollowerPending = new(WellKnownUsers.Explorer, PendingFollower,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+
+        NotFollowedFollowerAcceptedByExplorer = new(NotFollowedFollower, WellKnownUsers.Explorer,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        NotFollowedFollowerAcceptedByExplorer.Accept(WellKnownUsers.Explorer);
+
+        RequestingUserToExplorerPending = new(RequestingUser, WellKnownUsers.Explorer,
+            new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
     }
 
     public static FollowRequest[] All =>
@@ -56,6 +82,11 @@ internal static class FollowRequestSeed
         ExplorerRejectedByFormerlyFollowedUser,
         ExplorerRemovedByFormerlyFollowedUser,
         ExplorerRejectedByRejectingUser,
-        ExplorerAcceptedByFollowedUser
+        ExplorerAcceptedByFollowedUser,
+        FollowedUserAcceptedByExplorer,
+        PendingFollowerAcceptedByExplorer,
+        ExplorerToPendingFollowerPending,
+        NotFollowedFollowerAcceptedByExplorer,
+        RequestingUserToExplorerPending
     ];
 }

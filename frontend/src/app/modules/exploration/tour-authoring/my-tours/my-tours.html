@@ -19,6 +19,7 @@
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
           <th scope="col">Transport times</th>
+          <th scope="col">Recommended group size</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -35,9 +36,19 @@
                 <span class="meta">none</span>
               }
             </td>
+            <td>
+              @if (tour.recommendedGroupSize) {
+                {{ tour.recommendedGroupSize.min }}–{{ tour.recommendedGroupSize.max }}
+              } @else {
+                <span class="meta">Not specified</span>
+              }
+            </td>
             <td class="actions">
               <button class="button" type="button" (click)="select(tour.id)">Add time</button>
               @if (tour.status === 'Draft') {
+                <button class="button" type="button" (click)="selectGroupSize(tour)">
+                  Group size
+                </button>
                 <button
                   class="button button--primary"
                   type="button"
@@ -51,7 +62,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">You have no tours yet.</td>
+            <td colspan="6">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -85,6 +96,40 @@
         class="button button--primary"
         type="submit"
         [disabled]="!form().valid() || pending()"
+      >
+        Save
+      </button>
+    </form>
+  }
+
+  @if (groupSizeTourId()) {
+    <form class="card stack" (submit)="changeGroupSize($event)">
+      <h2>Recommended group size</h2>
+
+      <div class="field">
+        <label for="group-min">Minimum</label>
+        <input id="group-min" type="number" [formField]="groupSizeForm.min" />
+        @if (groupSizeForm.min().touched()) {
+          @for (message of groupSizeForm.min().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="group-max">Maximum</label>
+        <input id="group-max" type="number" [formField]="groupSizeForm.max" />
+        @if (groupSizeForm.max().touched()) {
+          @for (message of groupSizeForm.max().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!groupSizeForm().valid() || pending()"
       >
         Save
       </button>

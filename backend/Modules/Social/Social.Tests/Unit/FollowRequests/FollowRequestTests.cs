@@ -97,6 +97,36 @@ public class FollowRequestTests
     }
 
     [Fact]
+    public void Receiver_accepts_a_pending_request()
+    {
+        var request = CreatePendingRequest();
+
+        request.Accept(Receiver);
+
+        request.Status.Should().Be(FollowRequestStatus.Accepted);
+    }
+
+    [Fact]
+    public void Only_the_receiver_can_accept_a_request()
+    {
+        var request = CreatePendingRequest();
+
+        var acceptance = () => request.Accept(Sender);
+
+        acceptance.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Request_that_is_no_longer_pending_cannot_be_accepted()
+    {
+        var request = CreateRejectedRequest();
+
+        var acceptance = () => request.Accept(Receiver);
+
+        acceptance.Should().Throw<DomainException>();
+    }
+
+    [Fact]
     public void Receiver_rejects_a_pending_request()
     {
         var request = CreatePendingRequest();
