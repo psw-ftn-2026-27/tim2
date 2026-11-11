@@ -18,6 +18,13 @@ public class BlogTests
         return blog;
     }
 
+    private static Blog CreateArchivedBlog()
+    {
+        var blog = CreatePublishedBlog();
+        blog.Archive();
+        return blog;
+    }
+
     [Fact]
     public void New_blog_starts_as_a_draft()
     {
@@ -27,14 +34,15 @@ public class BlogTests
         blog.AuthorId.Should().Be(WellKnownUsers.Explorer);
         blog.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
         blog.Comments.Should().BeEmpty();
+        blog.LastModifiedAt.Should().BeNull();
     }
 
     [Fact]
-    public void New_blog_without_images_has_no_images()
+    public void New_blog_cannot_be_created_without_an_image()
     {
-        var blog = new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", "Opis obilaska tvrđave.", null);
+        var creation = () => new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", "Opis obilaska tvrđave.", []);
 
-        blog.Images.Should().BeEmpty();
+        creation.Should().Throw<DomainException>();
     }
 
     [Theory]
@@ -42,7 +50,7 @@ public class BlogTests
     [InlineData("   ")]
     public void New_blog_requires_a_title(string title)
     {
-        var creation = () => new Blog(WellKnownUsers.Explorer, title, "Opis obilaska tvrđave.", []);
+        var creation = () => new Blog(WellKnownUsers.Explorer, title, "Opis obilaska tvrđave.", ["https://example.com/tvrdjava.jpg"]);
 
         creation.Should().Throw<DomainException>();
     }
@@ -52,9 +60,87 @@ public class BlogTests
     [InlineData("   ")]
     public void New_blog_requires_a_description(string description)
     {
-        var creation = () => new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", description, []);
+        var creation = () => new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", description, ["https://example.com/tvrdjava.jpg"]);
 
         creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Edited_blog_records_when_it_was_last_modified_and_keeps_its_creation_date()
+    {
+        var blog = CreatePublishedBlog();
+        var createdAt = blog.CreatedAt;
+
+        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/kula.jpg"]);
+
+        blog.LastModifiedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        blog.CreatedAt.Should().Be(createdAt);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Blog_cannot_be_edited_without_a_title(string title)
+    {
+        var blog = CreateBlog();
+
+        var editing = () => blog.Edit(title, "Dopunjen opis obilaska.", ["https://example.com/kula.jpg"]);
+
+        editing.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Blog_cannot_be_edited_without_a_description(string description)
+    {
+        var blog = CreateBlog();
+
+        var editing = () => blog.Edit("Novi utisci sa tvrđave", description, ["https://example.com/kula.jpg"]);
+
+        editing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Blog_cannot_be_edited_without_an_image()
+    {
+        var blog = CreateBlog();
+
+        var editing = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", []);
+
+        editing.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Blog_cannot_be_edited_with_a_blank_image_address(string imageAddress)
+    {
+        var blog = CreateBlog();
+
+        var editing = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/kula.jpg", imageAddress]);
+
+        editing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void New_blog_stores_image_addresses_without_surrounding_spaces()
+    {
+        var blog = new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", "Opis obilaska tvrđave.", ["  https://example.com/tvrdjava.jpg  "]);
+
+        blog.Images.Should().Equal("https://example.com/tvrdjava.jpg");
+    }
+
+    [Fact]
+    public void Edited_blog_keeps_its_images_when_the_given_list_changes_later()
+    {
+        var blog = CreateBlog();
+        List<string> images = ["https://example.com/kula.jpg"];
+        blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", images);
+
+        images.Clear();
+
+        blog.Images.Should().Equal("https://example.com/kula.jpg");
     }
 
     [Fact]
@@ -136,4 +222,43 @@ public class BlogTests
         blog.Comments.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Draft_blog_cannot_be_archived()
+    {
+        var blog = CreateBlog();
+
+        var archiving = () => blog.Archive();
+
+        archiving.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_edited()
+    {
+        var blog = CreateArchivedBlog();
+
+        var editing = () => blog.Edit("Novi utisci sa tvrđave", "Dopunjen opis obilaska.", ["https://example.com/kula.jpg"]);
+
+        editing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_published_again()
+    {
+        var blog = CreateArchivedBlog();
+
+        var publishing = () => blog.Publish();
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_blog_cannot_be_commented_on()
+    {
+        var blog = CreateArchivedBlog();
+
+        var addition = () => blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");
+
+        addition.Should().Throw<DomainException>();
+    }
 }

@@ -13,13 +13,47 @@
     @if (detail.value(); as blog) {
       <h1>{{ blog.title }}</h1>
 
+      @if (relationship.value(); as relation) {
+        @if (followError()) {
+          <p class="error">{{ followError() }}</p>
+        }
+
+        <p class="follow">
+          <span>Author: {{ blog.authorId }}</span>
+          @switch (relation.state) {
+            @case ('Follow') {
+              <button class="button button--primary" type="button" (click)="follow(blog.authorId)">
+                Follow
+              </button>
+            }
+            @case ('Pending') {
+              <span>Pending</span>
+              @if (relation.pendingRequestId; as requestId) {
+                <button class="button" type="button" (click)="cancelRequest(requestId)">
+                  Cancel request
+                </button>
+              }
+            }
+            @case ('Following') {
+              <span>Following</span>
+            }
+          }
+        </p>
+      }
+
       <p>{{ blog.description }}</p>
+
+      <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
+      <p class="meta">
+        Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
+      </p>
 
       <p class="meta">Status: {{ blog.status }}</p>
 
       <app-blog-comments
         [comments]="blog.comments"
         [currentUserId]="auth.user()?.id ?? null"
+        [commentingAllowed]="blog.status === 'Published'"
         (addComment)="add($event)"
         (editComment)="edit($event)"
         (deleteComment)="remove($event)"

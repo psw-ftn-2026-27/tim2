@@ -24,14 +24,14 @@ internal sealed class BlogReadRepository : IBlogReadRepository
         return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.AuthorId == authorId)).ToListAsync();
     }
 
-    public async Task<PageResult<BlogDto>> GetPublishedAsync(int page, int pageSize)
+    public async Task<PageResult<BlogDto>> GetVisibleAsync(int page, int pageSize)
     {
-        var published = _dbContext.Blogs
-            .Where(blog => blog.Status == BlogStatus.Published)
+        var visible = _dbContext.Blogs
+            .Where(blog => blog.Status == BlogStatus.Published || blog.Status == BlogStatus.Archived)
             .OrderByDescending(blog => blog.CreatedAt);
 
-        var totalCount = await published.CountAsync();
-        var items = await ProjectToDtos(published)
+        var totalCount = await visible.CountAsync();
+        var items = await ProjectToDtos(visible)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -48,6 +48,7 @@ internal sealed class BlogReadRepository : IBlogReadRepository
                 blog.Title,
                 blog.Description,
                 blog.CreatedAt,
+                blog.LastModifiedAt,
                 blog.Images,
                 blog.Status,
                 blog.Comments

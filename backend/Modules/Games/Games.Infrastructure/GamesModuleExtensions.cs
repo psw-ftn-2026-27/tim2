@@ -1,5 +1,8 @@
 using Games.Application;
+using Games.Application.SocialChallengeManagement;
+using Games.Application.SocialChallenges;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
@@ -14,7 +17,12 @@ public static class GamesModuleExtensions
         services.AddHostedService<GamesModuleInitializer>();
         services.AddAutoMapper(mapper => mapper.AddProfile<GamesMapperProfile>());
 
+        services.AddScoped<ISocialChallengeRepository, SocialChallengeRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
+        services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
+
+        services.AddScoped<SocialChallengeManagementService>();
+        services.AddScoped<SocialChallengeManagementQueries>();
 
         return services;
     }

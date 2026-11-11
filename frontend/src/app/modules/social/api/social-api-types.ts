@@ -1,4 +1,4 @@
-export type BlogStatus = 'Draft' | 'Published' | 'Closed';
+export type BlogStatus = 'Draft' | 'Published' | 'Archived';
 
 export interface CommentDto {
   id: string;
@@ -13,6 +13,7 @@ export interface BlogDto {
   title: string;
   description: string;
   createdAt: string;
+  lastModifiedAt: string | null;
   images: string[];
   status: BlogStatus;
   comments: CommentDto[];
@@ -24,10 +25,56 @@ export interface CreateBlogDto {
   images: string[] | null;
 }
 
+export interface EditBlogDto {
+  title: string;
+  description: string;
+  images: string[] | null;
+}
+
 export interface CreateCommentDto {
   text: string;
 }
 
 export interface UpdateCommentDto {
   text: string;
+}
+
+export interface ClubDto {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  images: string[];
+}
+
+export interface CreateClubDto {
+  name: string;
+  description: string;
+  images: string[] | null;
+}
+
+export interface UpdateClubDto {
+  name: string;
+  description: string;
+  images: string[] | null;
+}
+
+export type FollowRelationshipState = 'Follow' | 'Pending' | 'Following';
+
+export type FollowRequestStatus = 'Pending' | 'Accepted' | 'Rejected' | 'Removed' | 'Unfollowed';
+
+export interface FollowRelationshipDto {
+  state: FollowRelationshipState;
+  pendingRequestId: string | null;
+}
+
+export interface SendFollowRequestDto {
+  receiverId: string;
+}
+
+export interface SentFollowRequestDto {
+  id: string;
+  receiverId: string;
+  status: FollowRequestStatus;
+  createdAt: string;
 }
