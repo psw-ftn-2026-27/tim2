@@ -1,6 +1,6 @@
 # Modul Identity
 
-Modul Identity je platformski modul zadužen za registraciju korisnika, prijavu i izdavanje JWT-a (JSON Web Token). Sastoji se od dva projekta. Projekat `Identity` sadrži sam modul, a projekat `Identity.Tests` njegove integracione testove. Studenti ovaj modul koriste kroz njegove krajnje tačke, ali ga ne menjaju i ne referenciraju iz svojih modula.
+Modul Identity je platformski modul zadužen za registraciju korisnika, prijavu i izdavanje JWT-a (JSON Web Token). Sastoji se od tri projekta. Projekat `Identity` sadrži sam modul, projekat `Identity.Contracts` njegovu javnu površinu za druge module, a projekat `Identity.Tests` njegove integracione testove. Studenti ovaj modul koriste kroz njegove krajnje tačke i kroz `Identity.Contracts`, ali ga ne menjaju i projekat `Identity` ne referenciraju iz svojih modula.
 
 ## Problem koji rešava
 
@@ -12,9 +12,9 @@ Posao oko tokena podeljen je na dva mesta. Modul Identity izdaje token, a projek
 
 ## Odstupanje od strukture modula
 
-Funkcionalni moduli imaju pet projekata, po jedan za svaki sloj. Modul Identity ima jedan projekat.
+Funkcionalni moduli imaju pet projekata, po jedan za svaki sloj. Modul Identity ima jedan projekat sa kodom modula i jedan sa kontraktom.
 
-Podela na pet projekata postoji da bi štitila domenska pravila i granice između timova. Modul Identity nema domenska pravila koja bi štitio, jer čitavu logiku naloga, lozinki i uloga preuzima gotova biblioteka ASP.NET Core Identity. Nema ni granice između timova, jer modul u celosti pripada platformskom timu i nijedan drugi modul ga ne referencira. Pet projekata bi u ovoj situaciji bila nepotrebna apstrakcija. Ovaj modul ujedno prikazuje snagu modular monolit arhitekture, koja dozvoljava da pratimo različite arhitekture na nivou pojedinačnih modula.
+Podela na pet projekata postoji da bi štitila domenska pravila i granice između timova. Modul Identity nema domenska pravila koja bi štitio, jer čitavu logiku naloga, lozinki i uloga preuzima gotova biblioteka ASP.NET Core Identity. Nema ni granice između timova unutar modula, jer modul u celosti pripada platformskom timu. Granica prema drugim modulima je projekat `Identity.Contracts`, isto kao kod funkcionalnih modula. Pet projekata bi u ovoj situaciji bila nepotrebna apstrakcija. Ovaj modul ujedno prikazuje snagu modular monolit arhitekture, koja dozvoljava da pratimo različite arhitekture na nivou pojedinačnih modula.
 
 ## Elementi projekta Identity
 
@@ -36,10 +36,16 @@ Ovde su i DTO klase koje krajnje tačke primaju i vraćaju. Klase `RegisterDto` 
 
 Sadrži pristup bazi i uključivanje modula u aplikaciju. Klasa `IdentityModuleDbContext` nasleđuje gotov kontekst biblioteke ASP.NET Core Identity i smešta njegove tabele u šemu `identity`, po pravilu da svaki modul ima svoju šemu. Direktorijum `Migrations` sadrži migracije te šeme.
 
+Klasa `IdentityApi` implementira kontrakt `IIdentityApi` iz projekta `Identity.Contracts`. Upitima nad kontekstom čita korisnike sa ulogom `explorer` i vraća samo njihov identifikator i adresu elektronske pošte.
+
 Metoda `AddIdentityModule` registruje sve delove modula i jedino je mesto koje `Host.Api` poziva pored metode `AddIdentityControllers`. Klasa `IdentityModuleInitializer` se izvršava pri pokretanju aplikacije. Ona primenjuje migracije i upisuje uloge `administrator` i `explorer` ako već ne postoje, pa aplikacija posle pokretanja uvek ima spremnu šemu i uloge.
+
+## Projekat Identity.Contracts
+
+Projekat je javna površina modula za druge module, po istom obrascu kao `Contracts` projekti funkcionalnih modula, i ne referencira nijedan drugi projekat. Sadrži interfejs `IIdentityApi` sa dva upita. Metoda `GetExplorersAsync` vraća stranicu korisnika sa ulogom `explorer`, poređanih po adresi elektronske pošte, zajedno sa ukupnim brojem takvih korisnika. Metoda `GetExplorerAsync` vraća jednog takvog korisnika po identifikatoru, ili `null` kada korisnik ne postoji ili nema tu ulogu. Oba upita vraćaju samo identifikator i adresu elektronske pošte, kroz zapise `ExplorerSummary` i `ExplorerPage`. Lozinke, uloge i ostali podaci naloga ostaju u modulu. Kontrakt se proširuje samo na zahtev platformskom timu.
 
 ## Projekat Identity.Tests
 
-Projekat sadrži integracione testove koji šalju prave HTTP zahteve krajnjim tačkama registracije i prijave i proveravaju odgovore, uključujući sadržaj vraćenog tokena. Ovo je jedini projekat koji te dve krajnje tačke testira, jer su jedino ovde one predmet testa. Testovi ostalih modula prijavljenog korisnika dobijaju direktno od test infrastrukture, bez prolaska kroz modul Identity.
+Projekat sadrži integracione testove koji šalju prave HTTP zahteve krajnjim tačkama registracije i prijave i proveravaju odgovore, uključujući sadržaj vraćenog tokena. Klasa `IdentityApiTests` proverava kontrakt `IIdentityApi`, tako što ga dobija iz kontejnera zavisnosti i poziva direktno, jer kontrakt nema krajnju tačku. Ovo je jedini projekat koji te dve krajnje tačke testira, jer su jedino ovde one predmet testa. Testovi ostalih modula prijavljenog korisnika dobijaju direktno od test infrastrukture, bez prolaska kroz modul Identity.
 
 Početni podaci ovog projekta imaju jednu posebnost. U funkcionalnim modulima početni podaci nastaju pozivom domenskih konstruktora. Korisnički nalog se u pravom radu pravi kroz klasu `UserManager`, koja usput računa heš lozinke i normalizovane kolone. Mehanizam za vraćanje baze na početno stanje upisuje redove direktno u bazu i taj korak zaobilazi, pa klasa `UserSeed` te vrednosti popunjava sama. Identifikator korisnika dolazi iz klase `WellKnownUsers`, tako da testovi svih modula govore o istim korisnicima.

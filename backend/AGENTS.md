@@ -29,6 +29,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          read-only surface for other modules       [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -59,7 +60,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references `Identity`. A module that needs user data references
+  `Identity.Contracts` and nothing else from it. Other modules carry a `UserId` as a
+  plain ID.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -86,6 +89,13 @@ Identity is a deliberate exception to the module structure: one platform-owned p
 that students use but never modify or reference. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
 (`administrator`, `explorer`); the details live in the project itself.
+
+`Identity.Contracts` is its only surface toward other modules: `IIdentityApi`, read-only
+and minimal, with a page of explorers and one explorer by ID (`null` when there is
+none), each carrying only the user ID and email. It references nothing, like every
+`Contracts` project, and is implemented in `Identity/Infrastructure`. Accounts,
+passwords and `UserManager` stay behind it. Adding a member is a request to the
+platform team.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the
