@@ -43,11 +43,24 @@
                   class="button button--primary"
                   type="button"
                   [disabled]="pending()"
-                  (click)="confirmDelete(challenge.id)"
+                  (click)="confirm(challenge.id)"
                 >
-                  Confirm delete
+                  @switch (confirmingAction()) {
+                    @case ('delete') {
+                      Confirm delete
+                    }
+                    @case ('publish') {
+                      Confirm publish
+                    }
+                    @case ('retire') {
+                      Confirm retire
+                    }
+                    @case ('archive') {
+                      Confirm archive
+                    }
+                  }
                 </button>
-                <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
+                <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
                   Cancel
                 </button>
               } @else if (editingId() !== challenge.id) {
@@ -55,8 +68,33 @@
                   <button class="button" type="button" (click)="startEdit(challenge)">Edit</button>
                 }
                 @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
-                  <button class="button" type="button" (click)="askToDelete(challenge.id)">
+                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'delete')">
                     Delete
+                  </button>
+                }
+                @if (challenge.status === 'Draft') {
+                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
+                    Publish
+                  </button>
+                }
+                @if (challenge.status === 'Published') {
+                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'retire')">
+                    Retire
+                  </button>
+                }
+                @if (challenge.status === 'Retired') {
+                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'archive')">
+                    Archive
+                  </button>
+                }
+                @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="repeat(challenge.id)"
+                  >
+                    Repeat
                   </button>
                 }
               }
