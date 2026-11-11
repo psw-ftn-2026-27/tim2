@@ -12,6 +12,10 @@ internal static class TourSeed
     public static readonly Tour PublishedVineyards;
     public static readonly Tour PublishedMonasteries;
     public static readonly Tour PublishedLakeside;
+    public static readonly Tour PublishedFreeParkWalk;
+    public static readonly Tour PublishedCheapGallery;
+    public static readonly Tour PublishedModeratelyPricedFortress;
+    public static readonly Tour PublishedExpensiveMountain;
 
     static TourSeed()
     {
@@ -34,7 +38,31 @@ internal static class TourSeed
         PublishedLakeside.ChangeRecommendedGroupSize(2, 20);
         PublishedLakeside.AddTransportTime(TransportMode.Walking, 120);
         PublishedLakeside.Publish();
+
+        PublishedFreeParkWalk = new(WellKnownUsers.SecondExplorer, "Šetnja Dunavskim parkom", "Šetnja vodi kroz Dunavski park, od jezerceta sa ostrvom i labudovima, pored spomenika Đuri Jakšiću, do izlaza ka Zmaj Jovinoj ulici.", TourDifficulty.Easy, ["park"]);
+        PublishedFreeParkWalk.ChangeRecommendedGroupSize(1, 15);
+        PublishedFreeParkWalk.AddTransportTime(TransportMode.Walking, 40);
+        PublishedFreeParkWalk.ChangePrice(0);
+        PublishedFreeParkWalk.Publish();
+
+        PublishedCheapGallery = new(WellKnownUsers.SecondExplorer, "Obilazak galerija", "Obilazak počinje u Galeriji Matice srpske, nastavlja se kroz Spomen-zbirku Pavla Beljanskog i završava u Galeriji likovne umetnosti poklon-zbirci Rajka Mamuzića.", TourDifficulty.Easy, ["umetnost"]);
+        PublishedCheapGallery.ChangeRecommendedGroupSize(1, 10);
+        PublishedCheapGallery.AddTransportTime(TransportMode.Walking, 75);
+        PublishedCheapGallery.ChangePrice(500);
+        PublishedCheapGallery.Publish();
+
+        PublishedModeratelyPricedFortress = new(WellKnownUsers.SecondExplorer, "Podzemlje tvrđave", "Obilazak vodi kroz podzemne vojne galerije Petrovaradinske tvrđave, sa vodičem i fenjerima, uz priču o odbrani tvrđave i njenim graditeljima.", TourDifficulty.Moderate, ["grad"]);
+        PublishedModeratelyPricedFortress.ChangeRecommendedGroupSize(2, 8);
+        PublishedModeratelyPricedFortress.AddTransportTime(TransportMode.Car, 30);
+        PublishedModeratelyPricedFortress.ChangePrice(1200);
+        PublishedModeratelyPricedFortress.Publish();
+
+        PublishedExpensiveMountain = new(WellKnownUsers.SecondExplorer, "Uspon na Crveni čot", "Celodnevni uspon na Crveni čot, najviši vrh Fruške gore, kreće iz Iriškog venca, prolazi pored TV tornja i vraća se šumskim putem do polazne tačke.", TourDifficulty.Hard, ["planina"]);
+        PublishedExpensiveMountain.ChangeRecommendedGroupSize(2, 6);
+        PublishedExpensiveMountain.AddTransportTime(TransportMode.Car, 50);
+        PublishedExpensiveMountain.ChangePrice(3000);
+        PublishedExpensiveMountain.Publish();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain];
 }

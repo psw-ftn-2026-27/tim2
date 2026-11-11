@@ -4,7 +4,10 @@ namespace Exploration.Application.TourBrowsing;
 
 public sealed record TourSearchDto(
     string? Name,
-    TourDifficulty? Difficulty,
+    List<TourDifficulty>? Difficulties,
     List<string>? Tags,
     List<TransportMode>? TransportModes,
-    DifficultySort DifficultySort = DifficultySort.None);
+    int? MinPrice,
+    int? MaxPrice,
+    SortDirection DifficultySort = SortDirection.None,
+    SortDirection PriceSort = SortDirection.None);
