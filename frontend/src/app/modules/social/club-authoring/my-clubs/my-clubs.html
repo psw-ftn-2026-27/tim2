@@ -85,10 +85,11 @@
           }
         </div>
 
-        <div class="field">
-          <label for="edit-images">Image addresses, one per line</label>
-          <textarea id="edit-images" rows="4" [formField]="editForm.images"></textarea>
-        </div>
+        <app-club-image-list
+          [images]="editForm.images().value()"
+          (addImage)="addImage($event)"
+          (removeImage)="removeImage($event)"
+        />
 
         @if (editError()) {
           <p class="error">{{ editError() }}</p>
