@@ -44,14 +44,29 @@
                 <button class="button" type="button" (click)="startEdit(blog)">Edit</button>
               }
               @if (blog.status === 'Published') {
-                <button
-                  class="button"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="archive(blog.id)"
-                >
-                  Archive
-                </button>
+                @if (confirmingArchiveId() === blog.id) {
+                  <p>Da li ste sigurni?</p>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(blog.id)"
+                  >
+                    Yes
+                  </button>
+                  <button class="button" type="button" (click)="confirmingArchiveId.set(null)">
+                    No
+                  </button>
+                } @else {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="confirmingArchiveId.set(blog.id)"
+                  >
+                    Archive
+                  </button>
+                }
               }
             </td>
           </tr>
