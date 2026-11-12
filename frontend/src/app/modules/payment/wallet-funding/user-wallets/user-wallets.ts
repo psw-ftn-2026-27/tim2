@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { UserWalletDto } from '../../api/payment-api-types';
@@ -9,7 +10,7 @@ import { WalletFunding } from '../wallet-funding';
 const pageSize = 20;
 
 @Component({
-  imports: [DepositForm],
+  imports: [DepositForm, RouterLink],
   selector: 'app-user-wallets',
   styleUrl: './user-wallets.scss',
   templateUrl: './user-wallets.html',

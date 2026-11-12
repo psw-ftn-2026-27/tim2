@@ -18,3 +18,11 @@ export interface UserWalletDto {
 export interface DepositDto {
   amount: number;
 }
+
+export interface UserTransactionDto {
+  id: string;
+  amount: number;
+  createdAt: string;
+  adminId: string;
+  isCancelled: boolean;
+}

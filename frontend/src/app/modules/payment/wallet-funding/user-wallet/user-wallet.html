@@ -1,0 +1,88 @@
+<div class="stack">
+  <p><a routerLink="/payment/wallets">Nazad na listu</a></p>
+
+  @if (wallet.isLoading()) {
+    <p>Učitavanje novčanika...</p>
+  } @else if (wallet.error()) {
+    <p class="error">Novčanik nije moguće učitati. Prijavite se kao administrator.</p>
+  } @else {
+    @if (wallet.value(); as userWallet) {
+      <h1>{{ userWallet.email }}</h1>
+      <p class="balance">Stanje: {{ userWallet.balance }} EC</p>
+    }
+  }
+
+  <h2>Transakcije</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (transactions.isLoading()) {
+    <p>Učitavanje transakcija...</p>
+  } @else if (transactions.error()) {
+    <p class="error">Transakcije nije moguće učitati. Prijavite se kao administrator.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Iznos</th>
+          <th scope="col">Vreme</th>
+          <th scope="col">Administrator</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
+          <tr>
+            <td>{{ transaction.amount }} EC</td>
+            <td>{{ formatTime(transaction.createdAt) }}</td>
+            <td>{{ isOwnDeposit(transaction) ? 'Vi' : 'Drugi administrator' }}</td>
+            <td>
+              @if (transaction.isCancelled) {
+                stornirano
+              } @else if (!isOwnDeposit(transaction)) {
+                <span class="meta">Storno može samo administrator koji je uplatio.</span>
+              } @else if (!isWithinCancellationWindow(transaction)) {
+                <span class="meta">Rok od 24h za storno je istekao.</span>
+              } @else {
+                <button
+                  class="button"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="cancelDeposit(transaction.id)"
+                >
+                  Storniraj
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="meta">Još nema transakcija.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button
+        class="button"
+        type="button"
+        [disabled]="page() === 1 || pending()"
+        (click)="previousPage()"
+      >
+        Prethodna
+      </button>
+      <span class="meta">Strana {{ page() }}</span>
+      <button
+        class="button"
+        type="button"
+        [disabled]="!hasNextPage() || pending()"
+        (click)="nextPage()"
+      >
+        Sledeća
+      </button>
+    </p>
+  }
+</div>
