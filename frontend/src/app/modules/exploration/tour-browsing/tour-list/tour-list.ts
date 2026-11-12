@@ -4,7 +4,7 @@ import { FormField, form, min, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../../../core/auth/auth';
 import { PageResult } from '../../../../shared/api/page-result';
-import { SortDirection, TourDto } from '../../api/exploration-api-types';
+import { SortDirection, TourDto, TourPreferenceDto } from '../../api/exploration-api-types';
 import { TourCard } from '../tour-card/tour-card';
 
 const pageSize = 10;
@@ -100,6 +100,14 @@ export class TourList {
     return `/api/exploration/tours/published?${params.toString()}`;
   });
 
+  protected readonly preferences = httpResource<TourPreferenceDto | null>(() =>
+    this.auth.isLoggedIn() ? '/api/exploration/tour-preferences/mine' : undefined,
+  );
+
+  protected readonly canApplyPreferences = computed(
+    () => this.preferences.hasValue() && this.preferences.value()?.applicableInSearch === true,
+  );
+
   protected readonly isFirstPage = computed(() => this.page() === 1);
 
   protected readonly isLastPage = computed(
@@ -112,6 +120,27 @@ export class TourList {
 
   protected clearFilters(): void {
     this.criteria.set({ ...emptyCriteria });
+    this.page.set(1);
+  }
+
+  protected applyPreferences(): void {
+    if (!this.preferences.hasValue()) {
+      return;
+    }
+    const preferences = this.preferences.value();
+    if (preferences === null) {
+      return;
+    }
+    this.criteria.update((criteria) => ({
+      ...criteria,
+      easy: preferences.difficulties.includes('Easy'),
+      moderate: preferences.difficulties.includes('Moderate'),
+      hard: preferences.difficulties.includes('Hard'),
+      tags: preferences.tags.join(', '),
+      walking: preferences.transportModes.includes('Walking'),
+      bicycle: preferences.transportModes.includes('Bicycle'),
+      car: preferences.transportModes.includes('Car'),
+    }));
     this.page.set(1);
   }
 

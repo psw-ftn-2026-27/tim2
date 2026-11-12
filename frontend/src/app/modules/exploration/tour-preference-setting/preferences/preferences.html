@@ -1,0 +1,102 @@
+<div class="card stack">
+  <h1>Preferences</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (preferences.isLoading()) {
+    <p>Loading your preferences...</p>
+  } @else if (preferences.error()) {
+    <p class="error">Could not load your preferences. Log in and try again.</p>
+  } @else {
+    @if (saved(); as current) {
+      @if (!editing()) {
+        <dl class="overview">
+          <dt>Difficulty</dt>
+          <dd>
+            @for (difficulty of current.difficulties; track difficulty) {
+              <span class="value">{{ difficulty }}</span>
+            } @empty {
+              <span class="meta">none</span>
+            }
+          </dd>
+          <dt>Transport</dt>
+          <dd>
+            @for (transport of current.transportModes; track transport) {
+              <span class="value">{{ transport }}</span>
+            } @empty {
+              <span class="meta">none</span>
+            }
+          </dd>
+          <dt>Tags</dt>
+          <dd>
+            @for (tag of current.tags; track tag) {
+              <span class="value">{{ tag }}</span>
+            } @empty {
+              <span class="meta">none</span>
+            }
+          </dd>
+          <dt>Apply in tour search</dt>
+          <dd>
+            @if (current.applicableInSearch) {
+              On
+            } @else {
+              Off
+            }
+          </dd>
+        </dl>
+
+        <p class="actions">
+          <button class="button" type="button" (click)="edit(current)">Edit</button>
+          <button class="button" type="button" [disabled]="pending()" (click)="delete()">
+            Delete
+          </button>
+        </p>
+      }
+    } @else {
+      <p>You have not set your preferences yet. Fill in the form to set them.</p>
+    }
+
+    @if (saved() === null || editing()) {
+      <form class="stack" (submit)="save($event)">
+        <fieldset class="field checkbox-group">
+          <legend>Difficulty</legend>
+          <label><input type="checkbox" [formField]="form.easy" /> Easy</label>
+          <label><input type="checkbox" [formField]="form.moderate" /> Moderate</label>
+          <label><input type="checkbox" [formField]="form.hard" /> Hard</label>
+        </fieldset>
+
+        <fieldset class="field checkbox-group">
+          <legend>Transport</legend>
+          <label><input type="checkbox" [formField]="form.walking" /> Walking</label>
+          <label><input type="checkbox" [formField]="form.bicycle" /> Bicycle</label>
+          <label><input type="checkbox" [formField]="form.car" /> Car</label>
+        </fieldset>
+
+        <div class="field">
+          <label for="tags">Tags, separated by commas</label>
+          <input id="tags" type="text" [formField]="form.tags" />
+        </div>
+
+        <label>
+          <input type="checkbox" [formField]="form.applicableInSearch" />
+          Allow applying these preferences in tour search
+        </label>
+
+        @if (saveError()) {
+          <p class="error">{{ saveError() }}</p>
+        }
+
+        <p class="actions">
+          <button class="button button--primary" type="submit" [disabled]="pending()">
+            Save
+          </button>
+          @if (editing()) {
+            <button class="button" type="button" (click)="cancel()">Cancel</button>
+          }
+        </p>
+      </form>
+    }
+  }
+</div>
