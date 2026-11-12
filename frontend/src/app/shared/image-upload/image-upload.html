@@ -1,0 +1,45 @@
+<section class="stack">
+  <div class="actions">
+    <label class="button">
+      Choose image
+      <input
+        class="file-input"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="choose($event)"
+      />
+    </label>
+    <button
+      class="button button--primary"
+      type="button"
+      [disabled]="!canSubmit()"
+      (click)="submit()"
+    >
+      Upload
+    </button>
+  </div>
+
+  @if (problem()) {
+    <p class="error">{{ problem() }}</p>
+  } @else if (previewUrl()) {
+    <div class="stack">
+      <p class="meta">Chosen image: {{ file()?.name }}</p>
+      <img class="image" alt="Preview of the chosen image" [src]="previewUrl()" (load)="revokePreview()" (error)="revokePreview()" />
+    </div>
+  }
+
+  @if (pending()) {
+    <p class="meta">Uploading...</p>
+  }
+
+  @if (uploadedUrl()) {
+    <div class="stack">
+      <p class="meta">Uploaded image: {{ uploadedUrl() }}</p>
+      <img class="image" alt="Uploaded image" [src]="uploadedUrl()" />
+    </div>
+  }
+</section>
+
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
