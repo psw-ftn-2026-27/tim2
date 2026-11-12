@@ -32,4 +32,20 @@ public sealed class Wallet : AggregateRoot
 
         _transactions.Add(new Transaction(adminId, amount));
     }
+
+    public void CancelDeposit(Guid transactionId, Guid adminId, DateTime now)
+    {
+        var transaction = _transactions.FirstOrDefault(transaction => transaction.Id == transactionId);
+        if (transaction is null)
+        {
+            throw new NotFoundException($"Transaction {transactionId} does not exist.");
+        }
+
+        if (!transaction.IsCancelled && Balance() - transaction.Amount < 0)
+        {
+            throw new DomainException("Cancelling the deposit would make the wallet balance negative.");
+        }
+
+        transaction.Cancel(adminId, now);
+    }
 }

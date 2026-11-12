@@ -31,8 +31,11 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Create
-    </button>
+    <div class="actions">
+      <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+        Create
+      </button>
+      <a class="button" routerLink="/social/clubs/mine">Cancel</a>
+    </div>
   </form>
 </div>

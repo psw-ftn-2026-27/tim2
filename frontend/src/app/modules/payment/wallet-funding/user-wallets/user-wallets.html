@@ -21,7 +21,7 @@
       <tbody>
         @for (wallet of wallets.value()?.items ?? []; track wallet.userId) {
           <tr>
-            <td>{{ wallet.email }}</td>
+            <td><a [routerLink]="[wallet.userId]">{{ wallet.email }}</a></td>
             <td>{{ wallet.balance }} EC</td>
             <td>
               <app-deposit-form [disabled]="pending()" (deposit)="deposit(wallet.userId, $event)" />

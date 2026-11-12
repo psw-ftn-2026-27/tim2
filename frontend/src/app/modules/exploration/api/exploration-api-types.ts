@@ -54,3 +54,10 @@ export interface CreateTourDto {
 export interface TourPriceDto {
   price: number;
 }
+
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  transportModes: TransportMode[];
+  tags: string[];
+  applicableInSearch: boolean;
+}
