@@ -196,6 +196,16 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Archived_tour_is_not_listed_among_published_tours()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?pageSize=100", JsonOptions);
+
+        tours!.Items.Should().NotContain(tour => tour.Id == TourSeed.ArchivedCastle.Id);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_browse_published_tours()
     {
         var client = Factory.CreateClient();

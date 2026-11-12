@@ -2,6 +2,11 @@
   margin: 0;
 }
 
+.image {
+  border-radius: var(--radius);
+  max-width: 100%;
+}
+
 .follow {
   display: flex;
   align-items: center;

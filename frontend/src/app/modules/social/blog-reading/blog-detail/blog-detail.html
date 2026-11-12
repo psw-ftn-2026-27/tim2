@@ -43,6 +43,10 @@
 
       <app-blog-description [description]="blog.description" />
 
+      @for (image of blog.images; track $index) {
+        <img class="image" [src]="image" [alt]="blog.title" />
+      }
+
       <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
       <p class="meta">
         Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}

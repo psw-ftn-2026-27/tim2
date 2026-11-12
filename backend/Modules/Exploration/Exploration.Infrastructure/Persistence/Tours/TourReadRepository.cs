@@ -122,6 +122,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                 tour.RecommendedGroupSize == null
                     ? null
                     : new RecommendedGroupSizeDto(tour.RecommendedGroupSize.Min, tour.RecommendedGroupSize.Max),
-                tour.Price));
+                tour.Price,
+                tour.ArchivedAt));
     }
 }

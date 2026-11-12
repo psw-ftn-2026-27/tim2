@@ -15,6 +15,44 @@
   gap: var(--space-2);
 }
 
+.comment-actions {
+  align-items: center;
+}
+
+// The comment text on the left and the ⋮ button on the right, in one row.
+.comment-row {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.comment-text {
+  flex: 1;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.comment-menu {
+  position: relative;
+}
+
+// Opens below the button, aligned to its right edge, above the rest of the page.
+.menu {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: var(--space-1);
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1;
+}
+
 .comment-actions input,
 .comment-form input {
   background: var(--color-surface);
