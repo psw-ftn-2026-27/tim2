@@ -22,10 +22,11 @@
       }
     </div>
 
-    <div class="field">
-      <label for="images">Image addresses, one per line</label>
-      <textarea id="images" rows="4" [formField]="form.images"></textarea>
-    </div>
+    <app-club-image-list
+      [images]="form.images().value()"
+      (addImage)="addImage($event)"
+      (removeImage)="removeImage($event)"
+    />
 
     @if (error()) {
       <p class="error">{{ error() }}</p>
