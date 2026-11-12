@@ -16,6 +16,7 @@ internal static class TourSeed
     public static readonly Tour PublishedCheapGallery;
     public static readonly Tour PublishedModeratelyPricedFortress;
     public static readonly Tour PublishedExpensiveMountain;
+    public static readonly Tour ArchivedCastle;
 
     static TourSeed()
     {
@@ -62,7 +63,13 @@ internal static class TourSeed
         PublishedExpensiveMountain.AddTransportTime(TransportMode.Car, 50);
         PublishedExpensiveMountain.ChangePrice(3000);
         PublishedExpensiveMountain.Publish();
+
+        ArchivedCastle = new(WellKnownUsers.Explorer, "Dvorac Fantast", "Obilazak dvorca Fantast kod Bečeja vodi kroz kapelu, park i konjušnicu, uz priču o porodici Dunđerski i njihovoj ergeli, sa šetnjom do obližnjeg jezera.", TourDifficulty.Easy, ["istorija"]);
+        ArchivedCastle.ChangeRecommendedGroupSize(2, 15);
+        ArchivedCastle.AddTransportTime(TransportMode.Car, 40);
+        ArchivedCastle.Publish();
+        ArchivedCastle.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle];
 }

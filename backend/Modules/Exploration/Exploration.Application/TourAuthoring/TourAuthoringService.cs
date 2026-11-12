@@ -60,14 +60,6 @@ public sealed class TourAuthoringService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task PublishAsync(Guid tourId, Guid authorId)
-    {
-        var tour = await GetOwnedTourAsync(tourId, authorId);
-
-        tour.Publish();
-        await _unitOfWork.SaveChangesAsync();
-    }
-
     private async Task<Tour> GetOwnedTourAsync(Guid tourId, Guid authorId)
     {
         var tour = await _tourRepository.GetByIdAsync(tourId);

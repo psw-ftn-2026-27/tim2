@@ -256,31 +256,4 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
-    [Fact]
-    public async Task Tour_is_published_when_all_rules_are_met()
-    {
-        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-
-        var response = await client.PostAsync($"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/publish", null);
-
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
-        stored.Status.Should().Be(TourStatus.Published);
-        stored.PublishedAt.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Explorer_cannot_publish_another_authors_tour()
-    {
-        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
-
-        var response = await client.PostAsync($"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/publish", null);
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
-        var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
-        stored.Status.Should().Be(TourStatus.Draft);
-    }
 }

@@ -17,6 +17,14 @@ public class TourTests
         return tour;
     }
 
+    private static Tour CreatePublishedTour()
+    {
+        var tour = CreateTour(LongDescription);
+        tour.AddTransportTime(TransportMode.Walking, 120);
+        tour.Publish();
+        return tour;
+    }
+
     [Fact]
     public void New_tour_starts_as_a_draft()
     {
@@ -179,5 +187,61 @@ public class TourTests
         var publishing = () => tour.Publish();
 
         publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_tour_cannot_be_published()
+    {
+        var tour = CreatePublishedTour();
+        tour.Archive();
+
+        var publishing = () => tour.Publish();
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Tour_that_is_not_published_cannot_be_archived()
+    {
+        var tour = CreateTour(LongDescription);
+
+        var archiving = () => tour.Archive();
+
+        archiving.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archiving_a_published_tour_records_the_archiving_time()
+    {
+        var tour = CreatePublishedTour();
+
+        tour.Archive();
+
+        tour.Status.Should().Be(TourStatus.Archived);
+        tour.ArchivedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void Tour_that_is_not_archived_cannot_be_reactivated()
+    {
+        var tour = CreatePublishedTour();
+
+        var reactivation = () => tour.Reactivate();
+
+        reactivation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Reactivation_returns_the_tour_to_published_clears_the_archiving_time_and_keeps_the_original_publishing_time()
+    {
+        var tour = CreatePublishedTour();
+        var publishedAt = tour.PublishedAt;
+        tour.Archive();
+
+        tour.Reactivate();
+
+        tour.Status.Should().Be(TourStatus.Published);
+        tour.ArchivedAt.Should().BeNull();
+        tour.PublishedAt.Should().Be(publishedAt);
     }
 }

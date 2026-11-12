@@ -1,6 +1,6 @@
 export type TourDifficulty = 'Easy' | 'Moderate' | 'Hard';
 
-export type TourStatus = 'Draft' | 'Published';
+export type TourStatus = 'Draft' | 'Published' | 'Archived';
 
 export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
@@ -26,6 +26,7 @@ export interface TourDto {
   transportTimes: TransportTimeDto[];
   recommendedGroupSize: RecommendedGroupSizeDto | null;
   price: number;
+  archivedAt: string | null;
 }
 
 export type SortDirection = 'None' | 'Ascending' | 'Descending';
