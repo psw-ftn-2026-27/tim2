@@ -21,6 +21,9 @@ export class MyBlogs {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  // The blog whose archiving waits for "Yes", because archiving cannot be undone.
+  protected readonly confirmingArchiveId = signal<string | null>(null);
+
   protected readonly editingBlogId = signal<string | null>(null);
   protected readonly editError = signal<string | null>(null);
 
@@ -46,6 +49,7 @@ export class MyBlogs {
   }
 
   protected async archive(blogId: string): Promise<void> {
+    this.confirmingArchiveId.set(null);
     this.pending.set(true);
     this.error.set(null);
     try {

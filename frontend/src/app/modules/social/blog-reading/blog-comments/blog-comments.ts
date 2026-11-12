@@ -28,6 +28,12 @@ export class BlogComments {
 
   protected readonly editingCommentId = signal<string | null>(null);
 
+  // The comment whose three-dot menu is open.
+  protected readonly openMenuId = signal<string | null>(null);
+
+  // The comment whose deletion waits for "Yes".
+  protected readonly confirmingDeleteId = signal<string | null>(null);
+
   protected readonly editForm = form(signal({ text: '' }), (path) => {
     required(path.text, { message: 'A comment cannot be empty.' });
   });
@@ -38,7 +44,26 @@ export class BlogComments {
     this.form().reset({ text: '' });
   }
 
+  protected formatDate(value: string): string {
+    return new Date(value).toLocaleString('sr-RS');
+  }
+
+  protected toggleMenu(commentId: string): void {
+    this.openMenuId.update((open) => (open === commentId ? null : commentId));
+  }
+
+  protected askDelete(commentId: string): void {
+    this.openMenuId.set(null);
+    this.confirmingDeleteId.set(commentId);
+  }
+
+  protected confirmDelete(commentId: string): void {
+    this.confirmingDeleteId.set(null);
+    this.deleteComment.emit(commentId);
+  }
+
   protected startEdit(comment: CommentDto): void {
+    this.openMenuId.set(null);
     this.editingCommentId.set(comment.id);
     this.editForm().reset({ text: comment.text });
   }
