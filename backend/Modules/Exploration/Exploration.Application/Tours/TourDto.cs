@@ -13,4 +13,5 @@ public sealed record TourDto(
     DateTime? PublishedAt,
     List<TransportTimeDto> TransportTimes,
     RecommendedGroupSizeDto? RecommendedGroupSize,
-    int Price);
+    int Price,
+    DateTime? ArchivedAt);

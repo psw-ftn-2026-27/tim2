@@ -3,6 +3,7 @@ using Exploration.Application.TourAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.TourPreferenceSetting;
 using Exploration.Application.TourPreferences;
+using Exploration.Application.TourPublishing;
 using Exploration.Application.Tours;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Infrastructure.Persistence.TourPreferences;
@@ -29,6 +30,7 @@ public static class ExplorationModuleExtensions
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
+        services.AddScoped<TourPublishingService>();
         services.AddScoped<TourBrowsingQueries>();
         services.AddScoped<TourPreferenceSettingService>();
         services.AddScoped<TourPreferenceSettingQueries>();
