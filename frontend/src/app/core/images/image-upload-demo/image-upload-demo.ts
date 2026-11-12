@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { ImageUpload } from '../../../shared/image-upload/image-upload';
 import { serverMessage } from '../../../shared/util/server-message';
-import { Images } from '../images';
+import { Images } from '../../../shared/images/images';
 
 @Component({
   imports: [ImageUpload],

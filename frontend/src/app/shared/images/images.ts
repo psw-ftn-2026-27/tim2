@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { UploadedImageDto } from '../../shared/api/uploaded-image';
+import { UploadedImageDto } from '../api/uploaded-image';
 
 @Injectable({ providedIn: 'root' })
 export class Images {
