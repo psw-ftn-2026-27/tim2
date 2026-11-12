@@ -41,7 +41,7 @@
           </form>
         } @else if (confirmingDeleteId() === comment.id) {
           <div class="comment-actions">
-            <p>Da li ste sigurni?</p>
+            <p>Are you sure?</p>
             <button class="button button--primary" type="button" (click)="confirmDelete(comment.id)">
               Yes
             </button>
