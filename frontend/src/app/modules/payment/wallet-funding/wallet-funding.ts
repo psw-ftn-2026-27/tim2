@@ -12,4 +12,10 @@ export class WalletFunding {
   async deposit(userId: string, dto: DepositDto): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${userId}/deposits`, dto));
   }
+
+  async cancelDeposit(userId: string, transactionId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${BASE_URL}/${userId}/transactions/${transactionId}/cancellation`, null),
+    );
+  }
 }

@@ -76,12 +76,24 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Tour_with_any_of_the_chosen_difficulties_is_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&difficulties=Hard&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedLakeside.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+    }
+
+    [Fact]
     public async Task Only_tours_meeting_every_given_filter_category_are_listed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
         var tours = await client.GetFromJsonAsync<PageResult<TourDto>>(
-            "/api/exploration/tours/published?difficulty=Moderate&tags=priroda&tags=istorija&transportModes=Walking&transportModes=Bicycle", JsonOptions);
+            "/api/exploration/tours/published?difficulties=Moderate&tags=priroda&tags=istorija&transportModes=Walking&transportModes=Bicycle", JsonOptions);
 
         tours!.Items.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedVineyards.Id);
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedLakeside.Id);
@@ -108,6 +120,79 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
 
         tours!.Items.Should().ContainSingle();
         tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published && tour.Tags.Contains("priroda")));
+    }
+
+    [Fact]
+    public async Task Tour_priced_at_the_minimum_or_maximum_given_price_is_listed_and_a_tour_priced_outside_the_range_is_not()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?minPrice=500&maxPrice=1200", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedCheapGallery.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedModeratelyPricedFortress.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedFreeParkWalk.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedExpensiveMountain.Id);
+    }
+
+    [Theory]
+    [InlineData("minPrice=1000", 1000, int.MaxValue)]
+    [InlineData("maxPrice=1000", 0, 1000)]
+    public async Task Tours_are_narrowed_only_on_the_side_of_the_single_given_price_and_a_free_tour_in_range_is_listed(
+        string priceBound, int lowestListedPrice, int highestListedPrice)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var expectedIds = TourSeed.All
+            .Where(tour => tour.Status == TourStatus.Published && tour.Price >= lowestListedPrice && tour.Price <= highestListedPrice)
+            .Select(tour => tour.Id);
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>($"/api/exploration/tours/published?{priceBound}&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => tour.Id).Should().BeEquivalentTo(expectedIds);
+    }
+
+    [Fact]
+    public async Task Only_tours_in_the_price_range_that_also_meet_another_filter_are_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&minPrice=500&maxPrice=3000", JsonOptions);
+
+        tours!.Items.Should().ContainSingle(tour => tour.Id == TourSeed.PublishedCheapGallery.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedModeratelyPricedFortress.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedExpensiveMountain.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedFreeParkWalk.Id);
+    }
+
+    [Theory]
+    [InlineData("Ascending", 1)]
+    [InlineData("Descending", -1)]
+    public async Task Tours_sorted_by_price_are_ordered_by_price_in_the_chosen_direction(string priceSort, int direction)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var expectedPrices = TourSeed.All
+            .Where(tour => tour.Status == TourStatus.Published)
+            .Select(tour => tour.Price)
+            .OrderBy(price => direction * price);
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>($"/api/exploration/tours/published?priceSort={priceSort}&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => tour.Price).Should().Equal(expectedPrices);
+    }
+
+    [Fact]
+    public async Task Tours_sorted_by_difficulty_and_price_are_grouped_by_difficulty_and_ordered_by_price_within_each_difficulty()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var expectedOrder = TourSeed.All
+            .Where(tour => tour.Status == TourStatus.Published)
+            .OrderBy(tour => tour.Difficulty)
+            .ThenByDescending(tour => tour.Price)
+            .Select(tour => (tour.Difficulty, tour.Price));
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficultySort=Ascending&priceSort=Descending&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => (tour.Difficulty, tour.Price)).Should().Equal(expectedOrder);
     }
 
     [Fact]

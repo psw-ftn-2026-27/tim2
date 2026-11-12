@@ -25,16 +25,20 @@ export interface TourDto {
   publishedAt: string | null;
   transportTimes: TransportTimeDto[];
   recommendedGroupSize: RecommendedGroupSizeDto | null;
+  price: number;
 }
 
-export type DifficultySort = 'None' | 'Ascending' | 'Descending';
+export type SortDirection = 'None' | 'Ascending' | 'Descending';
 
 export interface TourSearchDto {
   name: string | null;
-  difficulty: TourDifficulty | null;
+  difficulties: TourDifficulty[] | null;
   tags: string[] | null;
   transportModes: TransportMode[] | null;
-  difficultySort: DifficultySort;
+  minPrice: number | null;
+  maxPrice: number | null;
+  difficultySort: SortDirection;
+  priceSort: SortDirection;
 }
 
 export interface CreateTourDto {
@@ -43,4 +47,16 @@ export interface CreateTourDto {
   difficulty: TourDifficulty;
   tags: string[];
   recommendedGroupSize: RecommendedGroupSizeDto | null;
+  price: number;
+}
+
+export interface TourPriceDto {
+  price: number;
+}
+
+export interface TourPreferenceDto {
+  difficulties: TourDifficulty[];
+  transportModes: TransportMode[];
+  tags: string[];
+  applicableInSearch: boolean;
 }

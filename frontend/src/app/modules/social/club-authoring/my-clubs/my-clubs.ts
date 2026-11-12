@@ -5,9 +5,10 @@ import { RouterLink } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ClubDto } from '../../api/social-api-types';
 import { ClubAuthoring } from '../club-authoring';
+import { ClubImageList } from '../club-image-list/club-image-list';
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [ClubImageList, FormField, RouterLink],
   selector: 'app-my-clubs',
   styleUrl: './my-clubs.scss',
   templateUrl: './my-clubs.html',
@@ -25,10 +26,13 @@ export class MyClubs {
   protected readonly editingClubId = signal<string | null>(null);
   protected readonly editError = signal<string | null>(null);
 
-  protected readonly editForm = form(signal({ name: '', description: '', images: '' }), (path) => {
-    required(path.name, { message: 'Name is required.' });
-    required(path.description, { message: 'Description is required.' });
-  });
+  protected readonly editForm = form(
+    signal({ name: '', description: '', images: [] as string[] }),
+    (path) => {
+      required(path.name, { message: 'Name is required.' });
+      required(path.description, { message: 'Description is required.' });
+    },
+  );
 
   protected startDelete(clubId: string): void {
     this.editingClubId.set(null);
@@ -60,7 +64,7 @@ export class MyClubs {
     this.editForm().reset({
       name: club.name,
       description: club.description,
-      images: club.images.join('\n'),
+      images: [...club.images],
     });
   }
 
@@ -69,9 +73,17 @@ export class MyClubs {
     this.editError.set(null);
   }
 
+  protected addImage(address: string): void {
+    this.editForm.images().value.update((images) => [...images, address]);
+  }
+
+  protected removeImage(index: number): void {
+    this.editForm.images().value.update((images) => images.filter((_, i) => i !== index));
+  }
+
   protected async saveEdit(event: Event, clubId: string): Promise<void> {
     event.preventDefault();
-    const images = this.toImageList(this.editForm.images().value());
+    const images = this.editForm.images().value();
     if (images.length === 0) {
       this.editError.set('Add at least one image.');
       return;
@@ -91,12 +103,5 @@ export class MyClubs {
     } finally {
       this.pending.set(false);
     }
-  }
-
-  private toImageList(text: string): string[] {
-    return text
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line !== '');
   }
 }

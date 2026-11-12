@@ -88,9 +88,11 @@ export interface ReceivedFollowRequestDto {
 export interface FollowerDto {
   userId: string;
   state: FollowRelationshipState;
+  followRequestId: string;
   pendingRequestId: string | null;
 }
 
 export interface FollowedUserDto {
   userId: string;
+  followRequestId: string;
 }

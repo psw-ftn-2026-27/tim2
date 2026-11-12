@@ -18,6 +18,27 @@ public class SocialChallengeTests
     private static SocialChallenge CreateChallenge() =>
         new(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
 
+    private static SocialChallenge CreateChallengeIn(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallenge();
+        if (status == SocialChallengeStatus.Draft)
+        {
+            return challenge;
+        }
+        challenge.Publish();
+        if (status == SocialChallengeStatus.Published)
+        {
+            return challenge;
+        }
+        challenge.Retire();
+        if (status == SocialChallengeStatus.Retired)
+        {
+            return challenge;
+        }
+        challenge.Archive();
+        return challenge;
+    }
+
     [Theory]
     [InlineData("ab")]
     [InlineData("  ab  ")]
@@ -129,5 +150,144 @@ public class SocialChallengeTests
         var update = () => challenge.Update(ValidName, ValidStart, TimeSpan.FromMinutes(14), ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
 
         update.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Draft_challenge_is_published()
+    {
+        var challenge = CreateChallengeIn(SocialChallengeStatus.Draft);
+
+        challenge.Publish();
+
+        challenge.Status.Should().Be(SocialChallengeStatus.Published);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Retired)]
+    [InlineData(SocialChallengeStatus.Archived)]
+    public void Challenge_that_is_not_a_draft_cannot_be_published_and_keeps_its_state(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var publishing = () => challenge.Publish();
+
+        publishing.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Published_challenge_is_retired()
+    {
+        var challenge = CreateChallengeIn(SocialChallengeStatus.Published);
+
+        challenge.Retire();
+
+        challenge.Status.Should().Be(SocialChallengeStatus.Retired);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Draft)]
+    [InlineData(SocialChallengeStatus.Retired)]
+    [InlineData(SocialChallengeStatus.Archived)]
+    public void Challenge_that_is_not_published_cannot_be_retired_and_keeps_its_state(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var retiring = () => challenge.Retire();
+
+        retiring.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Retired_challenge_is_archived()
+    {
+        var challenge = CreateChallengeIn(SocialChallengeStatus.Retired);
+
+        challenge.Archive();
+
+        challenge.Status.Should().Be(SocialChallengeStatus.Archived);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Draft)]
+    [InlineData(SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Archived)]
+    public void Challenge_that_is_not_retired_cannot_be_archived_and_keeps_its_state(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var archiving = () => challenge.Archive();
+
+        archiving.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Retired)]
+    [InlineData(SocialChallengeStatus.Archived)]
+    public void Retired_or_archived_challenge_is_repeated_as_a_new_draft_with_the_same_data(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var copy = challenge.Repeat();
+
+        copy.Status.Should().Be(SocialChallengeStatus.Draft);
+        copy.Id.Should().NotBe(challenge.Id);
+        copy.Name.Should().Be(challenge.Name);
+        copy.Window.Should().Be(challenge.Window);
+        copy.RequiredParticipants.Should().Be(challenge.RequiredParticipants);
+        copy.RangeInMeters.Should().Be(challenge.RangeInMeters);
+        copy.Xp.Should().Be(challenge.Xp);
+        copy.CompletionMessage.Should().Be(challenge.CompletionMessage);
+        challenge.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Draft)]
+    [InlineData(SocialChallengeStatus.Published)]
+    public void Draft_or_published_challenge_cannot_be_repeated(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var repeating = () => challenge.Repeat();
+
+        repeating.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Retired)]
+    [InlineData(SocialChallengeStatus.Archived)]
+    public void Challenge_that_is_not_a_draft_cannot_be_changed(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var update = () => challenge.Update(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+
+        update.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(SocialChallengeStatus.Published)]
+    [InlineData(SocialChallengeStatus.Retired)]
+    public void Published_or_retired_challenge_cannot_be_deleted(SocialChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var deletion = () => challenge.EnsureCanBeDeleted();
+
+        deletion.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Archived_challenge_can_be_deleted()
+    {
+        var challenge = CreateChallengeIn(SocialChallengeStatus.Archived);
+
+        var deletion = () => challenge.EnsureCanBeDeleted();
+
+        deletion.Should().NotThrow();
     }
 }

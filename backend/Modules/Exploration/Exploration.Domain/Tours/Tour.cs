@@ -17,6 +17,7 @@ public sealed class Tour : AggregateRoot
     public TourStatus Status { get; private set; }
     public DateTime? PublishedAt { get; private set; }
     public RecommendedGroupSize? RecommendedGroupSize { get; private set; }
+    public int Price { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
 
     private Tour()
@@ -26,8 +27,7 @@ public sealed class Tour : AggregateRoot
         Tags = null!;
     }
 
-    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags,
-        RecommendedGroupSize? recommendedGroupSize = null)
+    public Tour(Guid authorId, string name, string description, TourDifficulty difficulty, List<string> tags)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -48,7 +48,6 @@ public sealed class Tour : AggregateRoot
         Description = description;
         Difficulty = difficulty;
         Tags = tags;
-        RecommendedGroupSize = recommendedGroupSize;
         Status = TourStatus.Draft;
     }
 
@@ -70,6 +69,20 @@ public sealed class Tour : AggregateRoot
         }
 
         RecommendedGroupSize = new RecommendedGroupSize(min, max);
+    }
+
+    public void ChangePrice(int newPrice)
+    {
+        if (newPrice < 0)
+        {
+            throw new DomainException("A tour price cannot be negative.");
+        }
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("The price can be changed only while the tour is a draft.");
+        }
+
+        Price = newPrice;
     }
 
     public void Publish()

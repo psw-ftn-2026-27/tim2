@@ -52,6 +52,21 @@ public class FollowRequestRespondingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task User_who_is_not_the_receiver_cannot_accept_a_request_and_nothing_changes()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PostAsync(
+            $"/api/social/follow-requests/{FollowRequestSeed.ExplorerToSecondExplorerPending.Id}/accept", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        assertContext.FollowRequests
+            .Single(followRequest => followRequest.Id == FollowRequestSeed.ExplorerToSecondExplorerPending.Id)
+            .Status.Should().Be(FollowRequestStatus.Pending);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_accept_a_request()
     {
         var client = Factory.CreateClient();

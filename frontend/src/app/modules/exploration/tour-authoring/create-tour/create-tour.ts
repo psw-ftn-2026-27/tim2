@@ -22,6 +22,7 @@ export class CreateTour {
     tags: '',
     minPeople: null as number | null,
     maxPeople: null as number | null,
+    price: 0,
   });
 
   protected readonly form = form(this.model, (path) => {
@@ -29,6 +30,8 @@ export class CreateTour {
     required(path.description, { message: 'Description is required.' });
     min(path.minPeople, 1, { message: 'Minimum must be at least 1.' });
     min(path.maxPeople, 1, { message: 'Maximum must be at least 1.' });
+    required(path.price, { message: 'Price is required.' });
+    min(path.price, 0, { message: 'Price cannot be negative.' });
   });
 
   protected readonly onlyOneGroupSizeFilled = computed(
@@ -57,6 +60,7 @@ export class CreateTour {
           .filter((tag) => tag !== ''),
         recommendedGroupSize:
           minPeople !== null && maxPeople !== null ? { min: minPeople, max: maxPeople } : null,
+        price: this.form.price().value(),
       });
       await this.router.navigate(['/exploration/mine']);
     } catch (failure) {

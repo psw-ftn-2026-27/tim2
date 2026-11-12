@@ -5,6 +5,7 @@ import {
   CreateTourDto,
   RecommendedGroupSizeDto,
   TourDto,
+  TourPriceDto,
   TransportTimeDto,
 } from '../api/exploration-api-types';
 
@@ -28,5 +29,9 @@ export class TourAuthoring {
 
   async changeRecommendedGroupSize(id: string, dto: RecommendedGroupSizeDto): Promise<void> {
     await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}/recommended-group-size`, dto));
+  }
+
+  async changePrice(id: string, dto: TourPriceDto): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}/price`, dto));
   }
 }

@@ -1,7 +1,11 @@
 <div class="stack">
+  <p><a routerLink="/social/clubs">Back to clubs</a></p>
+
   <h1>My clubs</h1>
 
-  <p><a routerLink="/social/clubs/create">Create club</a></p>
+  <p class="links">
+    <a routerLink="/social/clubs/create">Create club</a>
+  </p>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -81,10 +85,11 @@
           }
         </div>
 
-        <div class="field">
-          <label for="edit-images">Image addresses, one per line</label>
-          <textarea id="edit-images" rows="4" [formField]="editForm.images"></textarea>
-        </div>
+        <app-club-image-list
+          [images]="editForm.images().value()"
+          (addImage)="addImage($event)"
+          (removeImage)="removeImage($event)"
+        />
 
         @if (editError()) {
           <p class="error">{{ editError() }}</p>

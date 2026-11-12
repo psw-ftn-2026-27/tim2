@@ -5,6 +5,12 @@
 
   <p class="meta">Difficulty: {{ tour().difficulty }}</p>
 
+  @if (tour().price === 0) {
+    <p class="meta">Price: FREE</p>
+  } @else {
+    <p class="meta">Price: {{ tour().price }} EC</p>
+  }
+
   @if (tour().recommendedGroupSize; as groupSize) {
     <p class="meta">Group size: {{ groupSize.min }}–{{ groupSize.max }} people</p>
   } @else {

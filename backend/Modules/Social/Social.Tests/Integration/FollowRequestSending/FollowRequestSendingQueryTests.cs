@@ -38,6 +38,7 @@ public class FollowRequestSendingQueryTests : BaseIntegrationTest
             "/api/social/follow-requests/sent", JsonOptions);
 
         sent.Should().NotContain(followRequest => followRequest.ReceiverId == FollowRequestSeed.FormerlyFollowedUser);
+        sent.Should().NotContain(followRequest => followRequest.ReceiverId == FollowRequestSeed.UnfollowedUser);
         sent.Should().NotContain(followRequest => followRequest.Id == FollowRequestSeed.ExplorerAcceptedByFollowedUser.Id);
         sent.Should().Contain(followRequest => followRequest.Id == FollowRequestSeed.ExplorerRejectedByRejectingUser.Id);
     }
@@ -61,6 +62,17 @@ public class FollowRequestSendingQueryTests : BaseIntegrationTest
 
         var relationship = await client.GetFromJsonAsync<FollowRelationshipDto>(
             $"/api/social/follow-requests/relationship/{WellKnownUsers.Explorer}", JsonOptions);
+
+        relationship!.State.Should().Be(FollowRelationshipState.Follow);
+    }
+
+    [Fact]
+    public async Task Unfollowed_user_is_no_longer_followed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var relationship = await client.GetFromJsonAsync<FollowRelationshipDto>(
+            $"/api/social/follow-requests/relationship/{FollowRequestSeed.UnfollowedUser}", JsonOptions);
 
         relationship!.State.Should().Be(FollowRelationshipState.Follow);
     }

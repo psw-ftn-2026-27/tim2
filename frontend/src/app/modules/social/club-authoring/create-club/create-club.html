@@ -22,17 +22,21 @@
       }
     </div>
 
-    <div class="field">
-      <label for="images">Image addresses, one per line</label>
-      <textarea id="images" rows="4" [formField]="form.images"></textarea>
-    </div>
+    <app-club-image-list
+      [images]="form.images().value()"
+      (addImage)="addImage($event)"
+      (removeImage)="removeImage($event)"
+    />
 
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
 
-    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
-      Create
-    </button>
+    <div class="actions">
+      <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+        Create
+      </button>
+      <a class="button" routerLink="/social/clubs/mine">Cancel</a>
+    </div>
   </form>
 </div>

@@ -28,6 +28,31 @@ public class FollowRequestTests
         return request;
     }
 
+    private static FollowRequest CreateRemovedRequest()
+    {
+        var request = CreateAcceptedRequest();
+        request.RemoveFollower(Receiver);
+        return request;
+    }
+
+    private static FollowRequest CreateUnfollowedRequest()
+    {
+        var request = CreateAcceptedRequest();
+        request.Unfollow(Sender);
+        return request;
+    }
+
+    private static FollowRequest CreateRequestWithStatus(FollowRequestStatus status)
+    {
+        return status switch
+        {
+            FollowRequestStatus.Pending => CreatePendingRequest(),
+            FollowRequestStatus.Removed => CreateRemovedRequest(),
+            FollowRequestStatus.Unfollowed => CreateUnfollowedRequest(),
+            _ => throw new ArgumentOutOfRangeException(nameof(status))
+        };
+    }
+
     [Fact]
     public void User_cannot_send_a_request_to_themselves()
     {
@@ -53,7 +78,7 @@ public class FollowRequestTests
 
         var withdrawal = () => request.Withdraw(Receiver);
 
-        withdrawal.Should().Throw<DomainException>();
+        withdrawal.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -83,17 +108,52 @@ public class FollowRequestTests
 
         var removal = () => request.RemoveFollower(Sender);
 
-        removal.Should().Throw<DomainException>();
+        removal.Should().Throw<NotFoundException>();
     }
 
-    [Fact]
-    public void Follower_can_be_removed_only_from_an_accepted_request()
+    [Theory]
+    [InlineData(FollowRequestStatus.Pending)]
+    [InlineData(FollowRequestStatus.Unfollowed)]
+    public void Follower_can_be_removed_only_from_an_accepted_request(FollowRequestStatus status)
     {
-        var request = CreatePendingRequest();
+        var request = CreateRequestWithStatus(status);
 
         var removal = () => request.RemoveFollower(Receiver);
 
         removal.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Sender_unfollows_the_followed_user()
+    {
+        var request = CreateAcceptedRequest();
+
+        request.Unfollow(Sender);
+
+        request.Status.Should().Be(FollowRequestStatus.Unfollowed);
+    }
+
+    [Fact]
+    public void Only_the_sender_can_unfollow()
+    {
+        var request = CreateAcceptedRequest();
+
+        var unfollowing = () => request.Unfollow(Receiver);
+
+        unfollowing.Should().Throw<NotFoundException>();
+    }
+
+    [Theory]
+    [InlineData(FollowRequestStatus.Pending)]
+    [InlineData(FollowRequestStatus.Removed)]
+    [InlineData(FollowRequestStatus.Unfollowed)]
+    public void Sender_can_unfollow_only_while_following(FollowRequestStatus status)
+    {
+        var request = CreateRequestWithStatus(status);
+
+        var unfollowing = () => request.Unfollow(Sender);
+
+        unfollowing.Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -113,7 +173,7 @@ public class FollowRequestTests
 
         var acceptance = () => request.Accept(Sender);
 
-        acceptance.Should().Throw<DomainException>();
+        acceptance.Should().Throw<NotFoundException>();
     }
 
     [Fact]
@@ -143,7 +203,7 @@ public class FollowRequestTests
 
         var rejection = () => request.Reject(Sender);
 
-        rejection.Should().Throw<DomainException>();
+        rejection.Should().Throw<NotFoundException>();
     }
 
     [Fact]

@@ -21,6 +21,9 @@ export class SocialChallengeList {
   );
 
   protected readonly confirmingId = signal<string | null>(null);
+  protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive'>(
+    'delete',
+  );
   protected readonly editingId = signal<string | null>(null);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -107,26 +110,52 @@ export class SocialChallengeList {
     }
   }
 
-  protected askToDelete(challengeId: string): void {
+  protected askToConfirm(
+    challengeId: string,
+    action: 'delete' | 'publish' | 'retire' | 'archive',
+  ): void {
     this.error.set(null);
     this.editingId.set(null);
+    this.confirmingAction.set(action);
     this.confirmingId.set(challengeId);
   }
 
-  protected cancelDelete(): void {
+  protected cancelConfirm(): void {
     this.confirmingId.set(null);
   }
 
-  protected async confirmDelete(challengeId: string): Promise<void> {
+  protected async confirm(challengeId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    const action = this.confirmingAction();
+    try {
+      if (action === 'delete') {
+        await this.management.delete(challengeId);
+      } else if (action === 'publish') {
+        await this.management.publish(challengeId);
+      } else if (action === 'retire') {
+        await this.management.retire(challengeId);
+      } else {
+        await this.management.archive(challengeId);
+      }
+      this.challenges.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, `Could not ${action} the challenge.`));
+    } finally {
+      this.confirmingId.set(null);
+      this.pending.set(false);
+    }
+  }
+
+  protected async repeat(challengeId: string): Promise<void> {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.management.delete(challengeId);
+      await this.management.repeat(challengeId);
       this.challenges.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not delete the challenge.'));
+      this.error.set(serverMessage(failure, 'Could not repeat the challenge.'));
     } finally {
-      this.confirmingId.set(null);
       this.pending.set(false);
     }
   }

@@ -6,7 +6,7 @@ import { SendFollowRequestDto } from '../api/social-api-types';
 const FOLLOW_REQUESTS_URL = '/api/social/follow-requests';
 
 @Injectable({ providedIn: 'root' })
-export class Connections {
+export class FollowerManaging {
   private readonly http = inject(HttpClient);
 
   async sendFollowRequest(dto: SendFollowRequestDto): Promise<void> {
@@ -23,5 +23,17 @@ export class Connections {
 
   async rejectFollowRequest(requestId: string): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${FOLLOW_REQUESTS_URL}/${requestId}/reject`, null));
+  }
+
+  async removeFollower(followRequestId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${FOLLOW_REQUESTS_URL}/followers/${followRequestId}/remove`, null),
+    );
+  }
+
+  async unfollow(followRequestId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${FOLLOW_REQUESTS_URL}/following/${followRequestId}/unfollow`, null),
+    );
   }
 }
