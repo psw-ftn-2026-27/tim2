@@ -50,6 +50,25 @@ public sealed class ImageUploadingCommandTests : BaseIntegrationTest
     }
 
     [Theory]
+    [InlineData("89504E470D0A1A0A0000000D494844520000032000000258", ".png")]
+    [InlineData("FFD8FFC000110802580320", ".jpg")]
+    [InlineData("52494646000000005745425056503820000000000000009D012A20035802", ".webp")]
+    public async Task Stored_image_gets_the_extension_of_its_format(string header, string extension)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var image = new byte[64];
+        Convert.FromHexString(header).CopyTo(image, 0);
+        using var form = CreateForm(image, "slika");
+
+        var response = await client.PostAsync("/api/images", form);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<UploadedImageDto>(JsonOptions);
+        body!.Url.Should().EndWith(extension);
+        File.Exists(Path.Combine(Factory.WebRootPath, body.Url.TrimStart('/'))).Should().BeTrue();
+    }
+
+    [Theory]
     [InlineData("tvrdjava.png")]
     [InlineData("../../tvrdjava.png")]
     [InlineData("..\\..\\tvrdjava.png")]

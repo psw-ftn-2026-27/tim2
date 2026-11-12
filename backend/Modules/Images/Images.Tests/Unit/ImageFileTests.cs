@@ -117,4 +117,143 @@ public class ImageFileTests
 
         creation.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void File_of_exactly_15MB_is_accepted()
+    {
+        var content = CreateImage("png", 800, 600, 15 * 1024 * 1024);
+
+        var image = new ImageFile(content);
+
+        image.Content.Should().Equal(content);
+    }
+
+    [Theory]
+    [InlineData("jpeg")]
+    [InlineData("png")]
+    [InlineData("webp-lossy")]
+    [InlineData("webp-lossless")]
+    [InlineData("webp-extended")]
+    public void Image_exactly_at_the_dimension_limit_is_accepted(string kind)
+    {
+        var content = CreateImage(kind, 10000, 10000);
+
+        var image = new ImageFile(content);
+
+        image.Content.Should().Equal(content);
+    }
+
+    [Theory]
+    [InlineData("jpeg", 0, 600)]
+    [InlineData("jpeg", 800, 0)]
+    [InlineData("png", 0, 600)]
+    [InlineData("png", 800, 0)]
+    [InlineData("webp-lossy", 0, 600)]
+    [InlineData("webp-lossy", 800, 0)]
+    public void Image_without_width_or_height_is_rejected(string kind, int width, int height)
+    {
+        var content = CreateImage(kind, width, height);
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData("png", 23)]
+    [InlineData("jpeg", 3)]
+    [InlineData("jpeg", 5)]
+    [InlineData("jpeg", 20)]
+    [InlineData("jpeg", 26)]
+    [InlineData("webp-lossy", 12)]
+    [InlineData("webp-lossy", 29)]
+    [InlineData("webp-lossless", 24)]
+    [InlineData("webp-extended", 29)]
+    public void Image_whose_header_is_cut_short_is_rejected(string kind, int length)
+    {
+        var content = CreateImage(kind, 800, 600)[..length];
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Png_whose_first_chunk_is_not_the_image_header_is_rejected()
+    {
+        var content = CreateImage("png", 800, 600);
+        "IDAT"u8.CopyTo(content.AsSpan(12));
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Jpeg_with_a_segment_shorter_than_its_length_bytes_is_rejected()
+    {
+        var content = CreateImage("jpeg", 800, 600);
+        content[5] = 0x01;
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Jpeg_whose_segment_is_not_followed_by_a_marker_is_rejected()
+    {
+        var content = CreateImage("jpeg", 800, 600);
+        content[5] = 0x0F;
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Jpeg_whose_image_data_starts_before_the_frame_header_is_rejected()
+    {
+        var content = CreateImage("jpeg", 800, 600);
+        content[3] = 0xDA;
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Jpeg_with_fill_bytes_and_standalone_markers_before_the_frame_header_is_accepted()
+    {
+        var content = new byte[64];
+        Convert.FromHexString("FFD8FF01FFFFC000110802580320").CopyTo(content, 0);
+
+        var image = new ImageFile(content);
+
+        image.Format.Should().Be(ImageFormat.Jpeg);
+    }
+
+    [Theory]
+    [InlineData("webp-lossy", 23)]
+    [InlineData("webp-lossless", 20)]
+    public void WebP_whose_first_chunk_has_a_wrong_signature_is_rejected(string kind, int signatureOffset)
+    {
+        var content = CreateImage(kind, 800, 600);
+        content[signatureOffset] = 0x00;
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void WebP_whose_first_chunk_is_unknown_is_rejected()
+    {
+        var content = CreateImage("webp-lossy", 800, 600);
+        "ALPH"u8.CopyTo(content.AsSpan(12));
+
+        var creation = () => new ImageFile(content);
+
+        creation.Should().Throw<DomainException>();
+    }
 }

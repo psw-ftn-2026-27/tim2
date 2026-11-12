@@ -32,8 +32,11 @@ frontend/src/
                              app.routes.ts                                    [platform]
     shared/
       util/
-      api/                   shared types (PageResult, ProblemDetails),
+      api/                   shared types (PageResult, ProblemDetails, UploadedImageDto),
                              mirror the server, no client-only fields          [platform]
+      images/                Images service: sends one file to POST /api/images [platform]
+      image-upload/          presentational component for choosing and sending
+                             an image, see Conventions                         [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -140,7 +143,9 @@ Where a style goes, in order:
    Never `::ng-deep`.
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
-`shared/ui` wrappers unprompted. Visual consistency across modules is an open problem
+`shared/ui` wrappers unprompted. The one shared component, `shared/image-upload`, exists
+because every module that shows photos needs the same upload; adding another is a
+platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -158,5 +163,37 @@ assigned to the platform team, and misalignment is an accepted learning experien
 - A page component owns the interaction: it declares its read resource, injects its
   group's service for commands, and passes plain values down to presentational
   components, which take `input()`s and raise `output()`s and inject nothing.
+- A page that lets the user add an image renders `app-image-upload` from
+  `shared/image-upload`, passes the file it raises to `upload` of the `Images` service
+  from `shared/images`, and hands the component `pending`, `error` and `uploadedUrl`
+  back. The module keeps only the returned `url`, in its own DTO; it never stores the
+  file itself. The page clears `error` before each upload, which is what lets the
+  component offer a retry after a failure:
+
+  ```html
+  <app-image-upload [pending]="pending()" [error]="error()" [uploadedUrl]="uploadedUrl()"
+                    (upload)="upload($event)" />
+  ```
+
+  ```ts
+  private readonly images = inject(Images);
+
+  protected readonly pending = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly uploadedUrl = signal<string | null>(null);
+
+  protected async upload(file: File): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      const uploaded = await this.images.upload(file);
+      this.uploadedUrl.set(uploaded.url);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not upload the image.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+  ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.

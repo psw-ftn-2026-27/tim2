@@ -16,7 +16,10 @@ internal sealed class DiskImageSaver : IImageSaver
 
     public async Task<string> SaveAsync(ImageFile image)
     {
-        var webRoot = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        // Static files are served only from a web root that existed at startup, so a file saved
+        // into a folder created now would get an address that answers 404 until a restart.
+        var webRoot = _environment.WebRootPath
+            ?? throw new InvalidOperationException("The web root folder (wwwroot) did not exist when the application started.");
         var folder = Path.Combine(webRoot, UploadsFolder);
         Directory.CreateDirectory(folder);
 

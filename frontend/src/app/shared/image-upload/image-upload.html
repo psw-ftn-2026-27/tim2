@@ -1,7 +1,7 @@
 <section class="stack">
   <div class="actions">
     <label class="button">
-      Izaberi sliku
+      Choose image
       <input
         class="file-input"
         type="file"
@@ -12,10 +12,10 @@
     <button
       class="button button--primary"
       type="button"
-      [disabled]="file() === null || pending()"
+      [disabled]="!canSubmit()"
       (click)="submit()"
     >
-      Otpremi
+      Upload
     </button>
   </div>
 
@@ -23,19 +23,19 @@
     <p class="error">{{ problem() }}</p>
   } @else if (previewUrl()) {
     <div class="stack">
-      <p class="meta">Izabrana slika: {{ file()?.name }}</p>
-      <img class="image" alt="Pregled izabrane slike" [src]="previewUrl()" (load)="revokePreview()" (error)="revokePreview()" />
+      <p class="meta">Chosen image: {{ file()?.name }}</p>
+      <img class="image" alt="Preview of the chosen image" [src]="previewUrl()" (load)="revokePreview()" (error)="revokePreview()" />
     </div>
   }
 
   @if (pending()) {
-    <p class="meta">Otpremanje u toku...</p>
+    <p class="meta">Uploading...</p>
   }
 
   @if (uploadedUrl()) {
     <div class="stack">
-      <p class="meta">Otpremljena slika: {{ uploadedUrl() }}</p>
-      <img class="image" alt="Otpremljena slika" [src]="uploadedUrl()" />
+      <p class="meta">Uploaded image: {{ uploadedUrl() }}</p>
+      <img class="image" alt="Uploaded image" [src]="uploadedUrl()" />
     </div>
   }
 </section>

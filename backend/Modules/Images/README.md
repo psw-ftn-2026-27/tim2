@@ -20,13 +20,17 @@ Sadrži i klasu koja definiše metodu `AddImagesControllers` kojom `Host.Api` uk
 
 ### Core
 
-Vrednosni objekat `ImageFile` čuva pravila fajla. Odbija fajl veći od 15MB, fajl čiji prvi bajtovi ne odgovaraju formatu JPEG, PNG ili WebP (bez obzira na ekstenziju, pa i SVG) i sliku čija širina ili visina prelazi `MaxDimensionInPixels`. Dimenzije čita iz zaglavlja samog formata, bez dodatne biblioteke.
+Vrednosni objekat `ImageFile` čuva pravila fajla. Odbija fajl veći od 15MB, fajl čiji prvi bajtovi ne odgovaraju formatu JPEG, PNG ili WebP (bez obzira na ekstenziju, pa i SVG), fajl čije zaglavlje ne može da se pročita i sliku čija je širina ili visina manja od jednog piksela ili veća od `MaxDimensionInPixels`.
+
+Dimenzije se čitaju iz zaglavlja samog formata, bez dodatne biblioteke. Za svaki format postoji po jedna statička klasa (`PngHeader`, `JpegHeader`, `WebPHeader`) koja prepoznaje potpis formata i čita širinu i visinu, a pomoćne metode za čitanje bajtova su u klasi `ImageBytes`. Ove klase su `internal`, jer ih koristi samo `ImageFile`, pa ih testovi proveravaju kroz njega.
 
 Aplikacioni servis `ImageUploading` od primljenih bajtova pravi `ImageFile`, predaje ga sposobnosti `IImageSaver` i vraća adresu slike. Interfejs `IImageSaver` okreće zavisnost, pa servis ne zna da se slika čuva na disku.
 
 ### Infrastructure
 
 Klasa `DiskImageSaver` implementira `IImageSaver`. Ime sačuvanog fajla generiše sama, od novog identifikatora i ekstenzije koja odgovara formatu, pa originalno ime fajla ne utiče na to gde se fajl čuva. Fajl upisuje u direktorijum `uploads` unutar web korena aplikacije (`Host.Api/wwwroot`) i vraća adresu oblika `/uploads/<ime>`. `Host.Api` taj direktorijum servira kao statičke fajlove, pa sliku na toj adresi može da otvori svako. Direktorijum `uploads` se ne čuva u repozitorijumu.
+
+`Host.Api` servira samo web koren koji je postojao pri pokretanju aplikacije. Zato je `Host.Api/wwwroot` u repozitorijumu (sa praznim fajlom `.gitkeep`), a ako ga pri pokretanju nema, `DiskImageSaver` baca grešku umesto da napravi direktorijum i vrati adresu koja ne radi do restarta.
 
 Metoda `AddImagesModule` registruje servis i sposobnost i jedino je mesto koje `Host.Api` poziva pored metode `AddImagesControllers`.
 

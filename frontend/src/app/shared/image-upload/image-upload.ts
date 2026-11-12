@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 
 const MAX_SIZE = 15 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -18,6 +18,17 @@ export class ImageUpload {
   protected readonly file = signal<File | null>(null);
   protected readonly previewUrl = signal<string | null>(null);
   protected readonly problem = signal<string | null>(null);
+  private readonly submitted = signal<File | null>(null);
+
+  // A file already sent can be sent again only after a failure, so a second click
+  // does not store the same image twice.
+  protected readonly canSubmit = computed(() => {
+    const chosen = this.file();
+    if (chosen === null || this.pending()) {
+      return false;
+    }
+    return chosen !== this.submitted() || this.error() !== null;
+  });
 
   protected choose(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -32,11 +43,11 @@ export class ImageUpload {
     this.problem.set(null);
 
     if (!ALLOWED_TYPES.includes(chosen.type)) {
-      this.problem.set('Dozvoljeni formati su JPEG, PNG i WebP.');
+      this.problem.set('An image must be a JPEG, PNG or WebP file.');
       return;
     }
     if (chosen.size > MAX_SIZE) {
-      this.problem.set('Slika je veća od 15MB.');
+      this.problem.set('An image must not be larger than 15MB.');
       return;
     }
 
@@ -47,6 +58,7 @@ export class ImageUpload {
   protected submit(): void {
     const chosen = this.file();
     if (chosen !== null) {
+      this.submitted.set(chosen);
       this.upload.emit(chosen);
     }
   }
