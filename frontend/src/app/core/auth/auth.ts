@@ -38,10 +38,21 @@ function decodeUser(token: string | null): User | null {
 export class Auth {
   private readonly http = inject(HttpClient);
   private readonly token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  private readonly destination = signal<string | null>(null);
 
   readonly accessToken = computed(() => this.token());
   readonly user = computed(() => decodeUser(this.token()));
   readonly isLoggedIn = computed(() => this.user() !== null);
+
+  rememberDestination(url: string): void {
+    this.destination.set(url);
+  }
+
+  takeDestination(): string {
+    const url = this.destination() ?? '/';
+    this.destination.set(null);
+    return url;
+  }
 
   async login(email: string, password: string): Promise<void> {
     await this.authenticate('/api/identity/login', email, password);
