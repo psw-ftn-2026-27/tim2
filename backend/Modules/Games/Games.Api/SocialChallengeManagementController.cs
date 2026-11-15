@@ -1,7 +1,6 @@
 using Games.Application.SocialChallengeManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Domain;
 
 namespace Games.Api;
 
@@ -11,14 +10,10 @@ namespace Games.Api;
 public sealed class SocialChallengeManagementController : ControllerBase
 {
     private readonly SocialChallengeManagementService _managementService;
-    private readonly SocialChallengeManagementQueries _managementQueries;
 
-    public SocialChallengeManagementController(
-        SocialChallengeManagementService managementService,
-        SocialChallengeManagementQueries managementQueries)
+    public SocialChallengeManagementController(SocialChallengeManagementService managementService)
     {
         _managementService = managementService;
-        _managementQueries = managementQueries;
     }
 
     [HttpPost]
@@ -39,11 +34,5 @@ public sealed class SocialChallengeManagementController : ControllerBase
     {
         await _managementService.DeleteAsync(id);
         return NoContent();
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<PageResult<SocialChallengeDto>>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    {
-        return await _managementQueries.GetAllAsync(page, pageSize);
     }
 }

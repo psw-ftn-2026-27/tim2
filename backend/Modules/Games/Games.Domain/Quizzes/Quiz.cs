@@ -1,0 +1,92 @@
+using Shared.Domain;
+using Shared.Domain.Exceptions;
+
+namespace Games.Domain.Quizzes;
+
+public sealed class Quiz : AggregateRoot
+{
+    private const int MinimumNameLength = 3;
+    private const int MaximumNameLength = 60;
+    private const int MaximumInstructionsLength = 1000;
+    private const int MinimumXp = 1;
+    private const int MaximumXp = 1000;
+    private const int MinimumQuestionCount = 1;
+    private const int MaximumQuestionCount = 20;
+
+    private readonly List<Question> _questions = [];
+
+    public string Name { get; private set; }
+    public string Instructions { get; private set; }
+    public int Xp { get; private set; }
+    public QuizStatus Status { get; private set; }
+    public IReadOnlyList<Question> Questions => _questions;
+
+    private Quiz()
+    {
+        Name = null!;
+        Instructions = null!;
+    }
+
+    public Quiz(string name, string instructions, int xp, List<Question> questions)
+        : base(Guid.NewGuid())
+    {
+        Validate(name, instructions, xp, questions);
+
+        Name = name.Trim();
+        Instructions = instructions.Trim();
+        Xp = xp;
+        _questions.AddRange(questions);
+        Status = QuizStatus.Draft;
+    }
+
+    public void Update(string name, string instructions, int xp, List<Question> questions)
+    {
+        if (Status != QuizStatus.Draft)
+        {
+            throw new DomainException("Only a draft quiz can be changed.");
+        }
+
+        Validate(name, instructions, xp, questions);
+
+        Name = name.Trim();
+        Instructions = instructions.Trim();
+        Xp = xp;
+        _questions.Clear();
+        _questions.AddRange(questions);
+    }
+
+    public void EnsureCanBeDeleted()
+    {
+        if (Status != QuizStatus.Draft)
+        {
+            throw new DomainException("Only a draft quiz can be deleted.");
+        }
+    }
+
+    private static void Validate(string name, string instructions, int xp, List<Question> questions)
+    {
+        var trimmedName = name?.Trim() ?? string.Empty;
+        if (trimmedName.Length < MinimumNameLength || trimmedName.Length > MaximumNameLength)
+        {
+            throw new DomainException($"A quiz name must have from {MinimumNameLength} to {MaximumNameLength} characters.");
+        }
+        var trimmedInstructions = instructions?.Trim() ?? string.Empty;
+        if (trimmedInstructions.Length == 0)
+        {
+            throw new DomainException("A quiz requires instructions.");
+        }
+        if (trimmedInstructions.Length > MaximumInstructionsLength)
+        {
+            throw new DomainException($"Quiz instructions can have at most {MaximumInstructionsLength} characters.");
+        }
+        if (xp < MinimumXp || xp > MaximumXp)
+        {
+            throw new DomainException($"A quiz must carry from {MinimumXp} to {MaximumXp} XP.");
+        }
+        var questionCount = questions?.Count ?? 0;
+        if (questionCount < MinimumQuestionCount || questionCount > MaximumQuestionCount)
+        {
+            throw new DomainException($"A quiz must have from {MinimumQuestionCount} to {MaximumQuestionCount} questions.");
+        }
+    }
+}
