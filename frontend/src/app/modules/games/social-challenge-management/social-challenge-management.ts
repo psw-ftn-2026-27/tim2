@@ -33,7 +33,7 @@ export class SocialChallengeManagement {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/archive`, null));
   }
 
-  async repeat(id: string): Promise<string> {
-    return firstValueFrom(this.http.post<string>(`${BASE_URL}/${id}/repeat`, null));
+  async repeat(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/repeat`, null));
   }
 }

@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Domain.SocialChallenges;
 using Games.Infrastructure.Persistence;
@@ -200,7 +199,7 @@ public class SocialChallengeLifecycleCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Administrator_repeats_a_retired_challenge_and_a_new_draft_with_the_same_data_is_stored()
+    public async Task Administrator_repeats_a_retired_challenge_and_the_same_stored_challenge_is_a_draft_with_the_same_data()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var original = SocialChallengeSeed.RetiredBridgeWalk;
@@ -209,12 +208,10 @@ public class SocialChallengeLifecycleCommandTests : BaseIntegrationTest
 
         var response = await client.PostAsync($"/api/games/challenges/{original.Id}/repeat", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var copyId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
-        assertContext.SocialChallenges.Count().Should().Be(challengeCountBefore + 1);
-        copyId.Should().NotBe(original.Id);
-        var stored = assertContext.SocialChallenges.Single(challenge => challenge.Id == copyId);
+        assertContext.SocialChallenges.Count().Should().Be(challengeCountBefore);
+        var stored = assertContext.SocialChallenges.Single(challenge => challenge.Id == original.Id);
         stored.Status.Should().Be(SocialChallengeStatus.Draft);
         stored.Name.Should().Be(original.Name);
         stored.Window.Should().Be(original.Window);
@@ -222,35 +219,35 @@ public class SocialChallengeLifecycleCommandTests : BaseIntegrationTest
         stored.RangeInMeters.Should().Be(original.RangeInMeters);
         stored.Xp.Should().Be(original.Xp);
         stored.CompletionMessage.Should().Be(original.CompletionMessage);
-        assertContext.SocialChallenges.Single(challenge => challenge.Id == original.Id).Status.Should().Be(SocialChallengeStatus.Retired);
     }
 
     [Fact]
     public async Task Repeating_an_unknown_challenge_is_rejected_and_nothing_is_stored()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var unknownId = Guid.NewGuid();
         using var arrangeContext = Factory.CreateContext<GamesDbContext>();
         var challengeCountBefore = arrangeContext.SocialChallenges.Count();
 
-        var response = await client.PostAsync($"/api/games/challenges/{Guid.NewGuid()}/repeat", null);
+        var response = await client.PostAsync($"/api/games/challenges/{unknownId}/repeat", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
         assertContext.SocialChallenges.Count().Should().Be(challengeCountBefore);
+        assertContext.SocialChallenges.Should().NotContain(challenge => challenge.Id == unknownId);
     }
 
     [Fact]
-    public async Task Repeating_a_draft_challenge_is_rejected_and_no_new_challenge_is_stored()
+    public async Task Repeating_a_draft_challenge_is_rejected_and_its_stored_state_stays_the_same()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
-        var challengeCountBefore = arrangeContext.SocialChallenges.Count();
 
         var response = await client.PostAsync($"/api/games/challenges/{SocialChallengeSeed.DraftNightGathering.Id}/repeat", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
-        assertContext.SocialChallenges.Count().Should().Be(challengeCountBefore);
+        var stored = assertContext.SocialChallenges.Single(challenge => challenge.Id == SocialChallengeSeed.DraftNightGathering.Id);
+        stored.Status.Should().Be(SocialChallengeStatus.Draft);
     }
 
     [Fact]

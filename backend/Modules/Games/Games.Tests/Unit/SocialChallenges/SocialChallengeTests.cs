@@ -227,33 +227,34 @@ public class SocialChallengeTests
     [Theory]
     [InlineData(SocialChallengeStatus.Retired)]
     [InlineData(SocialChallengeStatus.Archived)]
-    public void Retired_or_archived_challenge_is_repeated_as_a_new_draft_with_the_same_data(SocialChallengeStatus status)
+    public void Retired_or_archived_challenge_is_repeated_as_the_same_challenge_in_draft_with_the_same_data(SocialChallengeStatus status)
     {
         var challenge = CreateChallengeIn(status);
+        var originalId = challenge.Id;
 
-        var copy = challenge.Repeat();
+        challenge.Repeat();
 
-        copy.Status.Should().Be(SocialChallengeStatus.Draft);
-        copy.Id.Should().NotBe(challenge.Id);
-        copy.Name.Should().Be(challenge.Name);
-        copy.Window.Should().Be(challenge.Window);
-        copy.RequiredParticipants.Should().Be(challenge.RequiredParticipants);
-        copy.RangeInMeters.Should().Be(challenge.RangeInMeters);
-        copy.Xp.Should().Be(challenge.Xp);
-        copy.CompletionMessage.Should().Be(challenge.CompletionMessage);
-        challenge.Status.Should().Be(status);
+        challenge.Status.Should().Be(SocialChallengeStatus.Draft);
+        challenge.Id.Should().Be(originalId);
+        challenge.Name.Should().Be(ValidName);
+        challenge.Window.Should().Be(new TimeWindow(ValidStart, ValidDuration));
+        challenge.RequiredParticipants.Should().Be(ValidRequiredParticipants);
+        challenge.RangeInMeters.Should().Be(ValidRangeInMeters);
+        challenge.Xp.Should().Be(ValidXp);
+        challenge.CompletionMessage.Should().Be(ValidCompletionMessage);
     }
 
     [Theory]
     [InlineData(SocialChallengeStatus.Draft)]
     [InlineData(SocialChallengeStatus.Published)]
-    public void Draft_or_published_challenge_cannot_be_repeated(SocialChallengeStatus status)
+    public void Draft_or_published_challenge_cannot_be_repeated_and_keeps_its_state(SocialChallengeStatus status)
     {
         var challenge = CreateChallengeIn(status);
 
         var repeating = () => challenge.Repeat();
 
         repeating.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(status);
     }
 
     [Theory]

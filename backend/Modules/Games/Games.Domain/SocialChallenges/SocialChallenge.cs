@@ -107,11 +107,11 @@ public sealed class SocialChallenge : AggregateRoot
         Status = SocialChallengeStatus.Archived;
     }
 
-    public SocialChallenge Repeat()
+    public void Repeat()
     {
         EnsureStatusIsOneOf(SocialChallengeStatus.Retired, SocialChallengeStatus.Archived);
 
-        return new SocialChallenge(Name, Window.Start, Window.Duration, RequiredParticipants, RangeInMeters, Xp, CompletionMessage);
+        Status = SocialChallengeStatus.Draft;
     }
 
     private void EnsureStatusIsOneOf(params SocialChallengeStatus[] allowedStatuses)
