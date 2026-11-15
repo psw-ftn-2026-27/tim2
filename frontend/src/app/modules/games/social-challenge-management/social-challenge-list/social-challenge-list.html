@@ -222,5 +222,25 @@
         }
       </tbody>
     </table>
+
+    <p class="paging">
+      <button
+        class="button"
+        type="button"
+        [disabled]="page() === 1 || pending()"
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }}</span>
+      <button
+        class="button"
+        type="button"
+        [disabled]="!hasNextPage() || pending()"
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </p>
   }
 </div>

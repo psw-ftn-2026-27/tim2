@@ -1,11 +1,13 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, maxLength, min, minLength, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { SocialChallengeDto } from '../../api/games-api-types';
 import { SocialChallengeManagement } from '../social-challenge-management';
+
+const pageSize = 20;
 
 @Component({
   imports: [FormField, RouterLink],
@@ -16,8 +18,14 @@ import { SocialChallengeManagement } from '../social-challenge-management';
 export class SocialChallengeList {
   private readonly management = inject(SocialChallengeManagement);
 
+  protected readonly page = signal(1);
+
   protected readonly challenges = httpResource<PageResult<SocialChallengeDto>>(
-    () => '/api/games/challenges?page=1&pageSize=20',
+    () => `/api/games/challenges?page=${this.page()}&pageSize=${pageSize}`,
+  );
+
+  protected readonly hasNextPage = computed(
+    () => this.page() * pageSize < (this.challenges.value()?.totalCount ?? 0),
   );
 
   protected readonly confirmingId = signal<string | null>(null);
@@ -158,5 +166,13 @@ export class SocialChallengeList {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  protected previousPage(): void {
+    this.page.update((page) => page - 1);
+  }
+
+  protected nextPage(): void {
+    this.page.update((page) => page + 1);
   }
 }
