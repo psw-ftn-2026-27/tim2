@@ -30,7 +30,7 @@ export class Register {
     this.error.set(null);
     try {
       await this.auth.register(this.form.email().value(), this.form.password().value());
-      await this.router.navigate(['/']);
+      await this.router.navigate([this.auth.takeDestination()]);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Registration failed. Please try again.'));
     } finally {

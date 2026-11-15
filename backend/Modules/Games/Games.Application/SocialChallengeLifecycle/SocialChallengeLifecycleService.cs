@@ -39,15 +39,12 @@ public sealed class SocialChallengeLifecycleService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<Guid> RepeatAsync(Guid challengeId)
+    public async Task RepeatAsync(Guid challengeId)
     {
         var challenge = await GetChallengeAsync(challengeId);
 
-        var copy = challenge.Repeat();
-        _challengeRepository.Add(copy);
+        challenge.Repeat();
         await _unitOfWork.SaveChangesAsync();
-
-        return copy.Id;
     }
 
     private async Task<SocialChallenge> GetChallengeAsync(Guid challengeId)

@@ -1,11 +1,13 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, maxLength, min, minLength, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ChallengeDto, ChallengeType } from '../../api/games-api-types';
 import { ChallengeOverview } from '../challenge-overview';
+
+const pageSize = 20;
 
 @Component({
   imports: [FormField, RouterLink],
@@ -20,11 +22,17 @@ export class ChallengeList {
 
   protected readonly filterForm = form(this.filter);
 
+  protected readonly page = signal(1);
+
   protected readonly challenges = httpResource<PageResult<ChallengeDto>>(() => {
     const type = this.filter().type;
     const typeParam = type === 'All' ? '' : `&type=${type}`;
-    return `/api/games/challenges?page=1&pageSize=20${typeParam}`;
+    return `/api/games/challenges?page=${this.page()}&pageSize=${pageSize}${typeParam}`;
   });
+
+  protected readonly hasNextPage = computed(
+    () => this.page() * pageSize < (this.challenges.value()?.totalCount ?? 0),
+  );
 
   protected readonly confirmingId = signal<string | null>(null);
   protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive'>(
@@ -168,5 +176,17 @@ export class ChallengeList {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  protected backToFirstPage(): void {
+    this.page.set(1);
+  }
+
+  protected previousPage(): void {
+    this.page.update((page) => page - 1);
+  }
+
+  protected nextPage(): void {
+    this.page.update((page) => page + 1);
   }
 }

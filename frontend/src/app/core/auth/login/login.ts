@@ -30,7 +30,7 @@ export class Login {
     this.error.set(null);
     try {
       await this.auth.login(this.form.email().value(), this.form.password().value());
-      await this.router.navigate(['/']);
+      await this.router.navigate([this.auth.takeDestination()]);
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Login failed. Please try again.'));
     } finally {

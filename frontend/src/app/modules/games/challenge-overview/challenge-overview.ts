@@ -30,8 +30,8 @@ export class ChallengeOverview {
     await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/archive`, null));
   }
 
-  async repeat(id: string): Promise<string> {
-    return firstValueFrom(this.http.post<string>(`${SOCIAL_CHALLENGES_URL}/${id}/repeat`, null));
+  async repeat(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/repeat`, null));
   }
 
   async deleteQuiz(id: string): Promise<void> {

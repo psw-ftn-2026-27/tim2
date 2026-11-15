@@ -38,8 +38,9 @@ public sealed class SocialChallengeLifecycleController : ControllerBase
     }
 
     [HttpPost("{id:guid}/repeat")]
-    public async Task<ActionResult<Guid>> Repeat(Guid id)
+    public async Task<ActionResult> Repeat(Guid id)
     {
-        return await _lifecycleService.RepeatAsync(id);
+        await _lifecycleService.RepeatAsync(id);
+        return NoContent();
     }
 }

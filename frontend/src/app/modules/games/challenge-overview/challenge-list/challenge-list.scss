@@ -3,6 +3,12 @@
   gap: var(--space-2);
 }
 
+.paging {
+  align-items: center;
+  display: flex;
+  gap: var(--space-4);
+}
+
 form.card {
   max-width: 32rem;
 }
