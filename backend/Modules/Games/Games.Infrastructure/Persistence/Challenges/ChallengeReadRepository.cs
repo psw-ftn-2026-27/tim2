@@ -34,7 +34,17 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
     // Both tables are projected to the same row shape, so the database pages and sorts them as one list.
     private IQueryable<ChallengeRow> SelectRows(ChallengeType? type)
     {
-        var socialChallenges = _dbContext.SocialChallenges.Select(challenge => new ChallengeRow
+        return type switch
+        {
+            ChallengeType.SocialChallenge => SelectSocialChallenges(),
+            ChallengeType.Quiz => SelectQuizzes(),
+            _ => SelectSocialChallenges().Concat(SelectQuizzes())
+        };
+    }
+
+    private IQueryable<ChallengeRow> SelectSocialChallenges()
+    {
+        return _dbContext.SocialChallenges.Select(challenge => new ChallengeRow
         {
             Id = challenge.Id,
             Type = ChallengeType.SocialChallenge,
@@ -47,7 +57,11 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             RangeInMeters = challenge.RangeInMeters,
             CompletionMessage = challenge.CompletionMessage
         });
-        var quizzes = _dbContext.Quizzes.Select(quiz => new ChallengeRow
+    }
+
+    private IQueryable<ChallengeRow> SelectQuizzes()
+    {
+        return _dbContext.Quizzes.Select(quiz => new ChallengeRow
         {
             Id = quiz.Id,
             Type = ChallengeType.Quiz,
@@ -60,13 +74,6 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             RangeInMeters = null,
             CompletionMessage = null
         });
-
-        return type switch
-        {
-            ChallengeType.SocialChallenge => socialChallenges,
-            ChallengeType.Quiz => quizzes,
-            _ => socialChallenges.Concat(quizzes)
-        };
     }
 
     private static ChallengeDto ToDto(ChallengeRow row)
