@@ -1,0 +1,43 @@
+<section class="hero stack">
+  <h1>Explore the city through stories and challenges</h1>
+  <p class="lead">
+    Follow guided tours that reveal the city one point at a time, and test yourself with
+    challenges on the map.
+  </p>
+  <p class="actions">
+    @if (!auth.isLoggedIn()) {
+      <a class="button button--primary" routerLink="/register" (click)="remember('/')">Sign up for free</a>
+    }
+    <a
+      class="button"
+      [routerLink]="linkTo('/exploration')"
+      (click)="remember('/exploration')"
+    >
+      Browse tours
+    </a>
+  </p>
+</section>
+
+<section class="stack">
+  <h2>What you can do</h2>
+  <div class="grid">
+    <a class="card stack" [routerLink]="linkTo('/exploration')" (click)="remember('/exploration')">
+      <h3>Tours</h3>
+      <p>Guided tours that tell a story point by point as you walk through the city.</p>
+    </a>
+    <a class="card stack" [routerLink]="linkTo('/games')" (click)="remember('/games')">
+      <h3>Challenges</h3>
+      <p>Quizzes and challenges on the map that put your knowledge of the city to the test.</p>
+    </a>
+  </div>
+</section>
+
+@if (!auth.isLoggedIn()) {
+  <section class="closing card stack">
+    <h2>Ready to start exploring?</h2>
+    <p>Create a free account and pick your first tour or challenge.</p>
+    <p>
+      <a class="button button--primary" routerLink="/register" (click)="remember('/')">Sign up for free</a>
+    </p>
+  </section>
+}
