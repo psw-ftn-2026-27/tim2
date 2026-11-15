@@ -1,0 +1,65 @@
+<div class="stack">
+  <p><a routerLink="/games/challenges">Back to challenges</a></p>
+
+  @if (quiz.isLoading()) {
+    <p>Loading the quiz...</p>
+  } @else if (quiz.error()) {
+    <p class="error">Could not load the quiz. It may have been deleted, or you are not logged in as an administrator.</p>
+  } @else {
+    @if (quiz.value(); as current) {
+      <h1>{{ current.name }}</h1>
+
+      <p class="meta">{{ current.xp }} XP · {{ current.status }}</p>
+
+      <section class="stack">
+        <h2>Instructions</h2>
+        <p class="instructions">{{ current.instructions }}</p>
+      </section>
+
+      <section class="stack">
+        <h2>Questions</h2>
+        <ol class="questions">
+          @for (question of current.questions; track $index) {
+            <li class="card stack">
+              <p class="question">{{ question.text }}</p>
+              <ul class="options">
+                @for (option of question.options; track $index) {
+                  <li [class.correct]="option.isCorrect">
+                    {{ option.text }}
+                    @if (option.isCorrect) {
+                      <span class="meta">(correct)</span>
+                    }
+                  </li>
+                }
+              </ul>
+            </li>
+          }
+        </ol>
+      </section>
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      @if (current.status === 'Draft') {
+        <div class="actions">
+          @if (confirmingDelete()) {
+            <button
+              class="button button--primary"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirmDelete()"
+            >
+              Confirm delete
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
+              Cancel
+            </button>
+          } @else {
+            <button class="button" type="button" (click)="askToConfirmDelete()">Delete</button>
+          }
+        </div>
+      }
+    }
+  }
+</div>

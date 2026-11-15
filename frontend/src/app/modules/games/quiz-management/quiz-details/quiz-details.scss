@@ -1,0 +1,30 @@
+.instructions {
+  white-space: pre-line;
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-5);
+}
+
+.question {
+  font-weight: 600;
+  margin: 0;
+}
+
+.options {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.correct {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}

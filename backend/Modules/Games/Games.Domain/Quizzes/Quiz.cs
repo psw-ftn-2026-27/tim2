@@ -11,7 +11,7 @@ public sealed class Quiz : AggregateRoot
     private const int MinimumXp = 1;
     private const int MaximumXp = 1000;
     private const int MinimumQuestionCount = 1;
-    private const int MaximumQuestionCount = 20;
+    private const int MaximumQuestionCount = 15;
 
     private readonly List<Question> _questions = [];
 

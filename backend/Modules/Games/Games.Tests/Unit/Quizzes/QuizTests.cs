@@ -30,9 +30,9 @@ public class QuizTests
     }
 
     [Fact]
-    public void Quiz_with_more_than_twenty_questions_cannot_be_created()
+    public void Quiz_with_more_than_fifteen_questions_cannot_be_created()
     {
-        var creation = () => new Quiz(ValidName, ValidInstructions, ValidXp, CreateQuestions(21));
+        var creation = () => new Quiz(ValidName, ValidInstructions, ValidXp, CreateQuestions(16));
 
         creation.Should().Throw<DomainException>();
     }
@@ -87,7 +87,7 @@ public class QuizTests
     [Fact]
     public void Quiz_with_all_upper_bounds_starts_as_a_draft()
     {
-        var quiz = new Quiz(new string('a', 60), new string('a', 1000), 1000, CreateQuestions(20));
+        var quiz = new Quiz(new string('a', 60), new string('a', 1000), 1000, CreateQuestions(15));
 
         quiz.Status.Should().Be(QuizStatus.Draft);
     }

@@ -10,7 +10,7 @@ import { Auth } from '../../../core/auth/auth';
       <h1>Games</h1>
 
       @if (isAdministrator()) {
-        <p><a routerLink="/games/challenges">Social challenges</a></p>
+        <p><a routerLink="/games/challenges">Challenges</a></p>
       }
     </div>
   `,
