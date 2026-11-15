@@ -65,11 +65,23 @@ public sealed class Quiz : AggregateRoot
 
     private static void Validate(string name, string instructions, int xp, List<Question> questions)
     {
+        ValidateName(name);
+        ValidateInstructions(instructions);
+        ValidateXp(xp);
+        ValidateQuestions(questions);
+    }
+
+    private static void ValidateName(string name)
+    {
         var trimmedName = name?.Trim() ?? string.Empty;
         if (trimmedName.Length < MinimumNameLength || trimmedName.Length > MaximumNameLength)
         {
             throw new DomainException($"A quiz name must have from {MinimumNameLength} to {MaximumNameLength} characters.");
         }
+    }
+
+    private static void ValidateInstructions(string instructions)
+    {
         var trimmedInstructions = instructions?.Trim() ?? string.Empty;
         if (trimmedInstructions.Length == 0)
         {
@@ -79,10 +91,18 @@ public sealed class Quiz : AggregateRoot
         {
             throw new DomainException($"Quiz instructions can have at most {MaximumInstructionsLength} characters.");
         }
+    }
+
+    private static void ValidateXp(int xp)
+    {
         if (xp < MinimumXp || xp > MaximumXp)
         {
             throw new DomainException($"A quiz must carry from {MinimumXp} to {MaximumXp} XP.");
         }
+    }
+
+    private static void ValidateQuestions(List<Question> questions)
+    {
         var questionCount = questions?.Count ?? 0;
         if (questionCount < MinimumQuestionCount || questionCount > MaximumQuestionCount)
         {

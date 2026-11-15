@@ -21,6 +21,16 @@ public sealed record Question
     public Question(string text, List<AnswerOption> options)
     {
         var trimmedText = text?.Trim() ?? string.Empty;
+        options ??= [];
+        ValidateText(trimmedText);
+        ValidateOptions(options);
+
+        Text = trimmedText;
+        _options.AddRange(options);
+    }
+
+    private static void ValidateText(string trimmedText)
+    {
         if (trimmedText.Length == 0)
         {
             throw new DomainException("A question requires a text.");
@@ -29,8 +39,10 @@ public sealed record Question
         {
             throw new DomainException($"A question text can have at most {MaximumTextLength} characters.");
         }
+    }
 
-        options ??= [];
+    private static void ValidateOptions(List<AnswerOption> options)
+    {
         if (options.Count < MinimumOptionCount || options.Count > MaximumOptionCount)
         {
             throw new DomainException($"A question must have from {MinimumOptionCount} to {MaximumOptionCount} answer options.");
@@ -44,8 +56,5 @@ public sealed record Question
         {
             throw new DomainException("Two answer options of the same question cannot be the same.");
         }
-
-        Text = trimmedText;
-        _options.AddRange(options);
     }
 }
