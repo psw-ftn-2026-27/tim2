@@ -124,7 +124,8 @@ Related use cases form a group with its own folder and use-case-named classes:
   injects `I<Aggregate>Repository` and `IUnitOfWork`. A command method loads the
   aggregate, calls a method on it, and saves once.
 - `<UseCaseGroup>Queries` for reads. Public sealed class, no interface. Constructor
-  injects `I<Aggregate>ReadRepository`, plus `I<Aggregate>Repository` when a read needs a
+  injects `I<Aggregate>ReadRepository` (or `I<Concept>ReadRepository` for a view spanning
+  aggregates, see Read side), plus `I<Aggregate>Repository` when a read needs a
   domain-computed value, plus other modules' contracts when it composes data across
   modules. Returns DTOs, never mutates, never saves (an architecture test forbids a
   `*Queries` class from depending on `IUnitOfWork`).
@@ -176,10 +177,10 @@ social challenges in one paged, filtered table), its rows come from one read rep
 that reads all of them, so paging, filtering and ordering happen in the database over the
 combined rows. It is named after the concept the aggregates share, not after any one of
 them, and lives in a folder of that name (`IChallengeReadRepository` in
-`Application/Challenges/`); it still projects directly to
-DTOs, and is injected by the queries class named after the view
-(`ChallengeOverviewQueries`). It is not a way to read another module's tables: across
-modules, compose through `Contracts`.
+`Application/Challenges/`). No aggregate carries that name, so the folder holds only the
+read repository and never a write repository. It still projects directly to DTOs. It is
+injected by the queries class named after the view (`ChallengeOverviewQueries`). It is not
+a way to read another module's tables: across modules, compose through `Contracts`.
 
 Deciding how to answer a request, in order:
 
