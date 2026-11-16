@@ -55,7 +55,7 @@ export class BlogDetail {
   }
 
   protected formatDate(value: string): string {
-    return new Date(value).toLocaleString('sr-RS');
+    return new Date(value).toLocaleString('en-GB');
   }
 
   protected async add(text: string): Promise<void> {

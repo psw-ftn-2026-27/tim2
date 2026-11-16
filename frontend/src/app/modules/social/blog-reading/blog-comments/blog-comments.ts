@@ -45,7 +45,7 @@ export class BlogComments {
   }
 
   protected formatDate(value: string): string {
-    return new Date(value).toLocaleString('sr-RS');
+    return new Date(value).toLocaleString('en-GB');
   }
 
   protected toggleMenu(commentId: string): void {
