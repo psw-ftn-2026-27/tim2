@@ -35,7 +35,7 @@ export class ChallengeList {
   );
 
   protected readonly confirmingId = signal<string | null>(null);
-  protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive'>(
+  protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive' | 'repeat'>(
     'delete',
   );
   protected readonly editingId = signal<string | null>(null);
@@ -127,7 +127,7 @@ export class ChallengeList {
 
   protected askToConfirm(
     challengeId: string,
-    action: 'delete' | 'publish' | 'retire' | 'archive',
+    action: 'delete' | 'publish' | 'retire' | 'archive' | 'repeat',
   ): void {
     this.error.set(null);
     this.editingId.set(null);
@@ -145,8 +145,8 @@ export class ChallengeList {
     this.error.set(null);
     const action = this.confirmingAction();
     try {
-      if (action === 'delete' && challenge.type === 'Quiz') {
-        await this.overview.deleteQuiz(challengeId);
+      if (challenge.type === 'Quiz') {
+        await this.confirmQuiz(challengeId, action);
       } else if (action === 'delete' && challenge.type === 'LocationChallenge') {
         await this.overview.deleteLocationChallenge(challengeId);
       } else if (action === 'delete') {
@@ -155,15 +155,35 @@ export class ChallengeList {
         await this.overview.publish(challengeId);
       } else if (action === 'retire') {
         await this.overview.retire(challengeId);
-      } else {
+      } else if (action === 'archive') {
         await this.overview.archive(challengeId);
       }
       this.challenges.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, `Could not ${action} the challenge.`));
+      if (challenge.type === 'Quiz') {
+        this.challenges.reload();
+      }
     } finally {
       this.confirmingId.set(null);
       this.pending.set(false);
+    }
+  }
+
+  private async confirmQuiz(
+    quizId: string,
+    action: 'delete' | 'publish' | 'retire' | 'archive' | 'repeat',
+  ): Promise<void> {
+    if (action === 'delete') {
+      await this.overview.deleteQuiz(quizId);
+    } else if (action === 'publish') {
+      await this.overview.publishQuiz(quizId);
+    } else if (action === 'retire') {
+      await this.overview.retireQuiz(quizId);
+    } else if (action === 'archive') {
+      await this.overview.archiveQuiz(quizId);
+    } else {
+      await this.overview.repeatQuiz(quizId);
     }
   }
 

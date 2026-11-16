@@ -39,6 +39,22 @@ export class ChallengeOverview {
     await firstValueFrom(this.http.delete<void>(`${QUIZZES_URL}/${id}`));
   }
 
+  async publishQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/publish`, null));
+  }
+
+  async retireQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/retire`, null));
+  }
+
+  async archiveQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/archive`, null));
+  }
+
+  async repeatQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/repeat`, null));
+  }
+
   async deleteLocationChallenge(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${LOCATION_CHALLENGES_URL}/${id}`));
   }

@@ -21,6 +21,27 @@ public class QuizTests
         return questions;
     }
 
+    private static Quiz CreateQuizIn(QuizStatus status)
+    {
+        var quiz = new Quiz(ValidName, ValidInstructions, ValidXp, CreateQuestions(1));
+        if (status == QuizStatus.Draft)
+        {
+            return quiz;
+        }
+        quiz.Publish();
+        if (status == QuizStatus.Published)
+        {
+            return quiz;
+        }
+        quiz.Retire();
+        if (status == QuizStatus.Retired)
+        {
+            return quiz;
+        }
+        quiz.Archive();
+        return quiz;
+    }
+
     [Fact]
     public void Quiz_without_questions_cannot_be_created()
     {
@@ -90,5 +111,139 @@ public class QuizTests
         var quiz = new Quiz(new string('a', 60), new string('a', 1000), 1000, CreateQuestions(15));
 
         quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Fact]
+    public void Draft_quiz_is_published()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Draft);
+
+        quiz.Publish();
+
+        quiz.Status.Should().Be(QuizStatus.Published);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_a_draft_cannot_be_published_and_keeps_its_state(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var publishing = () => quiz.Publish();
+
+        publishing.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Published_quiz_is_retired()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        quiz.Retire();
+
+        quiz.Status.Should().Be(QuizStatus.Retired);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_published_cannot_be_retired_and_keeps_its_state(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var retiring = () => quiz.Retire();
+
+        retiring.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Fact]
+    public void Retired_quiz_is_archived()
+    {
+        var quiz = CreateQuizIn(QuizStatus.Retired);
+
+        quiz.Archive();
+
+        quiz.Status.Should().Be(QuizStatus.Archived);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_retired_cannot_be_archived_and_keeps_its_state(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var archiving = () => quiz.Archive();
+
+        archiving.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Retired_or_archived_quiz_is_repeated_as_a_draft(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        quiz.Repeat();
+
+        quiz.Status.Should().Be(QuizStatus.Draft);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Published)]
+    public void Draft_or_published_quiz_cannot_be_repeated_and_keeps_its_state(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var repeating = () => quiz.Repeat();
+
+        repeating.Should().Throw<DomainException>();
+        quiz.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Draft)]
+    [InlineData(QuizStatus.Archived)]
+    public void Draft_or_archived_quiz_can_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var deletion = () => quiz.EnsureCanBeDeleted();
+
+        deletion.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    public void Published_or_retired_quiz_cannot_be_deleted(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var deletion = () => quiz.EnsureCanBeDeleted();
+
+        deletion.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_a_draft_cannot_be_changed(QuizStatus status)
+    {
+        var quiz = CreateQuizIn(status);
+
+        var update = () => quiz.Update(ValidName, ValidInstructions, ValidXp, CreateQuestions(1));
+
+        update.Should().Throw<DomainException>();
     }
 }

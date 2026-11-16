@@ -1,13 +1,14 @@
 <div class="stack">
-  <h1>Challenges</h1>
-
-  <p class="actions">
-    <a class="button button--primary" routerLink="/games/challenges/create">+ Social challenge</a>
-    <a class="button button--primary" routerLink="/games/challenges/quiz/create">+ Quiz</a>
-    <a class="button button--primary" routerLink="/games/challenges/location/create">
-      + Location challenge
-    </a>
-  </p>
+  <header class="page-header">
+    <h1>Challenges</h1>
+    <div class="row">
+      <a class="button button--primary" routerLink="/games/challenges/create">+ Social challenge</a>
+      <a class="button button--primary" routerLink="/games/challenges/quiz/create">+ Quiz</a>
+      <a class="button button--primary" routerLink="/games/challenges/location/create">
+        + Location challenge
+      </a>
+    </div>
+  </header>
 
   <div class="field filter">
     <label for="type-filter">Type</label>
@@ -73,75 +74,112 @@
             <td>{{ challenge.end?.slice(0, 5) }}</td>
             <td>{{ challenge.requiredParticipants }}</td>
             <td>{{ challenge.rangeInMeters }}</td>
-            <td>{{ challenge.xp }}</td>
-            <td>{{ challenge.status }}</td>
-            <td class="actions">
-              @if (confirmingId() === challenge.id) {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="confirm(challenge)"
-                >
-                  @switch (confirmingAction()) {
-                    @case ('delete') {
-                      Confirm delete
-                    }
-                    @case ('publish') {
-                      Confirm publish
-                    }
-                    @case ('retire') {
-                      Confirm retire
-                    }
-                    @case ('archive') {
-                      Confirm archive
-                    }
-                  }
-                </button>
-                <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
-                  Cancel
-                </button>
-              } @else if (challenge.type === 'Quiz' || challenge.type === 'LocationChallenge') {
-                @if (challenge.status === 'Draft') {
-                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'delete')">
-                    Delete
-                  </button>
-                }
-              } @else if (editingId() !== challenge.id) {
-                @if (challenge.status === 'Draft') {
-                  <button class="button" type="button" (click)="startEdit(challenge)">Edit</button>
-                }
-                @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
-                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'delete')">
-                    Delete
-                  </button>
-                }
-                @if (challenge.status === 'Draft') {
-                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
-                    Publish
-                  </button>
-                }
-                @if (challenge.status === 'Published') {
-                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'retire')">
-                    Retire
-                  </button>
-                }
-                @if (challenge.status === 'Retired') {
-                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'archive')">
-                    Archive
-                  </button>
-                }
-                @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+            <td><span class="amount">{{ challenge.xp }} XP</span></td>
+            <td>
+              <span class="badge" [class.badge--muted]="challenge.status !== 'Published'">
+                {{ challenge.status }}
+              </span>
+            </td>
+            <td>
+              <div class="row">
+                @if (confirmingId() === challenge.id) {
                   <button
                     class="button"
+                    [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+                    [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
                     type="button"
                     [disabled]="pending()"
-                    (click)="repeat(challenge.id)"
+                    (click)="confirm(challenge)"
                   >
-                    Repeat
+                    @switch (confirmingAction()) {
+                      @case ('delete') {
+                        Confirm delete
+                      }
+                      @case ('publish') {
+                        Confirm publish
+                      }
+                      @case ('retire') {
+                        Confirm retire
+                      }
+                      @case ('archive') {
+                        Confirm archive
+                      }
+                      @case ('repeat') {
+                        Confirm repeat
+                      }
+                    }
                   </button>
+                  <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+                    Cancel
+                  </button>
+                } @else if (challenge.type === 'Quiz') {
+                  @if (challenge.status === 'Draft') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
+                      Publish
+                    </button>
+                  }
+                  @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
+                      Delete
+                    </button>
+                  }
+                  @if (challenge.status === 'Published') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'retire')">
+                      Retire
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'archive')">
+                      Archive
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'repeat')">
+                      Repeat
+                    </button>
+                  }
+                } @else if (challenge.type === 'LocationChallenge') {
+                  @if (challenge.status === 'Draft') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
+                      Delete
+                    </button>
+                  }
+                } @else if (editingId() !== challenge.id) {
+                  @if (challenge.status === 'Draft') {
+                    <button class="button" type="button" (click)="startEdit(challenge)">Edit</button>
+                  }
+                  @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
+                      Delete
+                    </button>
+                  }
+                  @if (challenge.status === 'Draft') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
+                      Publish
+                    </button>
+                  }
+                  @if (challenge.status === 'Published') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'retire')">
+                      Retire
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'archive')">
+                      Archive
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="repeat(challenge.id)"
+                    >
+                      Repeat
+                    </button>
+                  }
                 }
-              }
+              </div>
             </td>
           </tr>
           @if (editingId() === challenge.id) {
@@ -243,7 +281,7 @@
                     <p class="error">{{ editError() }}</p>
                   }
 
-                  <div class="actions">
+                  <div class="row">
                     <button
                       class="button button--primary"
                       type="submit"
