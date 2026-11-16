@@ -27,6 +27,8 @@ frontend/src/
     _base.scss               reset, body, headings, links
     _layout.scss             page container, stack, grid helpers
     _components.scss         global classes: button, card, form field, table
+  environments/              environment.ts (production) and environment.development.ts,
+                             swapped by fileReplacements; the GA4 measurement ID   [platform]
   app/
     core/                    auth (state, interceptor, login, register), home,
                              map-demo (live example of shared/map for the team),
@@ -40,6 +42,8 @@ frontend/src/
                              an image, see Conventions                         [platform]
       map/                   presentational component showing locations and a
                              walking path on a map, see Conventions            [platform]
+      analytics/             Analytics service, event catalog, consent banner
+                             rendered by the app shell, see Conventions        [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -123,7 +127,8 @@ construct means adding a lesson, so treat it as a platform decision.
   exception is `<div #map>` in `shared/map`, read with `viewChild`, because Leaflet
   needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
-  drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
+  drive something outside the component tree, and it needs a reason (the example is
+  `shared/analytics`, where consent switches Google's opt-out flag on the window). Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
 - HTTP: `httpResource()` in the page for reads (it carries loading and error state as
   signals, and a fresh one is created on every visit); `HttpClient` with
@@ -165,8 +170,9 @@ Where a style goes, in order:
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
 `shared/ui` wrappers unprompted. The two shared components, `shared/image-upload` and
-`shared/map`, exist because several modules need the same upload and the same map;
-adding another is a platform decision. Visual consistency across modules is an open problem
+`shared/map`, exist because several modules need the same upload and the same map; the
+consent banner in `shared/analytics` is rendered only by the app shell, never by a module.
+Adding another is a platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -243,6 +249,18 @@ assigned to the platform team, and misalignment is an accepted learning experien
 
   ```html
   <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
+  ```
+- A page that records a GA4 event injects `Analytics` from `shared/analytics` and calls
+  `logEvent` on the line after the awaited command, never in `catch`, so a failed command
+  is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
+  content identifiers or closed-set values as params, never a user id, name, email or
+  free text. The service adds the role and checks sign-in, consent and the measurement
+  ID itself; a module never calls `gtag` or checks consent. `shared/analytics/README.md`
+  shows how to add an event and how to check it in the browser:
+
+  ```ts
+  await this.tourAuthoring.publish(tourId);
+  this.analytics.logEvent({ name: 'tour_published', params: { tour_id: tourId } });
   ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.
