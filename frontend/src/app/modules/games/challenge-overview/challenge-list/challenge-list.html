@@ -1,7 +1,19 @@
 <div class="stack">
-  <h1>Social challenges</h1>
+  <h1>Challenges</h1>
 
-  <p><a class="button button--primary" routerLink="/games/challenges/create">New challenge</a></p>
+  <p class="actions">
+    <a class="button button--primary" routerLink="/games/challenges/create">+ Social challenge</a>
+    <a class="button button--primary" routerLink="/games/challenges/quiz/create">+ Quiz</a>
+  </p>
+
+  <div class="field filter">
+    <label for="type-filter">Type</label>
+    <select id="type-filter" [formField]="filterForm.type" (change)="backToFirstPage()">
+      <option value="All">All</option>
+      <option value="SocialChallenge">Social challenges</option>
+      <option value="Quiz">Quizzes</option>
+    </select>
+  </div>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -16,6 +28,7 @@
       <thead>
         <tr>
           <th scope="col">Name</th>
+          <th scope="col">Type</th>
           <th scope="col">Start</th>
           <th scope="col">Duration</th>
           <th scope="col">End</th>
@@ -29,10 +42,26 @@
       <tbody>
         @for (challenge of challenges.value()?.items ?? []; track challenge.id) {
           <tr>
-            <td>{{ challenge.name }}</td>
-            <td>{{ challenge.start.slice(0, 5) }}</td>
-            <td>{{ challenge.duration.slice(0, 5) }}</td>
-            <td>{{ challenge.end.slice(0, 5) }}</td>
+            <td>
+              @if (challenge.type === 'Quiz') {
+                <a [routerLink]="['/games/challenges/quiz', challenge.id]">{{ challenge.name }}</a>
+              } @else {
+                {{ challenge.name }}
+              }
+            </td>
+            <td>
+              @switch (challenge.type) {
+                @case ('SocialChallenge') {
+                  Social challenge
+                }
+                @case ('Quiz') {
+                  Quiz
+                }
+              }
+            </td>
+            <td>{{ challenge.start?.slice(0, 5) }}</td>
+            <td>{{ challenge.duration?.slice(0, 5) }}</td>
+            <td>{{ challenge.end?.slice(0, 5) }}</td>
             <td>{{ challenge.requiredParticipants }}</td>
             <td>{{ challenge.rangeInMeters }}</td>
             <td>{{ challenge.xp }}</td>
@@ -43,7 +72,7 @@
                   class="button button--primary"
                   type="button"
                   [disabled]="pending()"
-                  (click)="confirm(challenge.id)"
+                  (click)="confirm(challenge)"
                 >
                   @switch (confirmingAction()) {
                     @case ('delete') {
@@ -63,6 +92,12 @@
                 <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
                   Cancel
                 </button>
+              } @else if (challenge.type === 'Quiz') {
+                @if (challenge.status === 'Draft') {
+                  <button class="button" type="button" (click)="askToConfirm(challenge.id, 'delete')">
+                    Delete
+                  </button>
+                }
               } @else if (editingId() !== challenge.id) {
                 @if (challenge.status === 'Draft') {
                   <button class="button" type="button" (click)="startEdit(challenge)">Edit</button>
@@ -102,7 +137,7 @@
           </tr>
           @if (editingId() === challenge.id) {
             <tr>
-              <td colspan="9">
+              <td colspan="10">
                 <form class="card stack" (submit)="saveEdit($event, challenge.id)">
                   <h2>Edit challenge</h2>
 
@@ -217,7 +252,7 @@
           }
         } @empty {
           <tr>
-            <td colspan="9">There are no challenges yet.</td>
+            <td colspan="10">There are no challenges yet.</td>
           </tr>
         }
       </tbody>

@@ -1,8 +1,14 @@
 using Games.Application;
+using Games.Application.ChallengeOverview;
+using Games.Application.Challenges;
+using Games.Application.QuizManagement;
+using Games.Application.Quizzes;
 using Games.Application.SocialChallengeLifecycle;
 using Games.Application.SocialChallengeManagement;
 using Games.Application.SocialChallenges;
 using Games.Infrastructure.Persistence;
+using Games.Infrastructure.Persistence.Challenges;
+using Games.Infrastructure.Persistence.Quizzes;
 using Games.Infrastructure.Persistence.SocialChallenges;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,12 +25,16 @@ public static class GamesModuleExtensions
         services.AddAutoMapper(mapper => mapper.AddProfile<GamesMapperProfile>());
 
         services.AddScoped<ISocialChallengeRepository, SocialChallengeRepository>();
+        services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
-        services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
+        services.AddScoped<IQuizReadRepository, QuizReadRepository>();
+        services.AddScoped<IChallengeReadRepository, ChallengeReadRepository>();
 
         services.AddScoped<SocialChallengeManagementService>();
-        services.AddScoped<SocialChallengeManagementQueries>();
         services.AddScoped<SocialChallengeLifecycleService>();
+        services.AddScoped<QuizManagementService>();
+        services.AddScoped<QuizManagementQueries>();
+        services.AddScoped<ChallengeOverviewQueries>();
 
         return services;
     }

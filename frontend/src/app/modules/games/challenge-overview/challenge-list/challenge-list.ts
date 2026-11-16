@@ -4,25 +4,31 @@ import { FormField, form, max, maxLength, min, minLength, required } from '@angu
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
 import { serverMessage } from '../../../../shared/util/server-message';
-import { SocialChallengeDto } from '../../api/games-api-types';
-import { SocialChallengeManagement } from '../social-challenge-management';
+import { ChallengeDto, ChallengeType } from '../../api/games-api-types';
+import { ChallengeOverview } from '../challenge-overview';
 
 const pageSize = 20;
 
 @Component({
   imports: [FormField, RouterLink],
-  selector: 'app-social-challenge-list',
-  styleUrl: './social-challenge-list.scss',
-  templateUrl: './social-challenge-list.html',
+  selector: 'app-challenge-list',
+  styleUrl: './challenge-list.scss',
+  templateUrl: './challenge-list.html',
 })
-export class SocialChallengeList {
-  private readonly management = inject(SocialChallengeManagement);
+export class ChallengeList {
+  private readonly overview = inject(ChallengeOverview);
+
+  private readonly filter = signal({ type: 'All' as ChallengeType | 'All' });
+
+  protected readonly filterForm = form(this.filter);
 
   protected readonly page = signal(1);
 
-  protected readonly challenges = httpResource<PageResult<SocialChallengeDto>>(
-    () => `/api/games/challenges?page=${this.page()}&pageSize=${pageSize}`,
-  );
+  protected readonly challenges = httpResource<PageResult<ChallengeDto>>(() => {
+    const type = this.filter().type;
+    const typeParam = type === 'All' ? '' : `&type=${type}`;
+    return `/api/games/challenges?page=${this.page()}&pageSize=${pageSize}${typeParam}`;
+  });
 
   protected readonly hasNextPage = computed(
     () => this.page() * pageSize < (this.challenges.value()?.totalCount ?? 0),
@@ -71,19 +77,20 @@ export class SocialChallengeList {
     },
   );
 
-  protected startEdit(challenge: SocialChallengeDto): void {
+  // Only social challenge rows offer Edit, so their social challenge columns are always filled.
+  protected startEdit(challenge: ChallengeDto): void {
     this.error.set(null);
     this.editError.set(null);
     this.confirmingId.set(null);
-    const [hours, minutes] = challenge.duration.split(':').map(Number);
+    const [hours, minutes] = (challenge.duration ?? '00:00').split(':').map(Number);
     this.editForm().reset({
       name: challenge.name,
-      start: challenge.start.slice(0, 5),
+      start: (challenge.start ?? '').slice(0, 5),
       durationMinutes: hours * 60 + minutes,
-      requiredParticipants: challenge.requiredParticipants,
-      rangeInMeters: challenge.rangeInMeters,
+      requiredParticipants: challenge.requiredParticipants ?? 0,
+      rangeInMeters: challenge.rangeInMeters ?? 0,
       xp: challenge.xp,
-      completionMessage: challenge.completionMessage,
+      completionMessage: challenge.completionMessage ?? '',
     });
     this.editingId.set(challenge.id);
   }
@@ -100,7 +107,7 @@ export class SocialChallengeList {
     const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
     const restMinutes = String(minutes % 60).padStart(2, '0');
     try {
-      await this.management.update(challengeId, {
+      await this.overview.update(challengeId, {
         name: this.editForm.name().value(),
         start: `${this.editForm.start().value()}:00`,
         duration: `${hours}:${restMinutes}:00`,
@@ -132,19 +139,22 @@ export class SocialChallengeList {
     this.confirmingId.set(null);
   }
 
-  protected async confirm(challengeId: string): Promise<void> {
+  protected async confirm(challenge: ChallengeDto): Promise<void> {
+    const challengeId = challenge.id;
     this.pending.set(true);
     this.error.set(null);
     const action = this.confirmingAction();
     try {
-      if (action === 'delete') {
-        await this.management.delete(challengeId);
+      if (action === 'delete' && challenge.type === 'Quiz') {
+        await this.overview.deleteQuiz(challengeId);
+      } else if (action === 'delete') {
+        await this.overview.delete(challengeId);
       } else if (action === 'publish') {
-        await this.management.publish(challengeId);
+        await this.overview.publish(challengeId);
       } else if (action === 'retire') {
-        await this.management.retire(challengeId);
+        await this.overview.retire(challengeId);
       } else {
-        await this.management.archive(challengeId);
+        await this.overview.archive(challengeId);
       }
       this.challenges.reload();
     } catch (failure) {
@@ -159,13 +169,17 @@ export class SocialChallengeList {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.management.repeat(challengeId);
+      await this.overview.repeat(challengeId);
       this.challenges.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not repeat the challenge.'));
     } finally {
       this.pending.set(false);
     }
+  }
+
+  protected backToFirstPage(): void {
+    this.page.set(1);
   }
 
   protected previousPage(): void {

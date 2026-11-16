@@ -1,0 +1,231 @@
+<div class="stack">
+  <p><a routerLink="/games/challenges">Back to challenges</a></p>
+
+  @if (quiz.isLoading()) {
+    <p>Loading the quiz...</p>
+  } @else if (quiz.error()) {
+    <p class="error">Could not load the quiz. It may have been deleted, or you are not logged in as an administrator.</p>
+  } @else {
+    @if (quiz.value(); as current) {
+      <h1>{{ current.name }}</h1>
+
+      <p class="meta">{{ current.xp }} XP · {{ current.status }}</p>
+
+      @if (editing()) {
+        <form class="card stack" (submit)="saveEdit($event)">
+          <section class="stack">
+            <h2>Basics</h2>
+
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" type="text" [formField]="editForm.name" />
+              @if (editForm.name().touched()) {
+                @for (message of editForm.name().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+
+            <div class="field">
+              <label for="instructions">Instructions</label>
+              <textarea id="instructions" rows="6" [formField]="editForm.instructions"></textarea>
+              @if (editForm.instructions().touched()) {
+                @for (message of editForm.instructions().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+
+            <div class="field">
+              <label for="xp">XP</label>
+              <input id="xp" type="number" step="1" [formField]="editForm.xp" />
+              @if (editForm.xp().touched()) {
+                @for (message of editForm.xp().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+          </section>
+
+          <section class="stack">
+            <h2>Questions</h2>
+
+            @for (question of editForm.questions; track $index; let questionIndex = $index) {
+              <div class="question-edit stack">
+                <div class="field">
+                  <label for="question-{{ questionIndex }}-text">Question {{ questionIndex + 1 }}</label>
+                  <input
+                    id="question-{{ questionIndex }}-text"
+                    type="text"
+                    [formField]="question.text"
+                  />
+                  @if (question.text().touched()) {
+                    @for (message of question.text().errors(); track $index) {
+                      <p class="error">{{ message.message }}</p>
+                    }
+                  }
+                </div>
+
+                <fieldset class="answers stack">
+                  <legend>Answers (mark the correct one)</legend>
+
+                  @for (answer of question.answers; track $index; let answerIndex = $index) {
+                    <div class="answer">
+                      <input
+                        type="radio"
+                        value="{{ answerIndex }}"
+                        aria-label="Correct answer"
+                        [formField]="question.correct"
+                      />
+                      <div class="field answer-text">
+                        <input
+                          type="text"
+                          aria-label="Answer {{ answerIndex + 1 }}"
+                          [formField]="answer.text"
+                        />
+                        @if (answer.text().touched()) {
+                          @for (message of answer.text().errors(); track $index) {
+                            <p class="error">{{ message.message }}</p>
+                          }
+                        }
+                      </div>
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="question.answers.length <= 2"
+                        (click)="removeAnswer(questionIndex, answerIndex)"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  }
+
+                  @if (question.answers.length <= 2) {
+
+                    <p class="hint">A question needs at least 2 answers.</p>
+
+                  }
+
+                  @for (message of question.correct().errors(); track $index) {
+                    <p class="error">{{ message.message }}</p>
+                  }
+                </fieldset>
+
+                <div class="actions">
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="question.answers.length >= 6"
+                    (click)="addAnswer(questionIndex)"
+                  >
+                    + Add answer
+                  </button>
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="editForm.questions.length <= 1"
+                    (click)="removeQuestion(questionIndex)"
+                  >
+                    Remove question
+                  </button>
+                </div>
+                @if (question.answers.length >= 6) {
+                  <p class="hint">A question can have at most 6 answers.</p>
+                }
+                @if (editForm.questions.length <= 1) {
+                  <p class="hint">A quiz needs at least 1 question.</p>
+                }
+              </div>
+            }
+
+            <p>
+              <button
+                class="button"
+                type="button"
+                [disabled]="editForm.questions.length >= 15"
+                (click)="addQuestion()"
+              >
+                + Add question
+              </button>
+            </p>
+            @if (editForm.questions.length >= 15) {
+              <p class="hint">A quiz can have at most 15 questions.</p>
+            }
+          </section>
+
+          @if (!editForm().valid()) {
+            <p class="hint">Saving is possible once every field is filled in correctly and each question has a correct answer.</p>
+          }
+
+          @if (editError()) {
+            <p class="error">{{ editError() }}</p>
+          }
+
+          <div class="actions">
+            <button
+              class="button button--primary"
+              type="submit"
+              [disabled]="!editForm().valid() || pending()"
+            >
+              Save
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelEdit()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      } @else {
+        <section class="stack">
+          <h2>Instructions</h2>
+          <p class="instructions">{{ current.instructions }}</p>
+        </section>
+
+        <section class="stack">
+          <h2>Questions</h2>
+          <ol class="questions">
+            @for (question of current.questions; track $index) {
+              <li class="card stack">
+                <p class="question">{{ question.text }}</p>
+                <ul class="options">
+                  @for (option of question.options; track $index) {
+                    <li [class.correct]="option.isCorrect">
+                      {{ option.text }}
+                      @if (option.isCorrect) {
+                        <span class="meta">(correct)</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              </li>
+            }
+          </ol>
+        </section>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        @if (current.status === 'Draft') {
+          <div class="actions">
+            @if (confirmingDelete()) {
+              <button
+                class="button button--primary"
+                type="button"
+                [disabled]="pending()"
+                (click)="confirmDelete()"
+              >
+                Confirm delete
+              </button>
+              <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
+                Cancel
+              </button>
+            } @else {
+              <button class="button" type="button" (click)="startEdit(current)">Edit</button>
+              <button class="button" type="button" (click)="askToConfirmDelete()">Delete</button>
+            }
+          </div>
+        }
+      }
+    }
+  }
+</div>
