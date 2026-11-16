@@ -120,6 +120,12 @@ construct means adding a lesson, so treat it as a platform decision.
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+  A form with a variable number of items (a quiz's questions, each with its answers) keeps
+  one model signal whose fields are arrays, which may nest (each question holds its own
+  array of answers); rules for every item are declared with
+  `applyEach`, add and remove buttons replace the array in the model, and the template
+  walks the arrays with `@for`. Limits on the number of items are kept by disabling those
+  buttons.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
   after a command.
