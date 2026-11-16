@@ -1,4 +1,4 @@
-<div class="card stack">
+<div class="card stack form-page">
   <h1>Preferences</h1>
 
   @if (error()) {
@@ -47,9 +47,9 @@
           </dd>
         </dl>
 
-        <p class="actions">
+        <p class="row">
           <button class="button" type="button" (click)="edit(current)">Edit</button>
-          <button class="button" type="button" [disabled]="pending()" (click)="delete()">
+          <button class="button button--danger" type="button" [disabled]="pending()" (click)="delete()">
             Delete
           </button>
         </p>
@@ -88,7 +88,7 @@
           <p class="error">{{ saveError() }}</p>
         }
 
-        <p class="actions">
+        <p class="row">
           <button class="button button--primary" type="submit" [disabled]="pending()">
             Save
           </button>

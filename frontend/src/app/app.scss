@@ -5,9 +5,19 @@ header {
 }
 
 nav {
+  align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-4);
   padding-block: var(--space-3);
+}
+
+// The app name on the left links to the home page.
+nav a.brand {
+  color: var(--color-accent);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin-right: var(--space-4);
 }
 
 nav a {
