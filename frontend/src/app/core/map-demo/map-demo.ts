@@ -17,6 +17,8 @@ export class MapDemo {
 
   protected readonly showPath = signal(false);
   protected readonly pathLength = signal<number | null>(null);
+  // Starts at Trg slobode, like an existing location being changed.
+  protected readonly picked = signal<MapLocation>({ latitude: 45.2551, longitude: 19.8451 });
 
   protected togglePath(): void {
     this.showPath.update((shown) => !shown);

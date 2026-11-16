@@ -171,4 +171,82 @@ describe('MapView', () => {
     expect(() => router.held.forEach((answer) => answer())).not.toThrow();
     expect(lengths.length).toBe(before);
   });
+
+  describe('picking a location', () => {
+    let leafletMap: L.Map;
+    let picks: MapLocation[];
+
+    // Keeps the Leaflet map the component creates, so a test can click on it.
+    beforeEach(() => {
+      const createMap = L.map;
+      vi.spyOn(L, 'map').mockImplementation((element, options) => {
+        leafletMap = createMap(element, options);
+        return leafletMap;
+      });
+      picks = [];
+      fixture.componentInstance.locationPicked.subscribe((location) => picks.push(location));
+    });
+
+    async function pick(pickLocation: boolean, selectedLocation: MapLocation | null): Promise<void> {
+      fixture.componentRef.setInput('pickLocation', pickLocation);
+      fixture.componentRef.setInput('selectedLocation', selectedLocation);
+      await fixture.whenStable();
+    }
+
+    function clickAt(location: MapLocation): void {
+      leafletMap.fire('click', { latlng: L.latLng(location.latitude, location.longitude) });
+    }
+
+    function pickedPinPlace(): number[] {
+      const places: number[][] = [];
+      leafletMap.eachLayer((layer) => {
+        if (layer instanceof L.CircleMarker) {
+          places.push([layer.getLatLng().lat, layer.getLatLng().lng]);
+        }
+      });
+      expect(places.length).toBe(1);
+      return places[0];
+    }
+
+    it('does not report a click while pickLocation is off (P1)', async () => {
+      await pick(false, null);
+
+      clickAt(PARK);
+
+      expect(picks).toEqual([]);
+    });
+
+    it('reports the latitude and longitude of the clicked place (P4)', async () => {
+      await pick(true, null);
+
+      clickAt(PARK);
+
+      expect(picks).toEqual([{ latitude: PARK.latitude, longitude: PARK.longitude }]);
+    });
+
+    it('shows one picked pin at the given location next to the ordinary pins and moves it when the location changes (P2, P3, P5)', async () => {
+      await show([FORTRESS, PARK], false);
+      await pick(true, SQUARE);
+
+      expect(count('.picked-pin')).toBe(1);
+      expect(count('.leaflet-marker-icon')).toBe(2);
+      expect(pickedPinPlace()).toEqual([SQUARE.latitude, SQUARE.longitude]);
+
+      await pick(true, BEACH);
+
+      expect(count('.picked-pin')).toBe(1);
+      expect(count('.leaflet-marker-icon')).toBe(2);
+      expect(pickedPinPlace()).toEqual([BEACH.latitude, BEACH.longitude]);
+    });
+
+    it('does not move the picked pin on a click until the page passes the new location', async () => {
+      await pick(true, SQUARE);
+
+      clickAt(BEACH);
+      await fixture.whenStable();
+
+      expect(count('.picked-pin')).toBe(1);
+      expect(pickedPinPlace()).toEqual([SQUARE.latitude, SQUARE.longitude]);
+    });
+  });
 });
