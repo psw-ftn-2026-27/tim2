@@ -61,3 +61,37 @@ export interface TourPreferenceDto {
   tags: string[];
   applicableInSearch: boolean;
 }
+
+export interface KeyPointDto {
+  id: string;
+  order: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  latitude: number;
+  longitude: number;
+  secret: string | null;
+  isVisibleBeforePurchase: boolean;
+}
+
+export interface TourKeyPointsDto {
+  name: string;
+  status: TourStatus;
+  keyPoints: KeyPointDto[];
+}
+
+export interface KeyPointDataDto {
+  name: string;
+  description: string;
+  imageUrl: string;
+  latitude: number;
+  longitude: number;
+  secret: string | null;
+  isVisibleBeforePurchase: boolean;
+}
+
+export type KeyPointMoveDirection = 'Up' | 'Down';
+
+export interface MoveKeyPointDto {
+  direction: KeyPointMoveDirection;
+}

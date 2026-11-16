@@ -1,43 +1,43 @@
 <div class="stack">
-  <h1>Moj novčanik</h1>
+  <h1>My wallet</h1>
 
   @if (balance.isLoading()) {
-    <p>Učitavanje stanja...</p>
+    <p>Loading the balance...</p>
   } @else if (balance.error()) {
-    <p class="error">Stanje nije moguće učitati. Prijavite se i pokušajte ponovo.</p>
+    <p class="error">Could not load the balance. Log in and try again.</p>
   } @else {
-    <p class="balance">Stanje: {{ balance.value()?.balance ?? 0 }} EC</p>
+    <p class="balance">Balance: <span class="amount">{{ balance.value()?.balance ?? 0 }} EC</span></p>
   }
 
-  <h2>Transakcije</h2>
+  <h2>Transactions</h2>
 
   @if (transactions.isLoading()) {
-    <p>Učitavanje transakcija...</p>
+    <p>Loading transactions...</p>
   } @else if (transactions.error()) {
-    <p class="error">Transakcije nije moguće učitati. Prijavite se i pokušajte ponovo.</p>
+    <p class="error">Could not load the transactions. Log in and try again.</p>
   } @else {
     <table class="table">
       <thead>
         <tr>
-          <th>Iznos</th>
-          <th>Vreme</th>
-          <th>Status</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Time</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
-            <td>{{ transaction.amount }} EC</td>
-            <td>{{ transaction.createdAt }}</td>
+            <td><span class="amount">{{ transaction.amount }} EC</span></td>
+            <td>{{ formatTime(transaction.createdAt) }}</td>
             <td>
               @if (transaction.isCancelled) {
-                stornirano
+                <span class="badge badge--muted">Cancelled</span>
               }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="meta">Još nema transakcija.</td>
+            <td colspan="3" class="meta">No transactions yet.</td>
           </tr>
         }
       </tbody>
@@ -45,11 +45,11 @@
 
     <p class="paging">
       <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
-        Prethodna
+        Previous
       </button>
-      <span class="meta">Strana {{ page() }}</span>
+      <span class="meta">Page {{ page() }}</span>
       <button class="button" type="button" [disabled]="!hasNextPage()" (click)="nextPage()">
-        Sledeća
+        Next
       </button>
     </p>
   }

@@ -9,10 +9,10 @@ import { Auth } from '../../../core/auth/auth';
     <div class="stack">
       <h1>Payment</h1>
       @if (isAdministrator()) {
-        <p><a routerLink="/payment/wallets">Novčanici korisnika</a></p>
+        <p><a routerLink="/payment/wallets">User wallets</a></p>
       }
       @if (isExplorer()) {
-        <p><a routerLink="/payment/wallet">Moj novčanik</a></p>
+        <p><a routerLink="/payment/wallet">My wallet</a></p>
       }
     </div>
   `,

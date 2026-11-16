@@ -57,9 +57,42 @@ public sealed class Quiz : AggregateRoot
 
     public void EnsureCanBeDeleted()
     {
-        if (Status != QuizStatus.Draft)
+        EnsureStatusIsOneOf(QuizStatus.Draft, QuizStatus.Archived);
+    }
+
+    public void Publish()
+    {
+        EnsureStatusIsOneOf(QuizStatus.Draft);
+
+        Status = QuizStatus.Published;
+    }
+
+    public void Retire()
+    {
+        EnsureStatusIsOneOf(QuizStatus.Published);
+
+        Status = QuizStatus.Retired;
+    }
+
+    public void Archive()
+    {
+        EnsureStatusIsOneOf(QuizStatus.Retired);
+
+        Status = QuizStatus.Archived;
+    }
+
+    public void Repeat()
+    {
+        EnsureStatusIsOneOf(QuizStatus.Retired, QuizStatus.Archived);
+
+        Status = QuizStatus.Draft;
+    }
+
+    private void EnsureStatusIsOneOf(params QuizStatus[] allowedStatuses)
+    {
+        if (!allowedStatuses.Contains(Status))
         {
-            throw new DomainException("Only a draft quiz can be deleted.");
+            throw new DomainException($"This action is not allowed for a quiz in the {Status} state.");
         }
     }
 

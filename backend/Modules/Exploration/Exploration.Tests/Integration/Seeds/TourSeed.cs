@@ -17,6 +17,9 @@ internal static class TourSeed
     public static readonly Tour PublishedModeratelyPricedFortress;
     public static readonly Tour PublishedExpensiveMountain;
     public static readonly Tour ArchivedCastle;
+    public static readonly Tour DraftOldTownWithThreeKeyPoints;
+    public static readonly Tour SecondExplorersDraftMarketWithTwoKeyPoints;
+    public static readonly Tour PublishedBridgesWithTwoKeyPoints;
 
     static TourSeed()
     {
@@ -69,7 +72,23 @@ internal static class TourSeed
         ArchivedCastle.AddTransportTime(TransportMode.Car, 40);
         ArchivedCastle.Publish();
         ArchivedCastle.Archive();
+
+        DraftOldTownWithThreeKeyPoints = new(WellKnownUsers.Explorer, "Stari grad Sombora", "Kratak opis šetnje kroz stari grad.", TourDifficulty.Easy, ["grad"]);
+        DraftOldTownWithThreeKeyPoints.AddKeyPoint("Gradska kuća", "Zgrada gradske kuće na glavnom trgu.", "/images/gradska-kuca.jpg", new Location(45.7733, 19.1151), null, true);
+        DraftOldTownWithThreeKeyPoints.AddKeyPoint("Županija", "Zgrada Županije sa najvećom slikom u zemlji.", "/images/zupanija.jpg", new Location(45.7745, 19.1123), "Slika Bitka kod Sente zauzima ceo zid sale.", false);
+        DraftOldTownWithThreeKeyPoints.AddKeyPoint("Karmelićanski samostan", "Samostan u mirnom delu centra.", "/images/samostan.jpg", new Location(45.7722, 19.1170), "Ispod samostana postoje stare podrumske prostorije.", false);
+
+        SecondExplorersDraftMarketWithTwoKeyPoints = new(WellKnownUsers.SecondExplorer, "Pijaca i okolina", "Kratak opis obilaska pijace.", TourDifficulty.Easy, ["grad"]);
+        SecondExplorersDraftMarketWithTwoKeyPoints.AddKeyPoint("Ulaz u pijacu", "Glavni ulaz sa tezgama voća.", "/images/pijaca-ulaz.jpg", new Location(45.2551, 19.8451), null, true);
+        SecondExplorersDraftMarketWithTwoKeyPoints.AddKeyPoint("Riblja pijaca", "Deo pijace sa ribom sa Dunava.", "/images/riblja-pijaca.jpg", new Location(45.2559, 19.8462), "Najbolja riba stiže pre sedam ujutru.", false);
+
+        PublishedBridgesWithTwoKeyPoints = new(WellKnownUsers.Explorer, "Mostovi Novog Sada", "Obilazak vodi duž keja od Varadinskog mosta do Mosta slobode, uz priču o tome kako su mostovi rušeni i ponovo građeni tokom istorije grada.", TourDifficulty.Hard, ["most"]);
+        PublishedBridgesWithTwoKeyPoints.ChangeRecommendedGroupSize(1, 10);
+        PublishedBridgesWithTwoKeyPoints.AddTransportTime(TransportMode.Car, 35);
+        PublishedBridgesWithTwoKeyPoints.AddKeyPoint("Varadinski most", "Most koji spaja centar sa Petrovaradinom.", "/images/varadinski-most.jpg", new Location(45.2526, 19.8650), null, true);
+        PublishedBridgesWithTwoKeyPoints.AddKeyPoint("Most slobode", "Viseći most na izlazu iz grada.", "/images/most-slobode.jpg", new Location(45.2390, 19.8290), "Most je obnovljen 2005. godine.", false);
+        PublishedBridgesWithTwoKeyPoints.Publish();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints];
 }

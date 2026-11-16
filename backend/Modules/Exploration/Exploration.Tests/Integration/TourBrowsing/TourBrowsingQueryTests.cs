@@ -221,15 +221,23 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     public async Task Guest_gets_only_the_three_most_recently_first_published_tours_newest_first_even_when_asking_for_a_larger_page()
     {
         var client = Factory.CreateClient();
-        var expectedNames = TourSeed.All
-            .Where(tour => tour.Status == TourStatus.Published)
-            .OrderByDescending(tour => tour.PublishedAt)
-            .Take(3)
-            .Select(tour => tour.Name);
+        var published = TourSeed.All.Where(tour => tour.Status == TourStatus.Published).ToList();
 
         var tours = await client.GetFromJsonAsync<List<FeaturedTourDto>>("/api/exploration/tours/featured?page=1&pageSize=100", JsonOptions);
 
-        tours!.Select(tour => tour.Name).Should().Equal(expectedNames);
+        var featuredNames = tours!.Select(tour => tour.Name).ToList();
+        var featuredTimes = featuredNames.Select(name => PublishedMicroseconds(published.Single(tour => tour.Name == name))).ToList();
+        var newerTourLeftOut = published
+            .Where(tour => !featuredNames.Contains(tour.Name))
+            .Any(tour => PublishedMicroseconds(tour) > featuredTimes.Min());
+        featuredTimes.Should().HaveCount(Math.Min(3, published.Count)).And.BeInDescendingOrder();
+        newerTourLeftOut.Should().BeFalse();
+    }
+
+    // The database keeps publishing times to the microsecond, so tours published within one microsecond tie there.
+    private static long PublishedMicroseconds(Tour tour)
+    {
+        return tour.PublishedAt!.Value.Ticks / 10;
     }
 
     [Fact]

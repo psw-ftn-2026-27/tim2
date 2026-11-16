@@ -8,6 +8,7 @@ public sealed class Tour : AggregateRoot
     private const int MinimumDescriptionLengthForPublishing = 100;
 
     private readonly List<TransportTime> _transportTimes = [];
+    private readonly List<KeyPoint> _keyPoints = [];
 
     public Guid AuthorId { get; private set; }
     public string Name { get; private set; }
@@ -20,6 +21,7 @@ public sealed class Tour : AggregateRoot
     public RecommendedGroupSize? RecommendedGroupSize { get; private set; }
     public int Price { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
+    public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
 
     private Tour()
     {
@@ -86,6 +88,62 @@ public sealed class Tour : AggregateRoot
         Price = newPrice;
     }
 
+    public void AddKeyPoint(string name, string description, string imageUrl, Location location,
+        string? secret, bool isVisibleBeforePurchase)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be added only while the tour is a draft.");
+        }
+
+        _keyPoints.Add(new KeyPoint(_keyPoints.Count + 1, name, description, imageUrl, location, secret, isVisibleBeforePurchase));
+    }
+
+    public void ChangeKeyPoint(Guid keyPointId, string name, string description, string imageUrl, Location location,
+        string? secret, bool isVisibleBeforePurchase)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be changed only while the tour is a draft.");
+        }
+
+        GetKeyPoint(keyPointId).Change(name, description, imageUrl, location, secret, isVisibleBeforePurchase);
+    }
+
+    public void RemoveKeyPoint(Guid keyPointId)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be removed only while the tour is a draft.");
+        }
+
+        var keyPoint = GetKeyPoint(keyPointId);
+        _keyPoints.Remove(keyPoint);
+        foreach (var following in _keyPoints.Where(point => point.Order > keyPoint.Order))
+        {
+            following.ChangeOrder(following.Order - 1);
+        }
+    }
+
+    public void MoveKeyPoint(Guid keyPointId, KeyPointMoveDirection direction)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be reordered only while the tour is a draft.");
+        }
+
+        var keyPoint = GetKeyPoint(keyPointId);
+        var neighbourOrder = direction == KeyPointMoveDirection.Up ? keyPoint.Order - 1 : keyPoint.Order + 1;
+        var neighbour = _keyPoints.FirstOrDefault(point => point.Order == neighbourOrder);
+        if (neighbour is null)
+        {
+            throw new DomainException("A key point cannot be moved outside the list.");
+        }
+
+        neighbour.ChangeOrder(keyPoint.Order);
+        keyPoint.ChangeOrder(neighbourOrder);
+    }
+
     public void Publish()
     {
         if (Status != TourStatus.Draft)
@@ -129,5 +187,15 @@ public sealed class Tour : AggregateRoot
 
         Status = TourStatus.Published;
         ArchivedAt = null;
+    }
+
+    private KeyPoint GetKeyPoint(Guid keyPointId)
+    {
+        var keyPoint = _keyPoints.FirstOrDefault(point => point.Id == keyPointId);
+        if (keyPoint is null)
+        {
+            throw new NotFoundException($"Key point {keyPointId} does not exist.");
+        }
+        return keyPoint;
     }
 }
