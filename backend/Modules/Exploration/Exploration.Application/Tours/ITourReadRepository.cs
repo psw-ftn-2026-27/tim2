@@ -1,3 +1,4 @@
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Shared.Domain;
 
@@ -8,4 +9,5 @@ public interface ITourReadRepository
     Task<List<TourDto>> GetByAuthorAsync(Guid authorId);
     Task<PageResult<TourDto>> GetPublishedAsync(TourSearchDto search, int page, int pageSize);
     Task<List<FeaturedTourDto>> GetFeaturedAsync(int count);
+    Task<TourKeyPointsDto?> GetKeyPointsAsync(Guid tourId, Guid authorId);
 }

@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
@@ -50,6 +51,29 @@ internal sealed class TourReadRepository : ITourReadRepository
             .Take(count)
             .Select(tour => new FeaturedTourDto(tour.Name, tour.Description, tour.Price))
             .ToListAsync();
+    }
+
+    public Task<TourKeyPointsDto?> GetKeyPointsAsync(Guid tourId, Guid authorId)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId && tour.AuthorId == authorId)
+            .Select(tour => new TourKeyPointsDto(
+                tour.Name,
+                tour.Status,
+                tour.KeyPoints
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => new KeyPointDto(
+                        keyPoint.Id,
+                        keyPoint.Order,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.ImageUrl,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude,
+                        keyPoint.Secret,
+                        keyPoint.IsVisibleBeforePurchase))
+                    .ToList()))
+            .FirstOrDefaultAsync();
     }
 
     private static IQueryable<Tour> FilterByNameAndDifficulty(IQueryable<Tour> tours, TourSearchDto search)
