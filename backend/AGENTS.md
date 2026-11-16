@@ -124,7 +124,8 @@ Related use cases form a group with its own folder and use-case-named classes:
   injects `I<Aggregate>Repository` and `IUnitOfWork`. A command method loads the
   aggregate, calls a method on it, and saves once.
 - `<UseCaseGroup>Queries` for reads. Public sealed class, no interface. Constructor
-  injects `I<Aggregate>ReadRepository`, plus `I<Aggregate>Repository` when a read needs a
+  injects `I<Aggregate>ReadRepository` (or `I<Concept>ReadRepository` for a view spanning
+  aggregates, see Read side), plus `I<Aggregate>Repository` when a read needs a
   domain-computed value, plus other modules' contracts when it composes data across
   modules. Returns DTOs, never mutates, never saves (an architecture test forbids a
   `*Queries` class from depending on `IUnitOfWork`).
@@ -152,7 +153,8 @@ Interfaces that do belong, all declared in `Application` and implemented in
 `Infrastructure`:
 
 - `I<Aggregate>Repository` for the write side, returning aggregates
-- `I<Aggregate>ReadRepository` for the read side, returning DTOs
+- `I<Aggregate>ReadRepository` for the read side, returning DTOs (or `I<Concept>ReadRepository`
+  for a view spanning aggregates, see Read side)
 - `IUnitOfWork`
 
 Plus `I<Name>Api` in `Contracts`, implemented in `Application`.
@@ -169,6 +171,16 @@ Commands call it exactly once, at the end. This is the transaction boundary.
 projecting directly to DTOs. Aggregates may also expose side-effect-free
 query methods that return values derived from their own state; commands use them as guards,
 and a read use case may reuse them instead of duplicating the derivation in SQL.
+
+When one view lists several aggregates of the same module together (Games lists quizzes and
+social challenges in one paged, filtered table), its rows come from one read repository
+that reads all of them, so paging, filtering and ordering happen in the database over the
+combined rows. It is named after the concept the aggregates share, not after any one of
+them, and lives in a folder of that name (`IChallengeReadRepository` in
+`Application/Challenges/`). No aggregate carries that name, so the folder holds only the
+read repository and never a write repository. It still projects directly to DTOs. It is
+injected by the queries class named after the view (`ChallengeOverviewQueries`). It is not
+a way to read another module's tables: across modules, compose through `Contracts`.
 
 Deciding how to answer a request, in order:
 

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
 using Exploration.Tests.Integration.Seeds;
@@ -213,5 +215,45 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         var response = await client.GetAsync("/api/exploration/tours/published");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Guest_gets_only_the_three_most_recently_first_published_tours_newest_first_even_when_asking_for_a_larger_page()
+    {
+        var client = Factory.CreateClient();
+        var expectedNames = TourSeed.All
+            .Where(tour => tour.Status == TourStatus.Published)
+            .OrderByDescending(tour => tour.PublishedAt)
+            .Take(3)
+            .Select(tour => tour.Name);
+
+        var tours = await client.GetFromJsonAsync<List<FeaturedTourDto>>("/api/exploration/tours/featured?page=1&pageSize=100", JsonOptions);
+
+        tours!.Select(tour => tour.Name).Should().Equal(expectedNames);
+    }
+
+    [Fact]
+    public async Task Draft_and_archived_tours_are_not_featured()
+    {
+        var client = Factory.CreateClient();
+
+        var tours = await client.GetFromJsonAsync<List<FeaturedTourDto>>("/api/exploration/tours/featured", JsonOptions);
+
+        tours!.Select(tour => tour.Name).Should().NotContain([TourSeed.FortressWalk.Name, TourSeed.PublishableRiverside.Name, TourSeed.ArchivedCastle.Name]);
+    }
+
+    [Fact]
+    public async Task Guest_gets_only_the_name_description_and_numeric_price_of_each_featured_tour()
+    {
+        var client = Factory.CreateClient();
+
+        var body = await client.GetStringAsync("/api/exploration/tours/featured");
+
+        using var json = JsonDocument.Parse(body);
+        json.RootElement.EnumerateArray().Should().NotBeEmpty().And.AllSatisfy(tour =>
+        {
+            tour.EnumerateObject().Select(field => field.Name).Should().BeEquivalentTo(["name", "description", "price"]);
+            tour.GetProperty("price").ValueKind.Should().Be(JsonValueKind.Number);
+        });
     }
 }

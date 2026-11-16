@@ -26,4 +26,11 @@ public sealed class TourBrowsingController : ControllerBase
     {
         return await _browsingQueries.GetPublishedAsync(search, page, pageSize);
     }
+
+    [HttpGet("featured")]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<FeaturedTourDto>>> GetFeatured()
+    {
+        return await _browsingQueries.GetFeaturedAsync();
+    }
 }

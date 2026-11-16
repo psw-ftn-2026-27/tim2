@@ -29,6 +29,7 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, login, register), home,
+                             map-demo (live example of shared/map for the team),
                              app.routes.ts                                    [platform]
     shared/
       util/
@@ -37,6 +38,8 @@ frontend/src/
       images/                Images service: sends one file to POST /api/images [platform]
       image-upload/          presentational component for choosing and sending
                              an image, see Conventions                         [platform]
+      map/                   presentational component showing locations and a
+                             walking path on a map, see Conventions            [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -50,12 +53,16 @@ frontend/src/
           create-tour/
           my-tours/
           tour-authoring.ts  the group's service: its commands, nothing else
+          tour-form-schema.ts
+                             a form shared by the group's pages: its model and
+                             schema, see Forms
         <name>.routes.ts     the module's routes, lazy-loaded by core/app.routes.ts; the
                              only module file imported from outside the module
 ```
 
 A module is a flat list of use-case groups. A group is a flat list of component
-folders plus at most one service file. That is the whole layout, and it follows the
+folders plus at most one service file, and one form schema file for each form its pages
+share. That is the whole layout, and it follows the
 2025 Angular style guide: organise by feature, never by type, so there are no
 `pages/`, `components/` or `services/` folders. Three rules place any file:
 
@@ -70,6 +77,8 @@ folders plus at most one service file. That is the whole layout, and it follows 
    `tour-list.scss`, no `.component` suffix. Generate with `ng g c tour-browsing/tour-list`
    from the module folder. A client-only type is exported from the file of the
    component whose input or output uses it; other components import it from there.
+   The one exception is the model of a form shared by several pages, which lives in
+   the group's form schema file (see Forms).
 3. Queries live in the page as an `httpResource`; commands live in the group's
    service. A page that runs a command reloads its own resource afterwards.
 
@@ -110,7 +119,9 @@ construct means adding a lesson, so treat it as a platform decision.
   framework-initialised properties.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
   bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`. No template reference
-  variables (`#name`); every value the user types goes through Signal Forms.
+  variables (`#name`); every value the user types goes through Signal Forms. The one
+  exception is `<div #map>` in `shared/map`, read with `viewChild`, because Leaflet
+  needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
   drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
@@ -120,6 +131,16 @@ construct means adding a lesson, so treat it as a platform decision.
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+  A form with a variable number of items (a quiz's questions, each with its answers) keeps
+  one model signal whose fields are arrays, which may nest (each question holds its own
+  array of answers); rules for every item are declared with
+  `applyEach`, add and remove buttons replace the array in the model, and the template
+  walks the arrays with `@for`. Limits on the number of items are shown by disabling those
+  buttons; this only helps the user, the backend domain still enforces the limits.
+  A form used by one page keeps its model type and schema function in that page's file.
+  A form shared by several pages of one group (a quiz's create and details pages) keeps them in
+  `<form>-form-schema.ts` in the group folder, next to the group's service
+  (`quiz-management/quiz-form-schema.ts`); the pages import from there.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
   after a command.
@@ -143,9 +164,9 @@ Where a style goes, in order:
    Never `::ng-deep`.
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
-`shared/ui` wrappers unprompted. The one shared component, `shared/image-upload`, exists
-because every module that shows photos needs the same upload; adding another is a
-platform decision. Visual consistency across modules is an open problem
+`shared/ui` wrappers unprompted. The two shared components, `shared/image-upload` and
+`shared/map`, exist because several modules need the same upload and the same map;
+adding another is a platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -153,8 +174,8 @@ assigned to the platform team, and misalignment is an accepted learning experien
 - In feature modules, DTO types mirror the backend's Application DTOs one to one: one
   file per module in `modules/<name>/api/`, shared envelope types in `shared/api/`, so
   the import boundary covers types as well. Client-only types follow rule 2 above.
-  There is no `models/` folder; a client-only type with no single owning component is
-  a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
+  There is no `models/` folder; apart from a shared form's model, a client-only type
+  with no single owning component is a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
   backend also updates the mirrored type in the same commit, and nothing else ever
   touches these files: no client-only fields, no renames, no extra types. Mapping
   rules: enum to a union of string literals, `Guid` and `DateTime` to `string`,
@@ -194,6 +215,34 @@ assigned to the platform team, and misalignment is an accepted learning experien
       this.pending.set(false);
     }
   }
+  ```
+- A page that shows locations renders `app-map` from `shared/map` with `locations`
+  (`MapLocation[]`: `latitude`, `longitude`, optional `name`) and `showPath`. The
+  component draws one pin per location and, when `showPath` is on, a walking path
+  through them in the given order. `pathLength` emits the length in km, and `null`
+  whenever there is no path (hidden, fewer than two locations, or routing failed); the
+  page decides whether to show or store it. The component itself shows
+  `Loading path...` while it waits and `Path could not be created` when routing fails.
+  Paths come from `routing.openstreetmap.de` (profile `foot`) and tiles from
+  OpenStreetMap: free public servers with no guarantee they are always up; when routing
+  does not answer within 10 seconds, the map shows that message. Pass `locations` from a
+  field or a `computed()`, never as an array written in the template; the map compares
+  coordinates and asks for a new path only when they change. `/map-demo` is the live
+  example:
+
+  ```html
+  <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
+  ```
+
+  To let the user choose a place, turn on `pickLocation`. Each click emits
+  `locationPicked` with the clicked `latitude` and `longitude` and nothing else; the
+  map does not move the picked pin itself. The page keeps the coordinates in a signal
+  and passes them back through `selectedLocation` (`MapLocation | null`), which the map
+  draws as one pin, styled apart from the `locations` pins; when that pin is off screen,
+  the map pans to it. To edit an existing place, start the signal at it. `/map-demo` shows this too:
+
+  ```html
+  <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
   ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.

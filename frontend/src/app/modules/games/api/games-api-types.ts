@@ -1,5 +1,3 @@
-export type SocialChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
-
 export interface CreateSocialChallengeDto {
   name: string;
   start: string;
@@ -20,15 +18,53 @@ export interface UpdateSocialChallengeDto {
   completionMessage: string;
 }
 
-export interface SocialChallengeDto {
+export type ChallengeType = 'SocialChallenge' | 'Quiz';
+
+export interface ChallengeDto {
+  id: string;
+  type: ChallengeType;
+  name: string;
+  xp: number;
+  status: string;
+  start: string | null;
+  duration: string | null;
+  end: string | null;
+  requiredParticipants: number | null;
+  rangeInMeters: number | null;
+  completionMessage: string | null;
+}
+
+export type QuizStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
+
+export interface AnswerOptionDto {
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface QuestionDto {
+  text: string;
+  options: AnswerOptionDto[];
+}
+
+export interface CreateQuizDto {
+  name: string;
+  instructions: string;
+  xp: number;
+  questions: QuestionDto[];
+}
+
+export interface UpdateQuizDto {
+  name: string;
+  instructions: string;
+  xp: number;
+  questions: QuestionDto[];
+}
+
+export interface QuizDto {
   id: string;
   name: string;
-  start: string;
-  duration: string;
-  end: string;
-  requiredParticipants: number;
-  rangeInMeters: number;
+  instructions: string;
   xp: number;
-  completionMessage: string;
-  status: SocialChallengeStatus;
+  status: QuizStatus;
+  questions: QuestionDto[];
 }
