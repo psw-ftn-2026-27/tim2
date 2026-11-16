@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Exploration.Tests.Integration.Seeds;
 using FluentAssertions;
 using Payment.Application.Shopping;
 using Payment.Tests.Integration.Seeds;
@@ -23,6 +24,27 @@ public class ShoppingQueryTests : BaseIntegrationTest
         cart!.Items.Select(item => (item.TourId, item.Name, item.Price)).Should()
             .BeEquivalentTo(seededCart.Items.Select(item => (item.EntityId, item.Name, item.Price)));
         cart.TotalPrice.Should().Be(seededCart.TotalPrice());
+    }
+
+    [Fact]
+    public async Task Explorer_sees_the_name_and_price_of_a_published_tour_on_offer()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tour = TourSeed.PublishedExpensiveMountain;
+
+        var offer = await client.GetFromJsonAsync<TourOfferDto>($"/api/payment/shopping/tours/{tour.Id}", JsonOptions);
+
+        offer.Should().BeEquivalentTo(new TourOfferDto(tour.Id, tour.Name, tour.Price));
+    }
+
+    [Fact]
+    public async Task A_tour_that_is_not_published_is_not_on_offer()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.GetAsync($"/api/payment/shopping/tours/{TourSeed.SecondExplorersTrail.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

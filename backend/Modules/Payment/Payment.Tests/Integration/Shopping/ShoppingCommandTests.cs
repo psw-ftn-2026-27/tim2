@@ -33,6 +33,40 @@ public class ShoppingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Adding_a_tour_for_a_buyer_without_a_cart_creates_their_cart_with_that_item()
+    {
+        var buyerId = Guid.NewGuid();
+        var client = Factory.CreateClientFor(buyerId, "explorer");
+        var tourId = TourSeed.PublishedExpensiveMountain.Id;
+
+        var response = await client.PostAsync($"/api/payment/shopping/cart/items/{tourId}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.ShoppingCarts.Single(cart => cart.BuyerId == buyerId)
+            .Items.Should().ContainSingle(item => item.EntityId == tourId);
+    }
+
+    [Fact]
+    public async Task Adding_an_own_tour_is_rejected_and_the_cart_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tourId = TourSeed.PublishedVineyards.Id;
+        int itemCount;
+        using (var arrangeContext = Factory.CreateContext<PaymentDbContext>())
+        {
+            itemCount = arrangeContext.ShoppingCarts.Single(cart => cart.BuyerId == WellKnownUsers.Explorer).Items.Count;
+        }
+
+        var response = await client.PostAsync($"/api/payment/shopping/cart/items/{tourId}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.ShoppingCarts.Single(cart => cart.BuyerId == WellKnownUsers.Explorer)
+            .Items.Should().HaveCount(itemCount);
+    }
+
+    [Fact]
     public async Task Adding_a_tour_whose_product_already_exists_creates_no_new_product()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
