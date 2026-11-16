@@ -29,6 +29,7 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, login, register), home,
+                             map-demo (live example of shared/map for the team),
                              app.routes.ts                                    [platform]
     shared/
       util/
@@ -37,6 +38,8 @@ frontend/src/
       images/                Images service: sends one file to POST /api/images [platform]
       image-upload/          presentational component for choosing and sending
                              an image, see Conventions                         [platform]
+      map/                   presentational component showing locations and a
+                             walking path on a map, see Conventions            [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -110,7 +113,9 @@ construct means adding a lesson, so treat it as a platform decision.
   framework-initialised properties.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
   bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`. No template reference
-  variables (`#name`); every value the user types goes through Signal Forms.
+  variables (`#name`); every value the user types goes through Signal Forms. The one
+  exception is `<div #map>` in `shared/map`, read with `viewChild`, because Leaflet
+  needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
   drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
@@ -143,9 +148,9 @@ Where a style goes, in order:
    Never `::ng-deep`.
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
-`shared/ui` wrappers unprompted. The one shared component, `shared/image-upload`, exists
-because every module that shows photos needs the same upload; adding another is a
-platform decision. Visual consistency across modules is an open problem
+`shared/ui` wrappers unprompted. The two shared components, `shared/image-upload` and
+`shared/map`, exist because several modules need the same upload and the same map;
+adding another is a platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -194,6 +199,23 @@ assigned to the platform team, and misalignment is an accepted learning experien
       this.pending.set(false);
     }
   }
+  ```
+- A page that shows locations renders `app-map` from `shared/map` with `locations`
+  (`MapLocation[]`: `latitude`, `longitude`, optional `name`) and `showPath`. The
+  component draws one pin per location and, when `showPath` is on, a walking path
+  through them in the given order. `pathLength` emits the length in km, and `null`
+  whenever there is no path (hidden, fewer than two locations, or routing failed); the
+  page decides whether to show or store it. The component itself shows
+  `Loading path...` while it waits and `Path could not be created` when routing fails.
+  Paths come from `routing.openstreetmap.de` (profile `foot`) and tiles from
+  OpenStreetMap: free public servers with no guarantee they are always up; when routing
+  does not answer within 10 seconds, the map shows that message. Pass `locations` from a
+  field or a `computed()`, never as an array written in the template; the map compares
+  coordinates and asks for a new path only when they change. `/map-demo` is the live
+  example:
+
+  ```html
+  <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
   ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.
