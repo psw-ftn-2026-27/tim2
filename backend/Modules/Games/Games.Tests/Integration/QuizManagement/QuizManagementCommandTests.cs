@@ -130,6 +130,24 @@ public class QuizManagementCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Changing_a_published_quiz_is_rejected_and_its_stored_content_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = QuizSeed.PublishedSynagogue;
+
+        var response = await client.PutAsJsonAsync($"/api/games/quizzes/{seeded.Id}", UpdateRequest());
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.Quizzes.Single(quiz => quiz.Id == seeded.Id);
+        stored.Name.Should().Be(seeded.Name);
+        stored.Instructions.Should().Be(seeded.Instructions);
+        stored.Xp.Should().Be(seeded.Xp);
+        stored.Status.Should().Be(QuizStatus.Published);
+        ToDtos(stored.Questions).Should().BeEquivalentTo(ToDtos(seeded.Questions), options => options.ComparingRecordsByMembers().WithStrictOrdering());
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_change_a_quiz()
     {
         var client = Factory.CreateClient();

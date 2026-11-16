@@ -57,10 +57,7 @@ public sealed class Quiz : AggregateRoot
 
     public void EnsureCanBeDeleted()
     {
-        if (Status != QuizStatus.Draft && Status != QuizStatus.Archived)
-        {
-            throw new DomainException("Only a draft or archived quiz can be deleted.");
-        }
+        EnsureStatusIsOneOf(QuizStatus.Draft, QuizStatus.Archived);
     }
 
     public void Publish()

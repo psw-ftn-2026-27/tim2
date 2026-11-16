@@ -234,10 +234,13 @@ public class QuizTests
         deletion.Should().Throw<DomainException>();
     }
 
-    [Fact]
-    public void Published_quiz_cannot_be_changed()
+    [Theory]
+    [InlineData(QuizStatus.Published)]
+    [InlineData(QuizStatus.Retired)]
+    [InlineData(QuizStatus.Archived)]
+    public void Quiz_that_is_not_a_draft_cannot_be_changed(QuizStatus status)
     {
-        var quiz = CreateQuizIn(QuizStatus.Published);
+        var quiz = CreateQuizIn(status);
 
         var update = () => quiz.Update(ValidName, ValidInstructions, ValidXp, CreateQuestions(1));
 
