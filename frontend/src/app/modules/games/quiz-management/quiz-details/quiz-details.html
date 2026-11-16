@@ -11,6 +11,61 @@
 
       <p class="meta">{{ current.xp }} XP · {{ current.status }}</p>
 
+      @if (!editing()) {
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <div class="actions">
+          @if (confirmingAction()) {
+            <button
+              class="button button--primary"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirm()"
+            >
+              @switch (confirmingAction()) {
+                @case ('delete') {
+                  Confirm delete
+                }
+                @case ('publish') {
+                  Confirm publish
+                }
+                @case ('retire') {
+                  Confirm retire
+                }
+                @case ('archive') {
+                  Confirm archive
+                }
+                @case ('repeat') {
+                  Confirm repeat
+                }
+              }
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+              Cancel
+            </button>
+          } @else {
+            @if (current.status === 'Draft') {
+              <button class="button" type="button" (click)="startEdit(current)">Edit</button>
+              <button class="button" type="button" (click)="askToConfirm('publish')">Publish</button>
+            }
+            @if (current.status === 'Draft' || current.status === 'Archived') {
+              <button class="button" type="button" (click)="askToConfirm('delete')">Delete</button>
+            }
+            @if (current.status === 'Published') {
+              <button class="button" type="button" (click)="askToConfirm('retire')">Retire</button>
+            }
+            @if (current.status === 'Retired') {
+              <button class="button" type="button" (click)="askToConfirm('archive')">Archive</button>
+            }
+            @if (current.status === 'Retired' || current.status === 'Archived') {
+              <button class="button" type="button" (click)="askToConfirm('repeat')">Repeat</button>
+            }
+          }
+        </div>
+      }
+
       @if (editing()) {
         <form class="card stack" (submit)="saveEdit($event)">
           <section class="stack">
@@ -200,31 +255,6 @@
             }
           </ol>
         </section>
-
-        @if (error()) {
-          <p class="error">{{ error() }}</p>
-        }
-
-        @if (current.status === 'Draft') {
-          <div class="actions">
-            @if (confirmingDelete()) {
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="confirmDelete()"
-              >
-                Confirm delete
-              </button>
-              <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
-                Cancel
-              </button>
-            } @else {
-              <button class="button" type="button" (click)="startEdit(current)">Edit</button>
-              <button class="button" type="button" (click)="askToConfirmDelete()">Delete</button>
-            }
-          </div>
-        }
       }
     }
   }
