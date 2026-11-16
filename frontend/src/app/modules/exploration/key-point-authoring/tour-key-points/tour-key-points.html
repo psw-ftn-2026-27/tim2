@@ -1,17 +1,33 @@
 <div class="stack">
   <p><a routerLink="/exploration/mine">Back to my tours</a></p>
 
+  <header class="page-header">
+    @if (tour.value(); as current) {
+      <h1>Key points: {{ current.name }}</h1>
+      @if (current.status === 'Draft' && !formOpen()) {
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="startAdd()"
+        >
+          Add key point
+        </button>
+      }
+    } @else {
+      <h1>Key points</h1>
+    }
+  </header>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
   @if (tour.isLoading()) {
     <p>Loading the key points...</p>
   } @else if (tour.error()) {
     <p class="error">Could not load the key points of this tour.</p>
   } @else if (tour.value(); as current) {
-    <h1>Key points: {{ current.name }}</h1>
-
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
-    }
-
     <table class="table">
       <thead>
         <tr>
@@ -47,9 +63,9 @@
               <td>
                 @if (deletingKeyPointId() === keyPoint.id) {
                   <p class="delete-question">Are you sure you want to delete this key point?</p>
-                  <div class="actions">
+                  <div class="row">
                     <button
-                      class="button button--primary"
+                      class="button button--danger"
                       type="button"
                       [disabled]="pending()"
                       (click)="confirmDelete(keyPoint.id)"
@@ -59,7 +75,7 @@
                     <button class="button" type="button" (click)="cancelDelete()">No</button>
                   </div>
                 } @else {
-                  <div class="actions">
+                  <div class="row">
                     <button
                       class="button"
                       type="button"
@@ -85,7 +101,7 @@
                       Edit
                     </button>
                     <button
-                      class="button"
+                      class="button button--danger"
                       type="button"
                       [disabled]="pending()"
                       (click)="startDelete(keyPoint.id)"
@@ -99,7 +115,9 @@
           </tr>
         } @empty {
           <tr>
-            <td [attr.colspan]="current.status === 'Draft' ? 8 : 7">This tour has no key points yet.</td>
+            <td [attr.colspan]="current.status === 'Draft' ? 8 : 7">
+              This tour has no key points yet.
+            </td>
           </tr>
         }
       </tbody>
@@ -170,7 +188,7 @@
             Visible before purchase
           </label>
 
-          <div class="actions">
+          <div class="row">
             <button
               class="button button--primary"
               type="submit"
@@ -181,12 +199,6 @@
             <button class="button" type="button" (click)="cancelForm()">Cancel</button>
           </div>
         </form>
-      } @else {
-        <p>
-          <button class="button button--primary" type="button" [disabled]="pending()" (click)="startAdd()">
-            Add key point
-          </button>
-        </p>
       }
     }
   }
