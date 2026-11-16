@@ -31,5 +31,42 @@ internal static class QuizSeed
             new Question("Iz kog veka je zgrada muzeja?", [new AnswerOption("Dvadesetog", false), new AnswerOption("Devetnaestog", true)])
         ]);
 
-    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum];
+    public static readonly Quiz PublishedSynagogue;
+    public static readonly Quiz RetiredBishopsPalace;
+    public static readonly Quiz ArchivedZmajJovinaStreet;
+
+    static QuizSeed()
+    {
+        PublishedSynagogue = new(
+            "Sinagoga",
+            "Posetite Sinagogu i pogledajte njenu kupolu.",
+            40,
+            [
+                new Question("Koje godine je završena Sinagoga?", [new AnswerOption("1909", true), new AnswerOption("1850", false)])
+            ]);
+        PublishedSynagogue.Publish();
+
+        RetiredBishopsPalace = new(
+            "Vladičanski dvor",
+            "Stanite ispred Vladičanskog dvora i pogledajte fasadu.",
+            35,
+            [
+                new Question("Kojim materijalom je ukrašena fasada?", [new AnswerOption("Opekom", true), new AnswerOption("Mermerom", false)])
+            ]);
+        RetiredBishopsPalace.Publish();
+        RetiredBishopsPalace.Retire();
+
+        ArchivedZmajJovinaStreet = new(
+            "Zmaj Jovina ulica",
+            "Prošetajte Zmaj Jovinom ulicom od trga do Dunavske.",
+            25,
+            [
+                new Question("Čiji spomenik stoji na početku ulice?", [new AnswerOption("Jovana Jovanovića Zmaja", true), new AnswerOption("Svetozara Miletića", false)])
+            ]);
+        ArchivedZmajJovinaStreet.Publish();
+        ArchivedZmajJovinaStreet.Retire();
+        ArchivedZmajJovinaStreet.Archive();
+    }
+
+    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum, PublishedSynagogue, RetiredBishopsPalace, ArchivedZmajJovinaStreet];
 }

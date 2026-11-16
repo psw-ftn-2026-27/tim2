@@ -48,6 +48,7 @@ internal sealed class TourReadRepository : ITourReadRepository
         return _dbContext.Tours
             .Where(tour => tour.Status == TourStatus.Published)
             .OrderByDescending(tour => tour.PublishedAt)
+            .ThenBy(tour => tour.Id)
             .Take(count)
             .Select(tour => new FeaturedTourDto(tour.Name, tour.Description, tour.Price))
             .ToListAsync();

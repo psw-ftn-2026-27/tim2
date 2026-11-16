@@ -1,12 +1,18 @@
+// The "Yacht club" palette. Every colour, spacing and font value in the app refers to
+// one of these custom properties; theming means editing this file and nothing else.
+// What each token is for is described in README.md next to this file.
 :root {
-  --color-bg: #f7f7f8;
+  --color-bg: #f2f0ef;
   --color-surface: #ffffff;
-  --color-border: #e2e2e6;
-  --color-text: #1c1c1f;
-  --color-text-muted: #5c5c66;
-  --color-accent: #2f6df6;
+  --color-border: #bbbdbc;
+  --color-field-border: #7d8382;
+  --color-text: #1b2427;
+  --color-text-muted: #4f5856;
+  --color-accent: #245f73;
+  --color-accent-hover: #1a4554;
   --color-accent-text: #ffffff;
-  --color-danger: #c02626;
+  --color-danger: #733e24;
+  --color-highlight: #733e24;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -16,6 +22,7 @@
   --space-6: 2rem;
 
   --radius: 0.5rem;
+  --control-height: 2.75rem;
 
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-size-sm: 0.875rem;

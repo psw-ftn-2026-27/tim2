@@ -1,6 +1,7 @@
 using Games.Application;
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
+using Games.Application.QuizLifecycle;
 using Games.Application.QuizManagement;
 using Games.Application.Quizzes;
 using Games.Application.SocialChallengeLifecycle;
@@ -34,6 +35,7 @@ public static class GamesModuleExtensions
         services.AddScoped<SocialChallengeLifecycleService>();
         services.AddScoped<QuizManagementService>();
         services.AddScoped<QuizManagementQueries>();
+        services.AddScoped<QuizLifecycleService>();
         services.AddScoped<ChallengeOverviewQueries>();
 
         return services;
