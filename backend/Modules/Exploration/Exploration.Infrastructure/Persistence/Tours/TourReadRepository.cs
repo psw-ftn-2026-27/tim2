@@ -41,6 +41,17 @@ internal sealed class TourReadRepository : ITourReadRepository
         return new PageResult<TourDto>(items, totalCount);
     }
 
+    // For now the newest tours are featured; reactivating an archived tour keeps its first publishing time.
+    public Task<List<FeaturedTourDto>> GetFeaturedAsync(int count)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Status == TourStatus.Published)
+            .OrderByDescending(tour => tour.PublishedAt)
+            .Take(count)
+            .Select(tour => new FeaturedTourDto(tour.Name, tour.Description, tour.Price))
+            .ToListAsync();
+    }
+
     private static IQueryable<Tour> FilterByNameAndDifficulty(IQueryable<Tour> tours, TourSearchDto search)
     {
         if (!string.IsNullOrWhiteSpace(search.Name))
