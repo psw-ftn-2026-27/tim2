@@ -9,7 +9,7 @@ namespace Host.Tests;
 
 public abstract class BaseArchitectureTests
 {
-    protected static readonly string[] Modules = ["Exploration", "Games", "Social", "Payment"];
+    protected static readonly string[] Modules = ["Exploration", "Games", "Social", "Payment", "Positions"];
     protected static readonly string[] Layers = ["Api", "Application", "Contracts", "Domain", "Infrastructure"];
     protected static readonly string[] SharedProjects = ["Shared.Domain", "Shared.Api", "Shared.Infrastructure"];
 
