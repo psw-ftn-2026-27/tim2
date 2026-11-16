@@ -5,8 +5,9 @@ namespace Exploration.Tests.Integration.Seeds;
 
 /// <summary>
 /// Lets another module's integration tests put the Exploration seeds into the exploration
-/// schema, so that IExplorationApi finds them. The seeds and the context stay internal;
-/// only this entry point is public.
+/// schema, so that IExplorationApi finds them. The seeds and the context are internal;
+/// Payment.Tests reads the seeded tours through InternalsVisibleTo in Exploration.Tests.csproj,
+/// as agreed with the Exploration and platform teams.
 /// </summary>
 public static class ExplorationReseed
 {
