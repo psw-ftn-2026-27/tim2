@@ -1,0 +1,8 @@
+<div #map class="map"></div>
+
+@if (loadingPath()) {
+  <p>Loading path...</p>
+}
+@if (routingFailed()) {
+  <p class="error">Path could not be created</p>
+}
