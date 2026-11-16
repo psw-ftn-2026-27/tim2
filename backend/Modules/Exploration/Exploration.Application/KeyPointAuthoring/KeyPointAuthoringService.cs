@@ -49,6 +49,14 @@ public sealed class KeyPointAuthoringService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task SetCalculatedLengthAsync(Guid tourId, Guid authorId, TourLengthDto dto)
+    {
+        var tour = await GetOwnedTourAsync(tourId, authorId);
+
+        tour.SetCalculatedLength(dto.LengthKm);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     private async Task<Tour> GetOwnedTourAsync(Guid tourId, Guid authorId)
     {
         var tour = await _tourRepository.GetByIdAsync(tourId);

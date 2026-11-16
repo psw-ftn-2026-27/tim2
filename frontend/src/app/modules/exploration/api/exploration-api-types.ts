@@ -27,6 +27,7 @@ export interface TourDto {
   recommendedGroupSize: RecommendedGroupSizeDto | null;
   price: number;
   archivedAt: string | null;
+  lengthKm: number | null;
 }
 
 export type SortDirection = 'None' | 'Ascending' | 'Descending';
@@ -101,6 +102,7 @@ export interface TourKeyPointsDto {
   name: string;
   status: TourStatus;
   keyPoints: KeyPointDto[];
+  lengthKm: number | null;
 }
 
 export interface KeyPointDataDto {
@@ -117,4 +119,8 @@ export type KeyPointMoveDirection = 'Up' | 'Down';
 
 export interface MoveKeyPointDto {
   direction: KeyPointMoveDirection;
+}
+
+export interface TourLengthDto {
+  lengthKm: number;
 }

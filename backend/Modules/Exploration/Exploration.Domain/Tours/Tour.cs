@@ -6,6 +6,7 @@ namespace Exploration.Domain.Tours;
 public sealed class Tour : AggregateRoot
 {
     private const int MinimumDescriptionLengthForPublishing = 100;
+    private const int MinimumKeyPointsForPath = 2;
 
     private readonly List<TransportTime> _transportTimes = [];
     private readonly List<KeyPoint> _keyPoints = [];
@@ -20,6 +21,7 @@ public sealed class Tour : AggregateRoot
     public DateTime? ArchivedAt { get; private set; }
     public RecommendedGroupSize? RecommendedGroupSize { get; private set; }
     public int Price { get; private set; }
+    public double? LengthKm { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
     public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
 
@@ -52,6 +54,7 @@ public sealed class Tour : AggregateRoot
         Difficulty = difficulty;
         Tags = tags;
         Status = TourStatus.Draft;
+        LengthKm = 0;
     }
 
     public void AddTransportTime(TransportMode transport, int minutes)
@@ -97,6 +100,7 @@ public sealed class Tour : AggregateRoot
         }
 
         _keyPoints.Add(new KeyPoint(_keyPoints.Count + 1, name, description, imageUrl, location, secret, isVisibleBeforePurchase));
+        ResetLength();
     }
 
     public void ChangeKeyPoint(Guid keyPointId, string name, string description, string imageUrl, Location location,
@@ -107,7 +111,13 @@ public sealed class Tour : AggregateRoot
             throw new DomainException("Key points can be changed only while the tour is a draft.");
         }
 
-        GetKeyPoint(keyPointId).Change(name, description, imageUrl, location, secret, isVisibleBeforePurchase);
+        var keyPoint = GetKeyPoint(keyPointId);
+        var locationChanged = keyPoint.Location != location;
+        keyPoint.Change(name, description, imageUrl, location, secret, isVisibleBeforePurchase);
+        if (locationChanged)
+        {
+            ResetLength();
+        }
     }
 
     public void RemoveKeyPoint(Guid keyPointId)
@@ -123,6 +133,7 @@ public sealed class Tour : AggregateRoot
         {
             following.ChangeOrder(following.Order - 1);
         }
+        ResetLength();
     }
 
     public void MoveKeyPoint(Guid keyPointId, KeyPointMoveDirection direction)
@@ -142,6 +153,25 @@ public sealed class Tour : AggregateRoot
 
         neighbour.ChangeOrder(keyPoint.Order);
         keyPoint.ChangeOrder(neighbourOrder);
+        ResetLength();
+    }
+
+    public void SetCalculatedLength(double lengthKm)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("The length can be set only while the tour is a draft.");
+        }
+        if (_keyPoints.Count < MinimumKeyPointsForPath)
+        {
+            throw new DomainException($"The length can be set only for a tour with at least {MinimumKeyPointsForPath} key points.");
+        }
+        if (!double.IsFinite(lengthKm) || lengthKm < 0)
+        {
+            throw new DomainException("A tour length must be a finite number that is not negative.");
+        }
+
+        LengthKm = lengthKm;
     }
 
     public void Publish()
@@ -161,6 +191,14 @@ public sealed class Tour : AggregateRoot
         if (RecommendedGroupSize is null)
         {
             throw new DomainException("A tour can be published only with a recommended group size.");
+        }
+        if (_keyPoints.Count < MinimumKeyPointsForPath)
+        {
+            throw new DomainException($"A tour can be published only with at least {MinimumKeyPointsForPath} key points.");
+        }
+        if (LengthKm is null)
+        {
+            throw new DomainException("A tour can be published only with a calculated length.");
         }
 
         Status = TourStatus.Published;
@@ -187,6 +225,12 @@ public sealed class Tour : AggregateRoot
 
         Status = TourStatus.Published;
         ArchivedAt = null;
+    }
+
+    // A changed list has no path yet, so its length waits for a new calculation; fewer than two points have no path at all.
+    private void ResetLength()
+    {
+        LengthKm = _keyPoints.Count < MinimumKeyPointsForPath ? 0 : null;
     }
 
     private KeyPoint GetKeyPoint(Guid keyPointId)

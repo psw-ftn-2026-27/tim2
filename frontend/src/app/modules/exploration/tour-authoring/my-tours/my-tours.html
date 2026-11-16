@@ -22,6 +22,7 @@
           <th scope="col">Transport times</th>
           <th scope="col">Recommended group size</th>
           <th scope="col">Price</th>
+          <th scope="col">Length</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -57,6 +58,13 @@
                 Free
               } @else {
                 <span class="amount">{{ tour.price }} EC</span>
+              }
+            </td>
+            <td>
+              @if (tour.lengthKm !== null) {
+                {{ tour.lengthKm.toFixed(1) }} km
+              } @else {
+                <span class="meta">Not calculated</span>
               }
             </td>
             <td>
@@ -104,7 +112,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="7">You have no tours yet.</td>
+            <td colspan="8">You have no tours yet.</td>
           </tr>
         }
       </tbody>

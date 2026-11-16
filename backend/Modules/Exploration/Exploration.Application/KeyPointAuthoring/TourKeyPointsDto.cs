@@ -5,4 +5,5 @@ namespace Exploration.Application.KeyPointAuthoring;
 public sealed record TourKeyPointsDto(
     string Name,
     TourStatus Status,
-    List<KeyPointDto> KeyPoints);
+    List<KeyPointDto> KeyPoints,
+    double? LengthKm);

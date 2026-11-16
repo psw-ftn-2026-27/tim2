@@ -320,4 +320,70 @@ public class KeyPointAuthoringCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Author_sets_the_calculated_length_of_their_draft_tour_and_it_is_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tourId = TourSeed.DraftOldTownWithThreeKeyPoints.Id;
+        var request = new TourLengthDto(2.75);
+
+        var response = await client.PutAsJsonAsync($"/api/exploration/tours/{tourId}/length", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Tours.Single(tour => tour.Id == tourId).LengthKm.Should().Be(request.LengthKm);
+    }
+
+    [Fact]
+    public async Task Author_cannot_set_the_length_of_another_authors_tour_and_its_length_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tourId = TourSeed.SecondExplorersDraftMarketWithTwoKeyPoints.Id;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var lengthBefore = arrangeContext.Tours.Single(tour => tour.Id == tourId).LengthKm;
+
+        var response = await client.PutAsJsonAsync($"/api/exploration/tours/{tourId}/length", new TourLengthDto(2.75));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Tours.Single(tour => tour.Id == tourId).LengthKm.Should().Be(lengthBefore);
+    }
+
+    [Fact]
+    public async Task Setting_the_length_of_a_published_tour_is_rejected_and_its_length_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tourId = TourSeed.PublishedBridgesWithTwoKeyPoints.Id;
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var lengthBefore = arrangeContext.Tours.Single(tour => tour.Id == tourId).LengthKm;
+
+        var response = await client.PutAsJsonAsync($"/api/exploration/tours/{tourId}/length", new TourLengthDto(2.75));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.Tours.Single(tour => tour.Id == tourId).LengthKm.Should().Be(lengthBefore);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_set_the_length_of_a_tour()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.DraftOldTownWithThreeKeyPoints.Id}/length", new TourLengthDto(2.75));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_set_the_length_of_a_tour()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/exploration/tours/{TourSeed.DraftOldTownWithThreeKeyPoints.Id}/length", new TourLengthDto(2.75));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }
