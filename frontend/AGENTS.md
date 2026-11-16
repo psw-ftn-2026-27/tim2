@@ -53,12 +53,16 @@ frontend/src/
           create-tour/
           my-tours/
           tour-authoring.ts  the group's service: its commands, nothing else
+          tour-form-schema.ts
+                             a form shared by the group's pages: its model and
+                             schema, see Forms
         <name>.routes.ts     the module's routes, lazy-loaded by core/app.routes.ts; the
                              only module file imported from outside the module
 ```
 
 A module is a flat list of use-case groups. A group is a flat list of component
-folders plus at most one service file. That is the whole layout, and it follows the
+folders plus at most one service file, and one form schema file for each form its pages
+share. That is the whole layout, and it follows the
 2025 Angular style guide: organise by feature, never by type, so there are no
 `pages/`, `components/` or `services/` folders. Three rules place any file:
 
@@ -73,6 +77,8 @@ folders plus at most one service file. That is the whole layout, and it follows 
    `tour-list.scss`, no `.component` suffix. Generate with `ng g c tour-browsing/tour-list`
    from the module folder. A client-only type is exported from the file of the
    component whose input or output uses it; other components import it from there.
+   The one exception is the model of a form shared by several pages, which lives in
+   the group's form schema file (see Forms).
 3. Queries live in the page as an `httpResource`; commands live in the group's
    service. A page that runs a command reloads its own resource afterwards.
 
@@ -97,6 +103,10 @@ nothing.
   module's endpoints, and the page's DTO is mirrored in the module's own `api/`. There
   is no third way: a module never uses another module's component or type, never calls
   another module's endpoints, and never shares state with it.
+- The one agreed exception is the host, not a module: the landing page (`core/home`) reads
+  Exploration's agreed featured-tours address (`GET /api/exploration/tours/featured`)
+  directly, with its own type in `core/home`. That address does not change without
+  agreement with the platform team.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
 - The one legitimately shared state is the current user (identity, roles) in `core/`.
@@ -125,6 +135,16 @@ construct means adding a lesson, so treat it as a platform decision.
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+  A form with a variable number of items (a quiz's questions, each with its answers) keeps
+  one model signal whose fields are arrays, which may nest (each question holds its own
+  array of answers); rules for every item are declared with
+  `applyEach`, add and remove buttons replace the array in the model, and the template
+  walks the arrays with `@for`. Limits on the number of items are shown by disabling those
+  buttons; this only helps the user, the backend domain still enforces the limits.
+  A form used by one page keeps its model type and schema function in that page's file.
+  A form shared by several pages of one group (a quiz's create and details pages) keeps them in
+  `<form>-form-schema.ts` in the group folder, next to the group's service
+  (`quiz-management/quiz-form-schema.ts`); the pages import from there.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
   after a command.
@@ -158,8 +178,8 @@ assigned to the platform team, and misalignment is an accepted learning experien
 - In feature modules, DTO types mirror the backend's Application DTOs one to one: one
   file per module in `modules/<name>/api/`, shared envelope types in `shared/api/`, so
   the import boundary covers types as well. Client-only types follow rule 2 above.
-  There is no `models/` folder; a client-only type with no single owning component is
-  a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
+  There is no `models/` folder; apart from a shared form's model, a client-only type
+  with no single owning component is a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
   backend also updates the mirrored type in the same commit, and nothing else ever
   touches these files: no client-only fields, no renames, no extra types. Mapping
   rules: enum to a union of string literals, `Guid` and `DateTime` to `string`,
@@ -216,6 +236,17 @@ assigned to the platform team, and misalignment is an accepted learning experien
 
   ```html
   <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
+  ```
+
+  To let the user choose a place, turn on `pickLocation`. Each click emits
+  `locationPicked` with the clicked `latitude` and `longitude` and nothing else; the
+  map does not move the picked pin itself. The page keeps the coordinates in a signal
+  and passes them back through `selectedLocation` (`MapLocation | null`), which the map
+  draws as one pin, styled apart from the `locations` pins; when that pin is off screen,
+  the map pans to it. To edit an existing place, start the signal at it. `/map-demo` shows this too:
+
+  ```html
+  <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
   ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.

@@ -9,17 +9,22 @@
     @if (quiz.value(); as current) {
       <h1>{{ current.name }}</h1>
 
-      <p class="meta">{{ current.xp }} XP · {{ current.status }}</p>
+      <p class="row">
+        <span class="amount">{{ current.xp }} XP</span>
+        <span class="badge" [class.badge--muted]="current.status !== 'Published'">{{ current.status }}</span>
+      </p>
 
       @if (!editing()) {
         @if (error()) {
           <p class="error">{{ error() }}</p>
         }
 
-        <div class="actions">
+        <div class="row">
           @if (confirmingAction()) {
             <button
-              class="button button--primary"
+              class="button"
+              [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+              [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
               type="button"
               [disabled]="pending()"
               (click)="confirm()"
@@ -51,13 +56,13 @@
               <button class="button" type="button" (click)="askToConfirm('publish')">Publish</button>
             }
             @if (current.status === 'Draft' || current.status === 'Archived') {
-              <button class="button" type="button" (click)="askToConfirm('delete')">Delete</button>
+              <button class="button button--danger" type="button" (click)="askToConfirm('delete')">Delete</button>
             }
             @if (current.status === 'Published') {
-              <button class="button" type="button" (click)="askToConfirm('retire')">Retire</button>
+              <button class="button button--danger" type="button" (click)="askToConfirm('retire')">Retire</button>
             }
             @if (current.status === 'Retired') {
-              <button class="button" type="button" (click)="askToConfirm('archive')">Archive</button>
+              <button class="button button--danger" type="button" (click)="askToConfirm('archive')">Archive</button>
             }
             @if (current.status === 'Retired' || current.status === 'Archived') {
               <button class="button" type="button" (click)="askToConfirm('repeat')">Repeat</button>
@@ -145,7 +150,7 @@
                         }
                       </div>
                       <button
-                        class="button"
+                        class="button button--danger"
                         type="button"
                         [disabled]="question.answers.length <= 2"
                         (click)="removeAnswer(questionIndex, answerIndex)"
@@ -166,7 +171,7 @@
                   }
                 </fieldset>
 
-                <div class="actions">
+                <div class="row">
                   <button
                     class="button"
                     type="button"
@@ -176,7 +181,7 @@
                     + Add answer
                   </button>
                   <button
-                    class="button"
+                    class="button button--danger"
                     type="button"
                     [disabled]="editForm.questions.length <= 1"
                     (click)="removeQuestion(questionIndex)"
@@ -216,7 +221,7 @@
             <p class="error">{{ editError() }}</p>
           }
 
-          <div class="actions">
+          <div class="row">
             <button
               class="button button--primary"
               type="submit"
