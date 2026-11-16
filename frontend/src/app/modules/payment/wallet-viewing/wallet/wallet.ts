@@ -23,6 +23,10 @@ export class Wallet {
     () => this.page() * pageSize < (this.transactions.value()?.totalCount ?? 0),
   );
 
+  protected formatTime(value: string): string {
+    return new Date(value).toLocaleString('en-GB');
+  }
+
   protected previousPage(): void {
     this.page.update((page) => page - 1);
   }

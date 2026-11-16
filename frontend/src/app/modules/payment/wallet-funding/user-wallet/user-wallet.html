@@ -1,33 +1,33 @@
 <div class="stack">
-  <p><a routerLink="/payment/wallets">Nazad na listu</a></p>
+  <p><a routerLink="/payment/wallets">Back to the list</a></p>
 
   @if (wallet.isLoading()) {
-    <p>Učitavanje novčanika...</p>
+    <p>Loading the wallet...</p>
   } @else if (wallet.error()) {
-    <p class="error">Novčanik nije moguće učitati. Prijavite se kao administrator.</p>
+    <p class="error">Could not load the wallet. Log in as an administrator.</p>
   } @else {
     @if (wallet.value(); as userWallet) {
       <h1>{{ userWallet.email }}</h1>
-      <p class="balance">Stanje: {{ userWallet.balance }} EC</p>
+      <p class="balance">Balance: <span class="amount">{{ userWallet.balance }} EC</span></p>
     }
   }
 
-  <h2>Transakcije</h2>
+  <h2>Transactions</h2>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (transactions.isLoading()) {
-    <p>Učitavanje transakcija...</p>
+    <p>Loading transactions...</p>
   } @else if (transactions.error()) {
-    <p class="error">Transakcije nije moguće učitati. Prijavite se kao administrator.</p>
+    <p class="error">Could not load the transactions. Log in as an administrator.</p>
   } @else {
     <table class="table">
       <thead>
         <tr>
-          <th scope="col">Iznos</th>
-          <th scope="col">Vreme</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Time</th>
           <th scope="col">Administrator</th>
           <th scope="col">Status</th>
         </tr>
@@ -35,31 +35,31 @@
       <tbody>
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
-            <td>{{ transaction.amount }} EC</td>
+            <td><span class="amount">{{ transaction.amount }} EC</span></td>
             <td>{{ formatTime(transaction.createdAt) }}</td>
-            <td>{{ isOwnDeposit(transaction) ? 'Vi' : 'Drugi administrator' }}</td>
+            <td>{{ isOwnDeposit(transaction) ? 'You' : 'Another administrator' }}</td>
             <td>
               @if (transaction.isCancelled) {
-                stornirano
+                <span class="badge badge--muted">Cancelled</span>
               } @else if (!isOwnDeposit(transaction)) {
-                <span class="meta">Storno može samo administrator koji je uplatio.</span>
+                <span class="meta">Only the administrator who made the deposit can cancel it.</span>
               } @else if (!isWithinCancellationWindow(transaction)) {
-                <span class="meta">Rok od 24h za storno je istekao.</span>
+                <span class="meta">The 24-hour cancellation window has expired.</span>
               } @else {
                 <button
-                  class="button"
+                  class="button button--danger"
                   type="button"
                   [disabled]="pending()"
                   (click)="cancelDeposit(transaction.id)"
                 >
-                  Storniraj
+                  Cancel deposit
                 </button>
               }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="meta">Još nema transakcija.</td>
+            <td colspan="4" class="meta">No transactions yet.</td>
           </tr>
         }
       </tbody>
@@ -72,16 +72,16 @@
         [disabled]="page() === 1 || pending()"
         (click)="previousPage()"
       >
-        Prethodna
+        Previous
       </button>
-      <span class="meta">Strana {{ page() }}</span>
+      <span class="meta">Page {{ page() }}</span>
       <button
         class="button"
         type="button"
         [disabled]="!hasNextPage() || pending()"
         (click)="nextPage()"
       >
-        Sledeća
+        Next
       </button>
     </p>
   }
