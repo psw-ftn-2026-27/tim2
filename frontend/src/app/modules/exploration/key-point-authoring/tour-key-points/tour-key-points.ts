@@ -76,6 +76,22 @@ export class TourKeyPoints {
   protected readonly imagePending = signal(false);
   protected readonly imageError = signal<string | null>(null);
 
+  // All key points of the loaded list, in their order, for the path map below the list.
+  protected readonly pathLocations = computed<MapLocation[]>(() => {
+    const keyPoints = this.tour.hasValue() ? this.tour.value().keyPoints : [];
+    return [...keyPoints]
+      .sort((first, second) => first.order - second.order)
+      .map((keyPoint) => ({
+        latitude: keyPoint.latitude,
+        longitude: keyPoint.longitude,
+        name: keyPoint.name,
+      }));
+  });
+
+  // The path map has no retry input, so "Try again" removes it and renders it again,
+  // and the new map asks for the path once more.
+  protected readonly pathMapShown = signal(true);
+
   protected startAdd(): void {
     this.deletingKeyPointId.set(null);
     this.editingKeyPointId.set(null);
@@ -194,5 +210,35 @@ export class TourKeyPoints {
     } finally {
       this.pending.set(false);
     }
+  }
+
+  // The map drops a path that arrives for an old list, so a number here belongs to the
+  // list on the page. It is sent only for a draft and only when it differs from the saved
+  // length; after the reload the map gives the same number again and nothing is sent.
+  // While another command runs the list is about to change, so that number is not sent.
+  protected async saveLength(lengthKm: number | null): Promise<void> {
+    if (lengthKm === null || !this.tour.hasValue() || this.pending()) {
+      return;
+    }
+    const current = this.tour.value();
+    if (current.status !== 'Draft' || lengthKm === current.lengthKm) {
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.keyPointAuthoring.setCalculatedLength(this.id(), { lengthKm });
+      this.tour.reload();
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not save the length of the tour.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  protected retryPath(): void {
+    this.pathMapShown.set(false);
+    // The page must be drawn once without the map, so the map comes back a moment later.
+    setTimeout(() => this.pathMapShown.set(true));
   }
 }

@@ -123,6 +123,31 @@
       </tbody>
     </table>
 
+    <section class="stack">
+      <h2>Path</h2>
+      @if (pathMapShown()) {
+        <app-map
+          [locations]="pathLocations()"
+          [showPath]="true"
+          (pathLength)="saveLength($event)"
+        />
+      }
+      @if (current.keyPoints.length < 2) {
+        <p>Length: 0 km</p>
+      } @else if (current.lengthKm !== null) {
+        <p>Length: {{ current.lengthKm.toFixed(1) }} km</p>
+      } @else {
+        <p class="meta">The length of the tour is not calculated.</p>
+        @if (current.status === 'Draft') {
+          <div class="row">
+            <button class="button" type="button" [disabled]="pending()" (click)="retryPath()">
+              Try again
+            </button>
+          </div>
+        }
+      }
+    </section>
+
     @if (current.status === 'Draft') {
       @if (formOpen()) {
         <form class="card stack key-point-form" (submit)="save($event)">

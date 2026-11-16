@@ -86,7 +86,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Location.Longitude,
                         keyPoint.Secret,
                         keyPoint.IsVisibleBeforePurchase))
-                    .ToList()))
+                    .ToList(),
+                tour.LengthKm))
             .FirstOrDefaultAsync();
     }
 
@@ -150,6 +151,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                     ? null
                     : new RecommendedGroupSizeDto(tour.RecommendedGroupSize.Min, tour.RecommendedGroupSize.Max),
                 tour.Price,
-                tour.ArchivedAt));
+                tour.ArchivedAt,
+                tour.LengthKm));
     }
 }
