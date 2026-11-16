@@ -20,6 +20,11 @@ internal static class TourSeed
     public static readonly Tour DraftOldTownWithThreeKeyPoints;
     public static readonly Tour SecondExplorersDraftMarketWithTwoKeyPoints;
     public static readonly Tour PublishedBridgesWithTwoKeyPoints;
+    public static readonly Tour PublishedKalemegdanWithVisibleKeyPointInBelgrade;
+    public static readonly Tour PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade;
+    public static readonly Tour PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade;
+    public static readonly Tour DraftDorcolWithVisibleKeyPointInBelgrade;
+    public static readonly Tour ArchivedTasmajdanWithVisibleKeyPointInBelgrade;
 
     static TourSeed()
     {
@@ -88,7 +93,41 @@ internal static class TourSeed
         PublishedBridgesWithTwoKeyPoints.AddKeyPoint("Varadinski most", "Most koji spaja centar sa Petrovaradinom.", "/images/varadinski-most.jpg", new Location(45.2526, 19.8650), null, true);
         PublishedBridgesWithTwoKeyPoints.AddKeyPoint("Most slobode", "Viseći most na izlazu iz grada.", "/images/most-slobode.jpg", new Location(45.2390, 19.8290), "Most je obnovljen 2005. godine.", false);
         PublishedBridgesWithTwoKeyPoints.Publish();
+
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade = new(WellKnownUsers.SecondExplorer, "Kalemegdanska tvrđava", "Obilazak počinje kod spomenika Pobedniku na Kalemegdanu, vodi kroz Gornji i Donji grad i završava se na ušću Save u Dunav.", TourDifficulty.Easy, ["beograd"]);
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade.ChangeRecommendedGroupSize(1, 10);
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade.AddTransportTime(TransportMode.Walking, 60);
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade.ChangePrice(500);
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade.AddKeyPoint("Pobednik", "Spomenik Pobedniku iznad ušća.", "/images/pobednik.jpg", new Location(44.8231, 20.4504), null, true);
+        PublishedKalemegdanWithVisibleKeyPointInBelgrade.Publish();
+
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade = new(WellKnownUsers.SecondExplorer, "Skadarlija i Zemun", "Obilazak počinje u boemskoj Skadarliji, a nastavlja se preko reke do Gardoša i starog zemunskog keja, uz priču o dva grada koja su postala jedan.", TourDifficulty.Moderate, ["beograd"]);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.ChangeRecommendedGroupSize(2, 12);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.AddTransportTime(TransportMode.Bicycle, 90);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.ChangePrice(800);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.AddKeyPoint("Skadarlija", "Kaldrmisana ulica boema.", "/images/skadarlija.jpg", new Location(44.8150, 20.4600), "Najstarija kafana ima tajni podrum.", false);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.AddKeyPoint("Gardoš", "Kula na zemunskom brdu.", "/images/gardos.jpg", new Location(44.8433, 20.4011), null, true);
+        PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.Publish();
+
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade = new(WellKnownUsers.Explorer, "Od Trga republike do Avale", "Tura počinje na Trgu republike, penje se do Avalskog tornja i vraća se u grad do Slavije, uz priču o tome kako je grad rastao ka jugu.", TourDifficulty.Hard, ["beograd"]);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.ChangeRecommendedGroupSize(2, 8);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.AddTransportTime(TransportMode.Car, 120);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.ChangePrice(2000);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.AddKeyPoint("Trg republike", "Glavni gradski trg.", "/images/trg-republike.jpg", new Location(44.8176, 20.4600), "Ispod trga je stari bunker.", false);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.AddKeyPoint("Avalski toranj", "Toranj na vrhu Avale.", "/images/avalski-toranj.jpg", new Location(44.6953, 20.5160), null, true);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.AddKeyPoint("Slavija", "Najveći kružni tok u gradu.", "/images/slavija.jpg", new Location(44.8027, 20.4663), null, true);
+        PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.Publish();
+
+        DraftDorcolWithVisibleKeyPointInBelgrade = new(WellKnownUsers.Explorer, "Dorćol", "Kratak opis šetnje Dorćolom.", TourDifficulty.Easy, ["beograd"]);
+        DraftDorcolWithVisibleKeyPointInBelgrade.AddKeyPoint("Bajrakli džamija", "Jedina sačuvana džamija u gradu.", "/images/bajrakli.jpg", new Location(44.8250, 20.4620), null, true);
+
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade = new(WellKnownUsers.Explorer, "Tašmajdanski park", "Šetnja vodi kroz Tašmajdanski park, pored crkve Svetog Marka i starih rimskih kamenoloma, do zgrade Narodne skupštine na rubu parka.", TourDifficulty.Easy, ["beograd"]);
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade.ChangeRecommendedGroupSize(1, 15);
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade.AddTransportTime(TransportMode.Walking, 45);
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade.AddKeyPoint("Crkva Svetog Marka", "Crkva na ivici parka.", "/images/sveti-marko.jpg", new Location(44.8090, 20.4730), null, true);
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Publish();
+        ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints, PublishedKalemegdanWithVisibleKeyPointInBelgrade, PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade, PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade, DraftDorcolWithVisibleKeyPointInBelgrade, ArchivedTasmajdanWithVisibleKeyPointInBelgrade];
 }
