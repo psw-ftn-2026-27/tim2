@@ -25,8 +25,11 @@ frontend/src/
   styles/
     _tokens.scss             colours, spacing, radius, type as CSS custom properties
     _base.scss               reset, body, headings, links
-    _layout.scss             page container, stack, grid helpers
-    _components.scss         global classes: button, card, form field, table
+    _layout.scss             page container, stack, grid, page header, row, form page
+    _components.scss         global classes: button, card, form field, table, badge,
+                             amount, paging
+    README.md                styling guide: which class to use when, page structure,
+                             review checklist
   app/
     core/                    auth (state, interceptor, login, register), home,
                              map-demo (live example of shared/map for the team),
@@ -158,6 +161,10 @@ lean files that students extend, not a design system. The four global partials i
 `src/styles/` are platform-owned and short. Theming means editing `_tokens.scss` and
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
+
+`src/styles/README.md` is the styling guide every team follows: the palette, the page
+structure, which global class to use when, and the review checklist for frontend PRs.
+Read it before styling a page.
 
 Where a style goes, in order:
 
