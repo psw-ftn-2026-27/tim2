@@ -37,6 +37,38 @@
     </section>
 
     <section class="stack">
+      <h2>Location</h2>
+
+      <app-map
+        [pickLocation]="true"
+        [selectedLocation]="form.location().value()"
+        (locationPicked)="pickLocation($event)"
+      />
+
+      @if (form.location().value(); as location) {
+        <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+      } @else {
+        <p class="hint">No location set. Click the map to place the pin.</p>
+      }
+
+      <div class="field">
+        <label for="range">Range (m)</label>
+        <input id="range" type="number" step="1" [formField]="form.rangeInMeters" />
+        @if (form.rangeInMeters().touched()) {
+          @for (message of form.rangeInMeters().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <p>
+        <button class="button button--danger" type="button" (click)="removeLocation()">
+          Remove location
+        </button>
+      </p>
+    </section>
+
+    <section class="stack">
       <h2>Questions</h2>
 
       @for (question of form.questions; track $index; let questionIndex = $index) {

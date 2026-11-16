@@ -8,4 +8,5 @@ public sealed record QuizDto(
     string Instructions,
     int Xp,
     QuizStatus Status,
-    List<QuestionDto> Questions);
+    List<QuestionDto> Questions,
+    QuizLocationDto? Location);

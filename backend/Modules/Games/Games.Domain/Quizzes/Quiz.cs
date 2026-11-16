@@ -19,6 +19,7 @@ public sealed class Quiz : AggregateRoot
     public string Instructions { get; private set; }
     public int Xp { get; private set; }
     public QuizStatus Status { get; private set; }
+    public QuizLocation? Location { get; private set; }
     public IReadOnlyList<Question> Questions => _questions;
 
     private Quiz()
@@ -27,7 +28,7 @@ public sealed class Quiz : AggregateRoot
         Instructions = null!;
     }
 
-    public Quiz(string name, string instructions, int xp, List<Question> questions)
+    public Quiz(string name, string instructions, int xp, List<Question> questions, QuizLocation? location)
         : base(Guid.NewGuid())
     {
         Validate(name, instructions, xp, questions);
@@ -36,10 +37,11 @@ public sealed class Quiz : AggregateRoot
         Instructions = instructions.Trim();
         Xp = xp;
         _questions.AddRange(questions);
+        Location = location;
         Status = QuizStatus.Draft;
     }
 
-    public void Update(string name, string instructions, int xp, List<Question> questions)
+    public void Update(string name, string instructions, int xp, List<Question> questions, QuizLocation? location)
     {
         if (Status != QuizStatus.Draft)
         {
@@ -53,6 +55,7 @@ public sealed class Quiz : AggregateRoot
         Xp = xp;
         _questions.Clear();
         _questions.AddRange(questions);
+        Location = location;
     }
 
     public void EnsureCanBeDeleted()
@@ -63,6 +66,10 @@ public sealed class Quiz : AggregateRoot
     public void Publish()
     {
         EnsureStatusIsOneOf(QuizStatus.Draft);
+        if (Location is null)
+        {
+            throw new DomainException("A quiz needs a location and a range before it can be published.");
+        }
 
         Status = QuizStatus.Published;
     }

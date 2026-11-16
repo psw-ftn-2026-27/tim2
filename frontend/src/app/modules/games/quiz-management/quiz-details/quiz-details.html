@@ -108,6 +108,38 @@
           </section>
 
           <section class="stack">
+            <h2>Location</h2>
+
+            <app-map
+              [pickLocation]="true"
+              [selectedLocation]="editForm.location().value()"
+              (locationPicked)="pickLocation($event)"
+            />
+
+            @if (editForm.location().value(); as location) {
+              <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+            } @else {
+              <p class="hint">No location set. Click the map to place the pin.</p>
+            }
+
+            <div class="field">
+              <label for="range">Range (m)</label>
+              <input id="range" type="number" step="1" [formField]="editForm.rangeInMeters" />
+              @if (editForm.rangeInMeters().touched()) {
+                @for (message of editForm.rangeInMeters().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+
+            <p>
+              <button class="button button--danger" type="button" (click)="removeLocation()">
+                Remove location
+              </button>
+            </p>
+          </section>
+
+          <section class="stack">
             <h2>Questions</h2>
 
             @for (question of editForm.questions; track $index; let questionIndex = $index) {
@@ -238,6 +270,20 @@
         <section class="stack">
           <h2>Instructions</h2>
           <p class="instructions">{{ current.instructions }}</p>
+        </section>
+
+        <section class="stack">
+          <h2>Location</h2>
+          @if (current.location; as location) {
+            <app-map [locations]="savedLocation()" />
+            <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+            <p>Range: {{ location.rangeInMeters }} m</p>
+          } @else {
+            <p>Location not set</p>
+            @if (current.status === 'Draft') {
+              <p class="hint">The quiz cannot be published until a location and range are set.</p>
+            }
+          }
         </section>
 
         <section class="stack">

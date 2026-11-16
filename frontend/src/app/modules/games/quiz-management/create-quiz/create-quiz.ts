@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { MapLocation, MapView } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { QuizManagement } from '../quiz-management';
 import {
@@ -8,14 +9,16 @@ import {
   addAnswer,
   addQuestion,
   emptyQuestion,
+  pickLocation,
   quizFormSchema,
   removeAnswer,
+  removeLocation,
   removeQuestion,
   toQuizDto,
 } from '../quiz-form-schema';
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, MapView, RouterLink],
   selector: 'app-create-quiz',
   styleUrl: './create-quiz.scss',
   templateUrl: './create-quiz.html',
@@ -29,12 +32,22 @@ export class CreateQuiz {
     instructions: '',
     xp: 10,
     questions: [emptyQuestion()],
+    location: null,
+    rangeInMeters: null,
   });
 
   protected readonly form = form(this.model, quizFormSchema);
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected pickLocation(location: MapLocation): void {
+    this.model.update((quiz) => pickLocation(quiz, location));
+  }
+
+  protected removeLocation(): void {
+    this.model.update((quiz) => removeLocation(quiz));
+  }
 
   protected addQuestion(): void {
     this.model.update((quiz) => addQuestion(quiz));

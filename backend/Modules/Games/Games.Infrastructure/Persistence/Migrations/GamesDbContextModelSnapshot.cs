@@ -135,6 +135,30 @@ namespace Games.Infrastructure.Persistence.Migrations
                             b1.Navigation("Options");
                         });
 
+                    b.OwnsOne("Games.Domain.Quizzes.QuizLocation", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("QuizId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<int>("RangeInMeters")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("QuizId");
+
+                            b1.ToTable("Quizzes", "games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizId");
+                        });
+
+                    b.Navigation("Location");
+
                     b.Navigation("Questions");
                 });
 
