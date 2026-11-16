@@ -1,14 +1,18 @@
 <div class="stack">
-  <h1>My cart</h1>
+  <p><a routerLink="/payment">Back to Payment</a></p>
+
+  <header class="page-header">
+    <h1>My cart</h1>
+  </header>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (cart.isLoading()) {
-    <p>Loading cart...</p>
+    <p>Loading the cart...</p>
   } @else if (cart.error()) {
-    <p class="error">The cart could not be loaded. Log in and try again.</p>
+    <p class="error">Could not load the cart. Log in and try again.</p>
   } @else {
     <table class="table">
       <thead>
@@ -22,10 +26,10 @@
         @for (item of cart.value()?.items ?? []; track item.tourId) {
           <tr>
             <td>{{ item.name }}</td>
-            <td>{{ item.price }} EC</td>
+            <td><span class="amount">{{ item.price }} EC</span></td>
             <td>
               <button
-                class="button"
+                class="button button--danger"
                 type="button"
                 [disabled]="pending()"
                 (click)="removeFromCart(item.tourId)"
@@ -42,6 +46,6 @@
       </tbody>
     </table>
 
-    <p class="total">Total: {{ cart.value()?.totalPrice ?? 0 }} EC</p>
+    <p class="total">Total: <span class="amount">{{ cart.value()?.totalPrice ?? 0 }} EC</span></p>
   }
 </div>

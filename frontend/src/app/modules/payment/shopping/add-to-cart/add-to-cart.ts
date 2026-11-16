@@ -1,11 +1,12 @@
 import { httpResource } from '@angular/common/http';
 import { Component, inject, input, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourOfferDto } from '../../api/payment-api-types';
 import { Shopping } from '../shopping';
 
 @Component({
+  imports: [RouterLink],
   selector: 'app-add-to-cart',
   styleUrl: './add-to-cart.scss',
   templateUrl: './add-to-cart.html',
