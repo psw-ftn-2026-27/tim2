@@ -14,6 +14,9 @@ internal sealed class TourReadRepository : ITourReadRepository
     private static readonly Expression<Func<Tour, int>> DifficultyRank =
         tour => tour.Difficulty == TourDifficulty.Easy ? 0 : tour.Difficulty == TourDifficulty.Moderate ? 1 : 2;
 
+    private const double EarthRadiusKm = 6371;
+    private const double RadiansPerDegree = Math.PI / 180;
+
     private readonly ExplorationDbContext _dbContext;
 
     public TourReadRepository(ExplorationDbContext dbContext)
@@ -40,6 +43,25 @@ internal sealed class TourReadRepository : ITourReadRepository
             .ToListAsync();
 
         return new PageResult<TourDto>(items, totalCount);
+    }
+
+    // Only key points visible before purchase count, both for the area and for the map marker.
+    public async Task<PageResult<LocatedTourDto>> GetPublishedByLocationAsync(SearchArea area, TourSearchDto search, int page, int pageSize)
+    {
+        var published = _dbContext.Tours.Where(tour => tour.Status == TourStatus.Published);
+        published = FilterByArea(published, area);
+        published = FilterByNameAndDifficulty(published, search);
+        published = FilterByTagsAndTransport(published, search);
+        published = FilterByPrice(published, search);
+
+        var totalCount = await published.CountAsync();
+        var sorted = published.OrderByDescending(tour => tour.PublishedAt).ThenBy(tour => tour.Id);
+        var items = await ProjectToLocatedDtos(sorted)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PageResult<LocatedTourDto>(items, totalCount);
     }
 
     // For now the newest tours are featured; reactivating an archived tour keeps its first publishing time.
@@ -75,6 +97,24 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.IsVisibleBeforePurchase))
                     .ToList()))
             .FirstOrDefaultAsync();
+    }
+
+    // Great-circle distance by the haversine formula, written with Math calls so that it runs in the database.
+    // Math.Min keeps rounding from pushing the arcsine argument above 1 for points on opposite sides of the Earth.
+    private static IQueryable<Tour> FilterByArea(IQueryable<Tour> tours, SearchArea area)
+    {
+        var centerLatitude = area.Center.Latitude * RadiansPerDegree;
+        var centerLongitude = area.Center.Longitude * RadiansPerDegree;
+        var centerLatitudeCosine = Math.Cos(centerLatitude);
+        var radiusKm = area.RadiusKm;
+
+        return tours.Where(tour => tour.KeyPoints.Any(keyPoint =>
+            keyPoint.IsVisibleBeforePurchase &&
+            2 * EarthRadiusKm * Math.Asin(Math.Min(1, Math.Sqrt(
+                Math.Pow(Math.Sin((keyPoint.Location.Latitude * RadiansPerDegree - centerLatitude) / 2), 2) +
+                centerLatitudeCosine * Math.Cos(keyPoint.Location.Latitude * RadiansPerDegree) *
+                Math.Pow(Math.Sin((keyPoint.Location.Longitude * RadiansPerDegree - centerLongitude) / 2), 2))))
+            <= radiusKm));
     }
 
     private static IQueryable<Tour> FilterByNameAndDifficulty(IQueryable<Tour> tours, TourSearchDto search)
@@ -138,6 +178,29 @@ internal sealed class TourReadRepository : ITourReadRepository
             _ => sorted
         };
         return sorted.ThenByDescending(tour => tour.PublishedAt);
+    }
+
+    // The marker stands on the first visible key point, even when that point lies outside the search area.
+    private static IQueryable<LocatedTourDto> ProjectToLocatedDtos(IQueryable<Tour> tours)
+    {
+        return tours
+            .Select(tour => new LocatedTourDto(
+                tour.Id,
+                tour.Name,
+                tour.Description,
+                tour.Difficulty,
+                tour.Tags,
+                tour.Price,
+                tour.KeyPoints
+                    .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => keyPoint.Location.Latitude)
+                    .First(),
+                tour.KeyPoints
+                    .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => keyPoint.Location.Longitude)
+                    .First()));
     }
 
     private static IQueryable<TourDto> ProjectToDtos(IQueryable<Tour> tours)

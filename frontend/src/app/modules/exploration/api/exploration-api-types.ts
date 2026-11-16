@@ -42,6 +42,29 @@ export interface TourSearchDto {
   priceSort: SortDirection;
 }
 
+export interface TourLocationSearchDto {
+  latitude: number;
+  longitude: number;
+  radiusKm: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transportModes: TransportMode[] | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+}
+
+export interface LocatedTourDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  price: number;
+  markerLatitude: number;
+  markerLongitude: number;
+}
+
 export interface CreateTourDto {
   name: string;
   description: string;
