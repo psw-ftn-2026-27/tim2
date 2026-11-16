@@ -147,6 +147,8 @@ export class ChallengeList {
     try {
       if (challenge.type === 'Quiz') {
         await this.confirmQuiz(challengeId, action);
+      } else if (action === 'delete' && challenge.type === 'LocationChallenge') {
+        await this.overview.deleteLocationChallenge(challengeId);
       } else if (action === 'delete') {
         await this.overview.delete(challengeId);
       } else if (action === 'publish') {

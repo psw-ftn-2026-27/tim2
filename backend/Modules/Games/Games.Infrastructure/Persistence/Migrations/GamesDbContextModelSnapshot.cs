@@ -23,6 +23,30 @@ namespace Games.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Xp")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LocationChallenges", "games");
+                });
+
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
                 {
                     b.Property<Guid>("Id")
@@ -85,6 +109,76 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SocialChallenges", "games");
+                });
+
+            modelBuilder.Entity("Games.Domain.LocationChallenges.LocationChallenge", b =>
+                {
+                    b.OwnsMany("Games.Domain.LocationChallenges.HiddenPoint", "HiddenPoints", b1 =>
+                        {
+                            b1.Property<Guid>("LocationChallengeId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("ImageUrl")
+                                .IsRequired();
+
+                            b1.HasKey("LocationChallengeId", "__synthesizedOrdinal");
+
+                            b1.ToTable("LocationChallenges", "games");
+
+                            b1
+                                .ToJson("HiddenPoints")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationChallengeId");
+
+                            b1.OwnsOne("Games.Domain.LocationChallenges.Location", "Location", b2 =>
+                                {
+                                    b2.Property<Guid>("HiddenPointLocationChallengeId");
+
+                                    b2.Property<int>("HiddenPoint__synthesizedOrdinal");
+
+                                    b2.Property<double>("Latitude");
+
+                                    b2.Property<double>("Longitude");
+
+                                    b2.HasKey("HiddenPointLocationChallengeId", "HiddenPoint__synthesizedOrdinal");
+
+                                    b2.ToTable("LocationChallenges", "games");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("HiddenPointLocationChallengeId", "HiddenPoint__synthesizedOrdinal");
+                                });
+
+                            b1.Navigation("Location")
+                                .IsRequired();
+                        });
+
+                    b.OwnsOne("Games.Domain.LocationChallenges.Location", "StartLocation", b1 =>
+                        {
+                            b1.Property<Guid>("LocationChallengeId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("LocationChallengeId");
+
+                            b1.ToTable("LocationChallenges", "games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationChallengeId");
+                        });
+
+                    b.Navigation("HiddenPoints");
+
+                    b.Navigation("StartLocation")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
