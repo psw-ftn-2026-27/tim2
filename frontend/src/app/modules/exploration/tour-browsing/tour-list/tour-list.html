@@ -2,11 +2,11 @@
   <h1>Tours</h1>
 
   @if (auth.isLoggedIn()) {
-    <p class="links">
+    <nav class="row row--wide">
       <a routerLink="/exploration/mine">My tours</a>
       <a routerLink="/exploration/create">Create tour</a>
       <a routerLink="/exploration/preferences">Preferences</a>
-    </p>
+    </nav>
   }
 
   <div class="filters" (input)="backToFirstPage()" (change)="backToFirstPage()">
