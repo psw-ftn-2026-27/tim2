@@ -31,8 +31,11 @@ function sameStops(first: L.LatLng[], second: L.LatLng[]): boolean {
 export class MapView {
   readonly locations = input<MapLocation[]>([]);
   readonly showPath = input(false);
+  readonly pickLocation = input(false);
+  readonly selectedLocation = input<MapLocation | null>(null);
 
   readonly pathLength = output<number | null>();
+  readonly locationPicked = output<MapLocation>();
 
   protected readonly loadingPath = signal(false);
   protected readonly routingFailed = signal(false);
@@ -83,6 +86,49 @@ export class MapView {
       }
 
       onCleanup(() => pins.forEach((pin) => pin.remove()));
+    });
+
+    // A click only reports the place; the page keeps it and passes it back as selectedLocation.
+    effect((onCleanup) => {
+      const map = this.map();
+      if (map === null || !this.pickLocation()) {
+        return;
+      }
+
+      const pick = (event: L.LeafletMouseEvent) =>
+        this.locationPicked.emit({ latitude: event.latlng.lat, longitude: event.latlng.lng });
+      map.on('click', pick);
+      onCleanup(() => map.off('click', pick));
+    });
+
+    // The picked pin moves only when the page passes a new location, and the view stays where it is.
+    effect((onCleanup) => {
+      const map = this.map();
+      const selected = this.selectedLocation();
+      if (map === null || selected === null) {
+        return;
+      }
+
+      // Leaflet takes a colour value, not a CSS variable, so the token is read from the page.
+      const accent = getComputedStyle(this.mapElement().nativeElement)
+        .getPropertyValue('--color-accent')
+        .trim();
+      const pin = L.circleMarker([selected.latitude, selected.longitude], {
+        className: 'picked-pin',
+        color: accent,
+        fillColor: accent,
+        fillOpacity: 0.5,
+        radius: 10,
+        // A click on the pin goes through to the map, so it picks that place like any other.
+        interactive: false,
+      }).addTo(map);
+
+      // When editing a place far away, the pin would start off screen; after a click it is already in view.
+      if (!map.getBounds().contains(pin.getLatLng())) {
+        map.panTo(pin.getLatLng());
+      }
+
+      onCleanup(() => pin.remove());
     });
 
     effect((onCleanup) => {

@@ -233,5 +233,16 @@ assigned to the platform team, and misalignment is an accepted learning experien
   ```html
   <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
   ```
+
+  To let the user choose a place, turn on `pickLocation`. Each click emits
+  `locationPicked` with the clicked `latitude` and `longitude` and nothing else; the
+  map does not move the picked pin itself. The page keeps the coordinates in a signal
+  and passes them back through `selectedLocation` (`MapLocation | null`), which the map
+  draws as one pin, styled apart from the `locations` pins; when that pin is off screen,
+  the map pans to it. To edit an existing place, start the signal at it. `/map-demo` shows this too:
+
+  ```html
+  <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
+  ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.
