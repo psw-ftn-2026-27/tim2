@@ -3,7 +3,7 @@
 
   <app-blog-description [description]="blog().description" [plain]="true" />
 
-  <p class="meta">Status: {{ blog().status }}</p>
+  <p><span class="badge" [class.badge--muted]="blog().status !== 'Published'">{{ blog().status }}</span></p>
 
   <p class="meta">Comments: {{ blog().comments.length }}</p>
 
