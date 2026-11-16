@@ -19,9 +19,3 @@
 .text p {
   margin: 0;
 }
-
-// Both buttons share one style, so neither choice is pushed harder than the other.
-.actions {
-  display: flex;
-  gap: var(--space-2);
-}

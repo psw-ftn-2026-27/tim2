@@ -12,7 +12,8 @@
       }
     </p>
   </div>
-  <div class="actions">
+  <!-- Both buttons share one style, so neither choice is pushed harder than the other. -->
+  <div class="row">
     <button class="button" type="button" (click)="accept.emit()">Accept</button>
     <button class="button" type="button" (click)="decline.emit()">Decline</button>
   </div>
