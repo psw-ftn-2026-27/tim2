@@ -41,7 +41,7 @@ export class UserWallet {
   protected readonly error = signal<string | null>(null);
 
   protected formatTime(value: string): string {
-    return new Date(value).toLocaleString('sr-RS');
+    return new Date(value).toLocaleString('en-GB');
   }
 
   protected isOwnDeposit(transaction: UserTransactionDto): boolean {
@@ -60,7 +60,7 @@ export class UserWallet {
       this.wallet.reload();
       this.transactions.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Storno nije uspeo.'));
+      this.error.set(serverMessage(failure, 'Cancelling the deposit failed.'));
     } finally {
       this.pending.set(false);
     }
