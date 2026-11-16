@@ -1,0 +1,25 @@
+<div class="stack">
+  @if (offer.isLoading()) {
+    <p>Loading tour...</p>
+  } @else if (offer.error()) {
+    <p class="error">Tour not found.</p>
+  } @else {
+    @if (offer.value(); as tour) {
+      <h1>{{ tour.name }}</h1>
+      <p class="price">Price: {{ tour.price }} EC</p>
+      <p>
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="addToCart()"
+        >
+          Add to cart
+        </button>
+      </p>
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+    }
+  }
+</div>

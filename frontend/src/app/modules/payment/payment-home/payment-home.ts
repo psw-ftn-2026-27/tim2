@@ -13,6 +13,7 @@ import { Auth } from '../../../core/auth/auth';
       }
       @if (isExplorer()) {
         <p><a routerLink="/payment/wallet">Moj novčanik</a></p>
+        <p><a routerLink="/payment/cart">My cart</a></p>
       }
     </div>
   `,

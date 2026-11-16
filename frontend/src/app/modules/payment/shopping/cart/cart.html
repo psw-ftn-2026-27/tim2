@@ -1,0 +1,47 @@
+<div class="stack">
+  <h1>My cart</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (cart.isLoading()) {
+    <p>Loading cart...</p>
+  } @else if (cart.error()) {
+    <p class="error">The cart could not be loaded. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Tour</th>
+          <th scope="col">Price</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of cart.value()?.items ?? []; track item.tourId) {
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.price }} EC</td>
+            <td>
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="removeFromCart(item.tourId)"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="meta">Your cart is empty.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="total">Total: {{ cart.value()?.totalPrice ?? 0 }} EC</p>
+  }
+</div>
