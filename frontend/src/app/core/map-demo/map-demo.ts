@@ -4,7 +4,6 @@ import { MapLocation, MapView } from '../../shared/map/map';
 @Component({
   imports: [MapView],
   selector: 'app-map-demo',
-  styleUrl: './map-demo.scss',
   templateUrl: './map-demo.html',
 })
 export class MapDemo {

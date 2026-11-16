@@ -1,4 +1,4 @@
-import { Component, ElementRef, effect, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, input, output, signal, viewChild } from '@angular/core';
 import L from 'leaflet';
 import 'leaflet-routing-machine';
 
@@ -19,6 +19,10 @@ const ROUTING_TIMEOUT_MS = 10_000;
 // The marker images are copied to /leaflet by angular.json.
 const PIN = new L.Icon.Default({ imagePath: 'leaflet/' });
 
+function sameStops(first: L.LatLng[], second: L.LatLng[]): boolean {
+  return first.length === second.length && first.every((stop, index) => stop.equals(second[index]));
+}
+
 @Component({
   selector: 'app-map',
   styleUrl: './map.scss',
@@ -34,6 +38,13 @@ export class MapView {
   protected readonly routingFailed = signal(false);
   private readonly mapElement = viewChild.required<ElementRef<HTMLElement>>('map');
   private readonly map = signal<L.Map | null>(null);
+  private path: L.Routing.Control | null = null;
+
+  // Compared by coordinates, so a new array with the same stops does not ask the server again.
+  private readonly stops = computed(
+    () => this.locations().map((location) => L.latLng(location.latitude, location.longitude)),
+    { equal: sameStops },
+  );
 
   constructor() {
     // Leaflet draws outside the component tree, so effects hand the signal inputs over to it.
@@ -41,7 +52,11 @@ export class MapView {
       const map = L.map(this.mapElement().nativeElement);
       L.tileLayer(TILES_URL, { attribution: TILES_ATTRIBUTION }).addTo(map);
       this.map.set(map);
-      onCleanup(() => map.remove());
+      onCleanup(() => {
+        // The path is drawn on the map, so it goes first.
+        this.removePath();
+        map.remove();
+      });
     });
 
     effect((onCleanup) => {
@@ -77,46 +92,56 @@ export class MapView {
       }
 
       // Until a new path is drawn there is no length, so the page never keeps an old one.
-      const locations = this.locations();
+      const stops = this.stops();
       this.loadingPath.set(false);
       this.routingFailed.set(false);
       this.pathLength.emit(null);
-      if (!this.showPath() || locations.length < 2) {
+      if (!this.showPath() || stops.length < 2) {
         return;
       }
 
-      const waypoints = locations.map((location) =>
-        L.latLng(location.latitude, location.longitude),
-      );
+      // An answer that arrives after the stops changed or the page closed belongs to an old
+      // path, so it is dropped before it reaches the routing library.
+      let current = true;
+      const walkingRoutes = L.Routing.osrmv1({
+        serviceUrl: WALKING_ROUTES_URL,
+        profile: 'foot',
+        timeout: ROUTING_TIMEOUT_MS,
+      });
+      const router: L.Routing.IRouter = {
+        route: (waypoints, callback, context, options) =>
+          walkingRoutes.route(
+            waypoints,
+            (error?: L.Routing.IError, routes?: L.Routing.IRoute[]) => {
+              if (current) {
+                callback.call(context, error, routes);
+              }
+            },
+            context,
+            options,
+          ),
+      };
+
       const path = L.Routing.control({
-        router: L.Routing.osrmv1({
-          serviceUrl: WALKING_ROUTES_URL,
-          profile: 'foot',
-          timeout: ROUTING_TIMEOUT_MS,
-        }),
-        plan: L.Routing.plan(waypoints, { createMarker: () => false, draggableWaypoints: false }),
+        router,
+        plan: L.Routing.plan(stops, { createMarker: () => false, draggableWaypoints: false }),
         addWaypoints: false,
         fitSelectedRoutes: false,
         show: false,
       });
 
-      // An answer that arrives after the inputs changed belongs to an old path, so it is ignored.
-      let current = true;
       path.on('routesfound', (event) => {
-        if (current) {
-          this.loadingPath.set(false);
-          this.pathLength.emit(event.routes[0].summary.totalDistance / 1000);
-        }
+        this.loadingPath.set(false);
+        this.pathLength.emit(event.routes[0].summary.totalDistance / 1000);
       });
       path.on('routingerror', () => {
-        if (current) {
-          this.loadingPath.set(false);
-          this.routingFailed.set(true);
-          this.pathLength.emit(null);
-        }
+        this.loadingPath.set(false);
+        this.routingFailed.set(true);
+        this.pathLength.emit(null);
       });
       this.loadingPath.set(true);
       path.addTo(map);
+      this.path = path;
 
       // The pins already name the stops, so the turn-by-turn panel stays out of the map.
       const panel = path.getContainer();
@@ -126,8 +151,13 @@ export class MapView {
 
       onCleanup(() => {
         current = false;
-        path.remove();
+        this.removePath();
       });
     });
+  }
+
+  private removePath(): void {
+    this.path?.remove();
+    this.path = null;
   }
 }

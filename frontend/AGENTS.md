@@ -29,6 +29,7 @@ frontend/src/
     _components.scss         global classes: button, card, form field, table
   app/
     core/                    auth (state, interceptor, login, register), home,
+                             map-demo (live example of shared/map for the team),
                              app.routes.ts                                    [platform]
     shared/
       util/
@@ -208,8 +209,10 @@ assigned to the platform team, and misalignment is an accepted learning experien
   `Loading path...` while it waits and `Path could not be created` when routing fails.
   Paths come from `routing.openstreetmap.de` (profile `foot`) and tiles from
   OpenStreetMap: free public servers with no guarantee they are always up; when routing
-  does not answer within 10 seconds, the map shows that message. `/map-demo` is
-  the live example:
+  does not answer within 10 seconds, the map shows that message. Pass `locations` from a
+  field or a `computed()`, never as an array written in the template; the map compares
+  coordinates and asks for a new path only when they change. `/map-demo` is the live
+  example:
 
   ```html
   <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />

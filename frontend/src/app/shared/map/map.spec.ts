@@ -14,7 +14,10 @@ const BEACH: MapLocation = { latitude: 45.244, longitude: 19.8462, name: 'Štran
 // Stands in for the walking-route server, so no test touches the network.
 class FakeRouter {
   fails = false;
-  answers = true;
+  // While holding, answers wait in `held` until a test releases them, like a slow server.
+  holding = false;
+  held: (() => void)[] = [];
+  distance = 3200;
   calls = 0;
   receivedStops: L.LatLng[] = [];
 
@@ -24,28 +27,34 @@ class FakeRouter {
     context?: object,
   ) {
     this.calls++;
-    this.receivedStops = waypoints.map((waypoint) => waypoint.latLng);
-    if (!this.answers) {
+    const stops = waypoints.map((waypoint) => waypoint.latLng);
+    this.receivedStops = stops;
+    const fails = this.fails;
+    const distance = this.distance;
+    const answer = () => {
+      if (fails) {
+        callback.call(context, { status: -1, message: 'No route found' });
+        return;
+      }
+      callback.call(context, undefined, [
+        {
+          name: 'Walk',
+          coordinates: stops,
+          waypoints: stops,
+          inputWaypoints: waypoints,
+          waypointIndices: stops.map((_, index) => index),
+          instructions: [],
+          summary: { totalDistance: distance, totalTime: 2400 },
+        },
+      ]);
+    };
+    if (this.holding) {
+      this.held.push(answer);
       return;
     }
     // Like a real server, the answer comes back later, not while the map is still adding the path.
     await Promise.resolve();
-    if (this.fails) {
-      callback.call(context, { status: -1, message: 'No route found' });
-      return;
-    }
-    const stops = this.receivedStops;
-    callback.call(context, undefined, [
-      {
-        name: 'Walk',
-        coordinates: stops,
-        waypoints: stops,
-        inputWaypoints: waypoints,
-        waypointIndices: stops.map((_, index) => index),
-        instructions: [],
-        summary: { totalDistance: 3200, totalTime: 2400 },
-      },
-    ]);
+    answer();
   }
 }
 
@@ -117,7 +126,7 @@ describe('MapView', () => {
   });
 
   it('shows that the path is loading while the server has not answered (P8)', async () => {
-    router.answers = false;
+    router.holding = true;
     await show([FORTRESS, SQUARE], true);
 
     expect(fixture.nativeElement.textContent).toContain('Loading path...');
@@ -130,5 +139,36 @@ describe('MapView', () => {
     expect(router.calls).toBe(0);
     expect(count('.leaflet-overlay-pane path')).toBe(0);
     expect(lengths.at(-1)).toBeNull();
+  });
+  it('does not ask for a new path when the same stops arrive in a new array', async () => {
+    await show([FORTRESS, SQUARE], true);
+
+    await show([{ ...FORTRESS }, { ...SQUARE }], true);
+
+    expect(router.calls).toBe(1);
+    expect(lengths.at(-1)).toBe(3.2);
+  });
+
+  it('ignores the answer for an old path that arrives after the stops changed', async () => {
+    router.holding = true;
+    await show([FORTRESS, SQUARE], true);
+
+    router.holding = false;
+    router.distance = 5000;
+    await show([PARK, BEACH], true);
+    router.held.forEach((answer) => answer());
+    await fixture.whenStable();
+
+    expect(lengths.at(-1)).toBe(5);
+  });
+
+  it('can leave the page while the path is loading', async () => {
+    router.holding = true;
+    await show([FORTRESS, SQUARE], true);
+    const before = lengths.length;
+
+    expect(() => fixture.destroy()).not.toThrow();
+    expect(() => router.held.forEach((answer) => answer())).not.toThrow();
+    expect(lengths.length).toBe(before);
   });
 });
