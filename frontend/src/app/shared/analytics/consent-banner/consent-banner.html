@@ -1,0 +1,20 @@
+<section class="banner container" aria-label="Cookie settings">
+  <div class="text">
+    <p>
+      We would like to use Google Analytics cookies to learn which features are used.
+      Nothing is sent unless you accept.
+    </p>
+    <p class="meta">
+      @switch (consent()) {
+        @case ('accepted') { Analytics: on }
+        @case ('declined') { Analytics: off }
+        @default { Analytics: not chosen yet }
+      }
+    </p>
+  </div>
+  <!-- Both buttons share one style, so neither choice is pushed harder than the other. -->
+  <div class="row">
+    <button class="button" type="button" (click)="accept.emit()">Accept</button>
+    <button class="button" type="button" (click)="decline.emit()">Decline</button>
+  </div>
+</section>
