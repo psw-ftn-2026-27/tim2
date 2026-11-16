@@ -61,6 +61,9 @@
             </td>
             <td>
               <div class="row">
+                <a class="button" [routerLink]="['/exploration/mine', tour.id, 'key-points']">
+                  Key points
+                </a>
                 <button class="button" type="button" (click)="select(tour.id)">Add time</button>
                 @if (tour.status === 'Draft') {
                   <button class="button" type="button" (click)="selectGroupSize(tour)">
