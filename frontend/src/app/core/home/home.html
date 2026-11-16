@@ -32,6 +32,30 @@
   </div>
 </section>
 
+@if (featuredTours().length > 0) {
+  <section class="stack">
+    <h2>Featured tours</h2>
+    <div class="grid">
+      @for (tour of featuredTours(); track $index) {
+        <a class="card stack" [routerLink]="linkTo('/exploration')" (click)="remember('/exploration')">
+          <h3>{{ tour.name }}</h3>
+          <p>{{ excerpt(tour.description) }}</p>
+          <p class="meta">
+            @if (tour.price === 0) {
+              Free
+            } @else {
+              {{ tour.price }} EC
+            }
+          </p>
+        </a>
+      }
+    </div>
+    <p>
+      <a [routerLink]="linkTo('/exploration')" (click)="remember('/exploration')">All tours →</a>
+    </p>
+  </section>
+}
+
 @if (!auth.isLoggedIn()) {
   <section class="closing card stack">
     <h2>Ready to start exploring?</h2>
