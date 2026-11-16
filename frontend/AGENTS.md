@@ -25,8 +25,11 @@ frontend/src/
   styles/
     _tokens.scss             colours, spacing, radius, type as CSS custom properties
     _base.scss               reset, body, headings, links
-    _layout.scss             page container, stack, grid helpers
-    _components.scss         global classes: button, card, form field, table
+    _layout.scss             page container, stack, grid, page header, row, form page
+    _components.scss         global classes: button, card, form field, table, badge,
+                             amount, paging
+    README.md                styling guide: which class to use when, page structure,
+                             review checklist
   app/
     core/                    auth (state, interceptor, login, register), home,
                              map-demo (live example of shared/map for the team),
@@ -103,6 +106,10 @@ nothing.
   module's endpoints, and the page's DTO is mirrored in the module's own `api/`. There
   is no third way: a module never uses another module's component or type, never calls
   another module's endpoints, and never shares state with it.
+- The one agreed exception is the host, not a module: the landing page (`core/home`) reads
+  Exploration's agreed featured-tours address (`GET /api/exploration/tours/featured`)
+  directly, with its own type in `core/home`. That address does not change without
+  agreement with the platform team.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
 - The one legitimately shared state is the current user (identity, roles) in `core/`.
@@ -154,6 +161,10 @@ lean files that students extend, not a design system. The four global partials i
 `src/styles/` are platform-owned and short. Theming means editing `_tokens.scss` and
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
+
+`src/styles/README.md` is the styling guide every team follows: the palette, the page
+structure, which global class to use when, and the review checklist for frontend PRs.
+Read it before styling a page.
 
 Where a style goes, in order:
 

@@ -52,7 +52,7 @@
         Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
       </p>
 
-      <p class="meta">Status: {{ blog.status }}</p>
+      <p><span class="badge" [class.badge--muted]="blog.status !== 'Published'">{{ blog.status }}</span></p>
 
       <app-blog-comments
         [comments]="blog.comments"
