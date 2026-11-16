@@ -5,6 +5,8 @@ namespace Exploration.Application.TourBrowsing;
 
 public sealed class TourBrowsingQueries
 {
+    private const int FeaturedTourCount = 3;
+
     private readonly ITourReadRepository _tourReadRepository;
 
     public TourBrowsingQueries(ITourReadRepository tourReadRepository)
@@ -18,5 +20,10 @@ public sealed class TourBrowsingQueries
         pageSize = Math.Clamp(pageSize, 1, 100);
 
         return _tourReadRepository.GetPublishedAsync(search, page, pageSize);
+    }
+
+    public Task<List<FeaturedTourDto>> GetFeaturedAsync()
+    {
+        return _tourReadRepository.GetFeaturedAsync(FeaturedTourCount);
     }
 }
