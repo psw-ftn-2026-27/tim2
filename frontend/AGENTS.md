@@ -107,6 +107,10 @@ nothing.
   module's endpoints, and the page's DTO is mirrored in the module's own `api/`. There
   is no third way: a module never uses another module's component or type, never calls
   another module's endpoints, and never shares state with it.
+- The one agreed exception is the host, not a module: the landing page (`core/home`) reads
+  Exploration's agreed featured-tours address (`GET /api/exploration/tours/featured`)
+  directly, with its own type in `core/home`. That address does not change without
+  agreement with the platform team.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
 - The one legitimately shared state is the current user (identity, roles) in `core/`.
