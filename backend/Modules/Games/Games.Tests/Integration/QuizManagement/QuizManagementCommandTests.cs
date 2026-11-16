@@ -130,6 +130,24 @@ public class QuizManagementCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Changing_a_published_quiz_is_rejected_and_its_stored_content_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = QuizSeed.PublishedSynagogue;
+
+        var response = await client.PutAsJsonAsync($"/api/games/quizzes/{seeded.Id}", UpdateRequest());
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.Quizzes.Single(quiz => quiz.Id == seeded.Id);
+        stored.Name.Should().Be(seeded.Name);
+        stored.Instructions.Should().Be(seeded.Instructions);
+        stored.Xp.Should().Be(seeded.Xp);
+        stored.Status.Should().Be(QuizStatus.Published);
+        ToDtos(stored.Questions).Should().BeEquivalentTo(ToDtos(seeded.Questions), options => options.ComparingRecordsByMembers().WithStrictOrdering());
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_change_a_quiz()
     {
         var client = Factory.CreateClient();
@@ -162,6 +180,36 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         using var assertContext = Factory.CreateContext<GamesDbContext>();
         assertContext.Quizzes.Count().Should().Be(quizCountBefore - 1);
         assertContext.Quizzes.Should().NotContain(quiz => quiz.Id == QuizSeed.DraftFortressArchitecture.Id);
+    }
+
+    [Fact]
+    public async Task Administrator_deletes_an_archived_quiz_and_it_is_gone()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var quizCountBefore = arrangeContext.Quizzes.Count();
+
+        var response = await client.DeleteAsync($"/api/games/quizzes/{QuizSeed.ArchivedZmajJovinaStreet.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.Quizzes.Count().Should().Be(quizCountBefore - 1);
+        assertContext.Quizzes.Should().NotContain(quiz => quiz.Id == QuizSeed.ArchivedZmajJovinaStreet.Id);
+    }
+
+    [Fact]
+    public async Task Deleting_a_published_quiz_is_rejected_and_the_quiz_stays_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var quizCountBefore = arrangeContext.Quizzes.Count();
+
+        var response = await client.DeleteAsync($"/api/games/quizzes/{QuizSeed.PublishedSynagogue.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.Quizzes.Count().Should().Be(quizCountBefore);
+        assertContext.Quizzes.Should().Contain(quiz => quiz.Id == QuizSeed.PublishedSynagogue.Id);
     }
 
     [Fact]

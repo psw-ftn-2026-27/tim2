@@ -76,8 +76,8 @@
                 @if (confirmingId() === challenge.id) {
                   <button
                     class="button"
-                    [class.button--primary]="confirmingAction() === 'publish'"
-                    [class.button--danger]="confirmingAction() !== 'publish'"
+                    [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+                    [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
                     type="button"
                     [disabled]="pending()"
                     (click)="confirm(challenge)"
@@ -95,6 +95,9 @@
                       @case ('archive') {
                         Confirm archive
                       }
+                      @case ('repeat') {
+                        Confirm repeat
+                      }
                     }
                   </button>
                   <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
@@ -102,8 +105,28 @@
                   </button>
                 } @else if (challenge.type === 'Quiz') {
                   @if (challenge.status === 'Draft') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
+                      Publish
+                    </button>
+                  }
+                  @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
                     <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
                       Delete
+                    </button>
+                  }
+                  @if (challenge.status === 'Published') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'retire')">
+                      Retire
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'archive')">
+                      Archive
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'repeat')">
+                      Repeat
                     </button>
                   }
                 } @else if (editingId() !== challenge.id) {
