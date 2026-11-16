@@ -121,19 +121,21 @@ A page whose content is one form is a centred card instead:
 
 ## Review checklist
 
-Copy this into the Frontend part of your review on every PR that changes the frontend in
-this sprint. Each item that does not hold is a line comment.
+Go through these questions on every PR that changes the frontend in this sprint. Do not
+paste them into the review: the review template is checked automatically and allows
+exactly one marked answer per question. Instead, leave a line comment on each place where
+a question is answered with no, answer "Da li su ispoštovane timske konvencije?" in the
+Frontend section with NE, and list the failed questions in the Frontend note.
 
-```markdown
-- [ ] The page follows the page structure (page-header, states, content, paging)
-- [ ] Delete, archive, remove and cancel actions use `button--danger`
-- [ ] Each form has at most one `button--primary`
-- [ ] Statuses are shown with `badge` (`badge--muted` for inactive states)
-- [ ] Money and XP use `amount`
-- [ ] Button groups use `row`; no local `.actions`, `.paging` or `.links` in the component SCSS
-- [ ] No hex colours or hard-coded spacing in the component SCSS
-- [ ] All visible text is in English
-```
+1. Does the page follow the page structure (page-header, states, content, paging)?
+2. Do delete, archive, remove and cancel actions use `button--danger`?
+3. Does each form have at most one `button--primary`?
+4. Are statuses shown with `badge` (`badge--muted` for inactive states)?
+5. Do money and XP use `amount`?
+6. Do button groups use `row`, with no local `.actions`, `.paging` or `.links` in the
+   component SCSS?
+7. Is the component SCSS free of hex colours and hard-coded spacing?
+8. Is all visible text in English?
 
 Two checks you can run from `frontend/` before you review or open a PR:
 
