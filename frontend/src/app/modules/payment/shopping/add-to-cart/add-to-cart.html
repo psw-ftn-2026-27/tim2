@@ -4,7 +4,7 @@
   @if (offer.isLoading()) {
     <p>Loading the tour...</p>
   } @else if (offer.error()) {
-    <p class="error">Tour not found.</p>
+    <p class="error">Could not load the tour. It may no longer be published, or you are not logged in as an explorer.</p>
   } @else {
     @if (offer.value(); as tour) {
       <div class="card stack form-page">
