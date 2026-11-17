@@ -23,8 +23,12 @@ public sealed class ShoppingCart : AggregateRoot
         return _items.Sum(item => item.Price);
     }
 
-    public void AddItem(Product product)
+    public void AddItem(Product product, bool isAlreadyPurchased)
     {
+        if (isAlreadyPurchased)
+        {
+            throw new DomainException("You have already purchased this tour.");
+        }
         if (_items.Any(item => item.EntityId == product.EntityId))
         {
             throw new DomainException("The product is already in the cart.");

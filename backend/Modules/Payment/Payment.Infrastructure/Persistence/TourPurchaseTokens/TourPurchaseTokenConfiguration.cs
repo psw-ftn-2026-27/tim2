@@ -13,7 +13,7 @@ internal static class TourPurchaseTokenConfiguration
 
     private static void ConfigureTourPurchaseToken(EntityTypeBuilder<TourPurchaseToken> builder)
     {
-        builder.HasIndex(token => token.BuyerId);
+        builder.HasIndex(token => new { token.BuyerId, token.TourId }).IsUnique();
         builder.Property(token => token.Name).HasMaxLength(200);
     }
 }

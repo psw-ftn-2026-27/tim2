@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
+using Payment.Application.CartPurchasing;
 using Payment.Application.Products;
 using Payment.Application.PurchaseViewing;
 using Payment.Application.Shopping;
@@ -43,6 +44,7 @@ public static class PaymentModuleExtensions
         services.AddScoped<WalletFundingQueries>();
         services.AddScoped<ShoppingService>();
         services.AddScoped<ShoppingQueries>();
+        services.AddScoped<CartPurchasingService>();
         services.AddScoped<PurchaseViewingQueries>();
 
         return services;

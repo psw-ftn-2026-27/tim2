@@ -44,11 +44,4 @@ public sealed class ShoppingController : ControllerBase
         await _shoppingService.RemoveFromCartAsync(User.GetUserId(), tourId);
         return NoContent();
     }
-
-    [HttpPost("cart/purchase")]
-    public async Task<ActionResult> Purchase()
-    {
-        await _shoppingService.PurchaseAsync(User.GetUserId());
-        return NoContent();
-    }
 }

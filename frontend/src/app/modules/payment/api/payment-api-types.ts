@@ -26,6 +26,7 @@ export interface UserTransactionDto {
   createdAt: string;
   adminId: string | null;
   isCancelled: boolean;
+  name: string | null;
 }
 
 export interface TourOfferDto {

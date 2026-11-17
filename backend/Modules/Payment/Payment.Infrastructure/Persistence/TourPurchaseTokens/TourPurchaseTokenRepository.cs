@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Payment.Application.TourPurchaseTokens;
 using Payment.Domain.TourPurchaseTokens;
 
@@ -10,6 +11,11 @@ internal sealed class TourPurchaseTokenRepository : ITourPurchaseTokenRepository
     public TourPurchaseTokenRepository(PaymentDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public Task<bool> ExistsAsync(Guid buyerId, Guid tourId)
+    {
+        return _dbContext.TourPurchaseTokens.AnyAsync(token => token.BuyerId == buyerId && token.TourId == tourId);
     }
 
     public void Add(TourPurchaseToken token)

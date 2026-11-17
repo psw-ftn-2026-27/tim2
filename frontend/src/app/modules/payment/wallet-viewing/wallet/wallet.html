@@ -28,7 +28,7 @@
       <tbody>
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
-            <td>{{ transaction.name }}</td>
+            <td>{{ transaction.name ?? 'Deposit' }}</td>
             <td><span class="amount">{{ transaction.amount }} EC</span></td>
             <td>{{ formatTime(transaction.createdAt) }}</td>
             <td>
