@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { KeyPointDataDto, MoveKeyPointDto } from '../api/exploration-api-types';
+import { KeyPointDataDto, MoveKeyPointDto, TourLengthDto } from '../api/exploration-api-types';
 
 const BASE_URL = '/api/exploration/tours';
 
@@ -27,5 +27,9 @@ export class KeyPointAuthoring {
     await firstValueFrom(
       this.http.post<void>(`${BASE_URL}/${tourId}/key-points/${keyPointId}/move`, dto),
     );
+  }
+
+  async setCalculatedLength(tourId: string, dto: TourLengthDto): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${BASE_URL}/${tourId}/length`, dto));
   }
 }

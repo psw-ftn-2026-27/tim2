@@ -27,6 +27,7 @@ export interface TourDto {
   recommendedGroupSize: RecommendedGroupSizeDto | null;
   price: number;
   archivedAt: string | null;
+  lengthKm: number | null;
 }
 
 export type SortDirection = 'None' | 'Ascending' | 'Descending';
@@ -40,6 +41,29 @@ export interface TourSearchDto {
   maxPrice: number | null;
   difficultySort: SortDirection;
   priceSort: SortDirection;
+}
+
+export interface TourLocationSearchDto {
+  latitude: number;
+  longitude: number;
+  radiusKm: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transportModes: TransportMode[] | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+}
+
+export interface LocatedTourDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  price: number;
+  markerLatitude: number;
+  markerLongitude: number;
 }
 
 export interface CreateTourDto {
@@ -78,6 +102,7 @@ export interface TourKeyPointsDto {
   name: string;
   status: TourStatus;
   keyPoints: KeyPointDto[];
+  lengthKm: number | null;
 }
 
 export interface KeyPointDataDto {
@@ -94,4 +119,8 @@ export type KeyPointMoveDirection = 'Up' | 'Down';
 
 export interface MoveKeyPointDto {
   direction: KeyPointMoveDirection;
+}
+
+export interface TourLengthDto {
+  lengthKm: number;
 }

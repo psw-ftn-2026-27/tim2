@@ -54,4 +54,11 @@ public sealed class KeyPointAuthoringController : ControllerBase
         await _authoringService.MoveKeyPointAsync(id, User.GetUserId(), keyPointId, dto);
         return NoContent();
     }
+
+    [HttpPut("{id:guid}/length")]
+    public async Task<ActionResult> SetCalculatedLength(Guid id, TourLengthDto dto)
+    {
+        await _authoringService.SetCalculatedLengthAsync(id, User.GetUserId(), dto);
+        return NoContent();
+    }
 }

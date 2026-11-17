@@ -4,6 +4,9 @@
     <div class="row">
       <a class="button button--primary" routerLink="/games/challenges/create">+ Social challenge</a>
       <a class="button button--primary" routerLink="/games/challenges/quiz/create">+ Quiz</a>
+      <a class="button button--primary" routerLink="/games/challenges/location/create">
+        + Location challenge
+      </a>
     </div>
   </header>
 
@@ -13,6 +16,7 @@
       <option value="All">All</option>
       <option value="SocialChallenge">Social challenges</option>
       <option value="Quiz">Quizzes</option>
+      <option value="LocationChallenge">Location challenges</option>
     </select>
   </div>
 
@@ -46,6 +50,8 @@
             <td>
               @if (challenge.type === 'Quiz') {
                 <a [routerLink]="['/games/challenges/quiz', challenge.id]">{{ challenge.name }}</a>
+              } @else if (challenge.type === 'LocationChallenge') {
+                <a [routerLink]="['/games/challenges/location', challenge.id]">{{ challenge.name }}</a>
               } @else {
                 {{ challenge.name }}
               }
@@ -57,6 +63,9 @@
                 }
                 @case ('Quiz') {
                   Quiz
+                }
+                @case ('LocationChallenge') {
+                  Location challenge
                 }
               }
             </td>
@@ -127,6 +136,12 @@
                   @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
                     <button class="button" type="button" (click)="askToConfirm(challenge.id, 'repeat')">
                       Repeat
+                    </button>
+                  }
+                } @else if (challenge.type === 'LocationChallenge') {
+                  @if (challenge.status === 'Draft') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
+                      Delete
                     </button>
                   }
                 } @else if (editingId() !== challenge.id) {

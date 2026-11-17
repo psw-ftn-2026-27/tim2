@@ -1,4 +1,5 @@
 using Exploration.Application.Tours;
+using Exploration.Domain.Tours;
 using Shared.Domain;
 
 namespace Exploration.Application.TourBrowsing;
@@ -20,6 +21,17 @@ public sealed class TourBrowsingQueries
         pageSize = Math.Clamp(pageSize, 1, 100);
 
         return _tourReadRepository.GetPublishedAsync(search, page, pageSize);
+    }
+
+    public Task<PageResult<LocatedTourDto>> GetPublishedByLocationAsync(TourLocationSearchDto search, int page, int pageSize)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var area = new SearchArea(new Location(search.Latitude, search.Longitude), search.RadiusKm);
+        var criteria = new TourSearchDto(search.Name, search.Difficulties, search.Tags, search.TransportModes, search.MinPrice, search.MaxPrice);
+
+        return _tourReadRepository.GetPublishedByLocationAsync(area, criteria, page, pageSize);
     }
 
     public Task<List<FeaturedTourDto>> GetFeaturedAsync()

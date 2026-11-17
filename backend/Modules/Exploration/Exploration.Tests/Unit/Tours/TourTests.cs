@@ -17,10 +17,18 @@ public class TourTests
         return tour;
     }
 
+    private static void AddKeyPointsWithLength(Tour tour)
+    {
+        tour.AddKeyPoint("Gradska kuća", "Opis tačke.", "/images/tacka.jpg", new Location(45.25, 19.85), null, false);
+        tour.AddKeyPoint("Županija", "Opis tačke.", "/images/tacka.jpg", new Location(45.26, 19.86), null, false);
+        tour.SetCalculatedLength(1.5);
+    }
+
     private static Tour CreatePublishedTour()
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Walking, 120);
+        AddKeyPointsWithLength(tour);
         tour.Publish();
         return tour;
     }
@@ -35,11 +43,10 @@ public class TourTests
         return tour;
     }
 
-    private static Tour CreatePublishedTourWithKeyPoint()
+    private static Tour CreateTourWithKeyPointsAndLength(params string[] names)
     {
-        var tour = CreateTourWithKeyPoints("Gradska kuća");
-        tour.AddTransportTime(TransportMode.Walking, 120);
-        tour.Publish();
+        var tour = CreateTourWithKeyPoints(names);
+        tour.SetCalculatedLength(1.5);
         return tour;
     }
 
@@ -114,6 +121,7 @@ public class TourTests
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Bicycle, 45);
+        AddKeyPointsWithLength(tour);
 
         tour.Publish();
 
@@ -126,6 +134,7 @@ public class TourTests
     {
         var tour = CreateTour("Kratak opis.");
         tour.AddTransportTime(TransportMode.Walking, 120);
+        AddKeyPointsWithLength(tour);
 
         var publishing = () => tour.Publish();
 
@@ -135,7 +144,7 @@ public class TourTests
     [Fact]
     public void Tour_without_a_transport_time_cannot_be_published()
     {
-        var tour = CreateTour(LongDescription);
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
 
         var publishing = () => tour.Publish();
 
@@ -147,6 +156,7 @@ public class TourTests
     {
         var tour = new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", LongDescription, TourDifficulty.Easy, ["istorija"]);
         tour.AddTransportTime(TransportMode.Walking, 120);
+        AddKeyPointsWithLength(tour);
 
         var publishing = () => tour.Publish();
 
@@ -167,9 +177,7 @@ public class TourTests
     [Fact]
     public void Published_tour_cannot_change_its_recommended_group_size()
     {
-        var tour = CreateTour(LongDescription);
-        tour.AddTransportTime(TransportMode.Walking, 120);
-        tour.Publish();
+        var tour = CreatePublishedTour();
 
         var change = () => tour.ChangeRecommendedGroupSize(3, 6);
 
@@ -191,9 +199,7 @@ public class TourTests
     [Fact]
     public void Tour_that_is_not_a_draft_cannot_change_its_price()
     {
-        var tour = CreateTour(LongDescription);
-        tour.AddTransportTime(TransportMode.Walking, 120);
-        tour.Publish();
+        var tour = CreatePublishedTour();
 
         var change = () => tour.ChangePrice(800);
 
@@ -203,9 +209,7 @@ public class TourTests
     [Fact]
     public void Published_tour_cannot_be_published_again()
     {
-        var tour = CreateTour(LongDescription);
-        tour.AddTransportTime(TransportMode.Car, 30);
-        tour.Publish();
+        var tour = CreatePublishedTour();
 
         var publishing = () => tour.Publish();
 
@@ -412,7 +416,7 @@ public class TourTests
     [Fact]
     public void Tour_that_is_not_a_draft_cannot_change_a_key_point()
     {
-        var tour = CreatePublishedTourWithKeyPoint();
+        var tour = CreatePublishedTour();
         var keyPointId = tour.KeyPoints[0].Id;
 
         var change = () => tour.ChangeKeyPoint(keyPointId, "Županija", "Opis tačke.", "/images/tacka.jpg", new Location(45.25, 19.85), null, false);
@@ -423,7 +427,7 @@ public class TourTests
     [Fact]
     public void Tour_that_is_not_a_draft_cannot_remove_a_key_point()
     {
-        var tour = CreatePublishedTourWithKeyPoint();
+        var tour = CreatePublishedTour();
         var keyPointId = tour.KeyPoints[0].Id;
 
         var removal = () => tour.RemoveKeyPoint(keyPointId);
@@ -434,11 +438,151 @@ public class TourTests
     [Fact]
     public void Tour_that_is_not_a_draft_cannot_move_a_key_point()
     {
-        var tour = CreatePublishedTourWithKeyPoint();
+        var tour = CreatePublishedTour();
         var keyPointId = tour.KeyPoints[0].Id;
 
         var move = () => tour.MoveKeyPoint(keyPointId, KeyPointMoveDirection.Down);
 
         move.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void New_tour_has_a_length_of_zero()
+    {
+        var tour = CreateTour(LongDescription);
+
+        tour.LengthKm.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(3.7)]
+    [InlineData(0)]
+    public void Draft_with_at_least_two_key_points_gets_the_calculated_length(double lengthKm)
+    {
+        var tour = CreateTourWithKeyPoints("Gradska kuća", "Županija");
+
+        tour.SetCalculatedLength(lengthKm);
+
+        tour.LengthKm.Should().Be(lengthKm);
+    }
+
+    [Theory]
+    [InlineData(-0.1)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public void Length_that_is_negative_or_not_a_finite_number_is_rejected(double lengthKm)
+    {
+        var tour = CreateTourWithKeyPoints("Gradska kuća", "Županija");
+
+        var setting = () => tour.SetCalculatedLength(lengthKm);
+
+        setting.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Tour_that_is_not_a_draft_cannot_get_a_length()
+    {
+        var tour = CreatePublishedTour();
+
+        var setting = () => tour.SetCalculatedLength(2.5);
+
+        setting.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Tour_with_fewer_than_two_key_points_cannot_get_a_length()
+    {
+        var tour = CreateTourWithKeyPoints("Gradska kuća");
+
+        var setting = () => tour.SetCalculatedLength(2.5);
+
+        setting.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Adding_a_key_point_clears_the_length()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
+
+        tour.AddKeyPoint("Samostan", "Opis tačke.", "/images/tacka.jpg", new Location(45.25, 19.85), null, false);
+
+        tour.LengthKm.Should().BeNull();
+    }
+
+    [Fact]
+    public void Removing_a_key_point_clears_the_length()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija", "Samostan");
+        var removedId = tour.KeyPoints.Single(keyPoint => keyPoint.Name == "Županija").Id;
+
+        tour.RemoveKeyPoint(removedId);
+
+        tour.LengthKm.Should().BeNull();
+    }
+
+    [Fact]
+    public void Moving_a_key_point_clears_the_length()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
+        var movedId = tour.KeyPoints.Single(keyPoint => keyPoint.Name == "Županija").Id;
+
+        tour.MoveKeyPoint(movedId, KeyPointMoveDirection.Up);
+
+        tour.LengthKm.Should().BeNull();
+    }
+
+    [Fact]
+    public void Removing_a_key_point_that_leaves_fewer_than_two_sets_the_length_to_zero()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
+        var removedId = tour.KeyPoints.Single(keyPoint => keyPoint.Name == "Županija").Id;
+
+        tour.RemoveKeyPoint(removedId);
+
+        tour.LengthKm.Should().Be(0);
+    }
+
+    [Fact]
+    public void Changing_the_location_of_a_key_point_clears_the_length()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
+        var keyPointId = tour.KeyPoints[0].Id;
+
+        tour.ChangeKeyPoint(keyPointId, "Gradska kuća", "Opis tačke.", "/images/tacka.jpg", new Location(45.27, 19.87), null, false);
+
+        tour.LengthKm.Should().BeNull();
+    }
+
+    [Fact]
+    public void Changing_the_name_description_image_secret_or_visibility_of_a_key_point_keeps_the_length()
+    {
+        var tour = CreateTourWithKeyPointsAndLength("Gradska kuća", "Županija");
+        var keyPointId = tour.KeyPoints[0].Id;
+
+        tour.ChangeKeyPoint(keyPointId, "Pozorište", "Novi opis tačke.", "/images/pozoriste.jpg", new Location(45.25, 19.85), "Nova tajna.", true);
+
+        tour.LengthKm.Should().Be(1.5);
+    }
+
+    [Fact]
+    public void Tour_with_fewer_than_two_key_points_cannot_be_published()
+    {
+        var tour = CreateTourWithKeyPoints("Gradska kuća");
+        tour.AddTransportTime(TransportMode.Walking, 120);
+
+        var publishing = () => tour.Publish();
+
+        publishing.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Tour_without_a_calculated_length_cannot_be_published()
+    {
+        var tour = CreateTourWithKeyPoints("Gradska kuća", "Županija");
+        tour.AddTransportTime(TransportMode.Walking, 120);
+
+        var publishing = () => tour.Publish();
+
+        publishing.Should().Throw<DomainException>();
     }
 }
