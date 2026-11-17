@@ -6,4 +6,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   height: 24rem;
+  // Leaflet lifts its layers high above the page; this keeps them inside the map, so a
+  // bar fixed over the page, like the cookie banner, stays on top of the map.
+  isolation: isolate;
 }

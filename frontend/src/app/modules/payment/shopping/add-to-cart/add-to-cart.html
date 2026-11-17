@@ -1,0 +1,32 @@
+<div class="stack">
+  <p><a routerLink="/exploration">Back to tours</a></p>
+
+  @if (offer.isLoading()) {
+    <p>Loading the tour...</p>
+  } @else if (offer.error()) {
+    <p class="error">Could not load the tour. It may no longer be published, or you are not logged in as an explorer.</p>
+  } @else {
+    @if (offer.value(); as tour) {
+      <div class="card stack form-page">
+        <h1>{{ tour.name }}</h1>
+        <p class="price">Price: <span class="amount">{{ tour.price }} EC</span></p>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <div class="row">
+          <button
+            class="button button--primary"
+            type="button"
+            [disabled]="pending()"
+            (click)="addToCart()"
+          >
+            Add to cart
+          </button>
+          <a class="button" routerLink="/exploration">Cancel</a>
+        </div>
+      </div>
+    }
+  }
+</div>

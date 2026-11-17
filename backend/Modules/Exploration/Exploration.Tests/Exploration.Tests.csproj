@@ -18,4 +18,8 @@
     <ProjectReference Include="..\Exploration.Infrastructure\Exploration.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Payment.Tests" />
+  </ItemGroup>
+
 </Project>

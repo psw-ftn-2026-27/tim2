@@ -172,6 +172,40 @@ describe('MapView', () => {
     expect(lengths.length).toBe(before);
   });
 
+  it('writes the label on the pin of a location that has one and keeps the plain pin for the rest', async () => {
+    await show([{ ...FORTRESS, label: 'S' }, SQUARE], false);
+
+    expect(count('.leaflet-marker-icon')).toBe(2);
+    expect(count('.map-label')).toBe(1);
+    expect(fixture.nativeElement.querySelector('.map-label').textContent).toBe('S');
+  });
+
+  it('still shows the name of a labeled pin when the mouse is over it', async () => {
+    let leafletMap!: L.Map;
+    const createMap = L.map;
+    vi.spyOn(L, 'map').mockImplementation((element, options) => {
+      leafletMap = createMap(element, options);
+      return leafletMap;
+    });
+    await show([{ ...FORTRESS, label: 'S' }], false);
+
+    leafletMap.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        layer.fire('mouseover');
+      }
+    });
+
+    expect(fixture.nativeElement.querySelector('.leaflet-tooltip')?.textContent).toBe(FORTRESS.name);
+  });
+
+  it('shows a label as plain text, never as HTML', async () => {
+    await show([{ ...FORTRESS, label: '<b>1</b>' }], false);
+
+    const label = fixture.nativeElement.querySelector('.map-label');
+    expect(label.querySelector('b')).toBeNull();
+    expect(label.textContent).toBe('<b>1</b>');
+  });
+
   describe('picking a location', () => {
     let leafletMap: L.Map;
     let picks: MapLocation[];

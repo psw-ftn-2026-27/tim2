@@ -238,9 +238,11 @@ assigned to the platform team, and misalignment is an accepted learning experien
   }
   ```
 - A page that shows locations renders `app-map` from `shared/map` with `locations`
-  (`MapLocation[]`: `latitude`, `longitude`, optional `name`) and `showPath`. The
-  component draws one pin per location and, when `showPath` is on, a walking path
-  through them in the given order. `pathLength` emits the length in km, and `null`
+  (`MapLocation[]`: `latitude`, `longitude`, optional `name` and `label`) and `showPath`.
+  The component draws one pin per location and, when `showPath` is on, a walking path
+  through them in the given order. The `name` shows when the mouse is over the pin; a
+  `label` is a short mark such as `S` or `1` written on the pin itself, for pages where
+  the user must tell the pins apart at a glance. `pathLength` emits the length in km, and `null`
   whenever there is no path (hidden, fewer than two locations, or routing failed); the
   page decides whether to show or store it. The component itself shows
   `Loading path...` while it waits and `Path could not be created` when routing fails.

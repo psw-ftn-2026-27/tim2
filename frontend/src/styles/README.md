@@ -104,6 +104,7 @@ A page whose content is one form is a centred card instead:
 | `.paging` | Previous / Page N / Next under a paged list. |
 | `.meta` | Small secondary text: dates, hints, "none". |
 | `.error` | An error message, from the server or from a form validator. |
+| `.map-label` | Set by `app-map` on a pin whose location has a `label`; pages never use it. |
 
 ## Rules
 
