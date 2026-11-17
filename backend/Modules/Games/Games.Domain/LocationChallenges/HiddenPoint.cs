@@ -1,3 +1,4 @@
+using Games.Domain.Locations;
 using Shared.Domain.Exceptions;
 
 namespace Games.Domain.LocationChallenges;

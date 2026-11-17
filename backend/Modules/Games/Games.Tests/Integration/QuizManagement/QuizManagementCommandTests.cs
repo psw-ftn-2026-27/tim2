@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.QuizManagement;
+using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
@@ -74,7 +75,7 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         var createdId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
         var stored = assertContext.Quizzes.Single(quiz => quiz.Id == createdId);
-        stored.Location.Should().Be(new QuizLocation(45.2573, 19.8445, 120));
+        stored.Location.Should().Be(new QuizLocation(new Location(45.2573, 19.8445), 120));
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         stored.Xp.Should().Be(request.Xp);
         stored.Status.Should().Be(QuizStatus.Draft);
         ToDtos(stored.Questions).Should().BeEquivalentTo(request.Questions, options => options.ComparingRecordsByMembers().WithStrictOrdering());
-        stored.Location.Should().Be(new QuizLocation(request.Location!.Latitude, request.Location.Longitude, request.Location.RangeInMeters));
+        stored.Location.Should().Be(new QuizLocation(new Location(request.Location!.Latitude, request.Location.Longitude), request.Location.RangeInMeters));
     }
 
     [Fact]

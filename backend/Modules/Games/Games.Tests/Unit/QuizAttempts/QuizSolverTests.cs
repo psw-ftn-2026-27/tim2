@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.Locations;
 using Games.Domain.QuizAttempts;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
@@ -33,7 +34,7 @@ public class QuizSolverTests
             "Obiđite tvrđavu i odgovorite na pitanja.",
             100,
             CreateQuestions(questionCount),
-            new QuizLocation(QuizLatitude, QuizLongitude, QuizRangeInMeters));
+            new QuizLocation(new Location(QuizLatitude, QuizLongitude), QuizRangeInMeters));
     }
 
     private static Quiz CreatePublishedQuiz(int questionCount)

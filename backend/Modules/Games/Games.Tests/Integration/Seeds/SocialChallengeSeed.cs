@@ -1,4 +1,4 @@
-using Games.Domain.LocationChallenges;
+using Games.Domain.Locations;
 using Games.Domain.SocialChallenges;
 
 namespace Games.Tests.Integration.Seeds;
