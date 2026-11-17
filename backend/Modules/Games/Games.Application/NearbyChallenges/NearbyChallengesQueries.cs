@@ -5,12 +5,12 @@ namespace Games.Application.NearbyChallenges;
 
 public sealed class NearbyChallengesQueries
 {
-    private readonly IChallengeReadRepository _challengeReadRepository;
+    private readonly INearbyChallengeReadRepository _nearbyChallengeReadRepository;
     private readonly IPositionsApi _positionsApi;
 
-    public NearbyChallengesQueries(IChallengeReadRepository challengeReadRepository, IPositionsApi positionsApi)
+    public NearbyChallengesQueries(INearbyChallengeReadRepository nearbyChallengeReadRepository, IPositionsApi positionsApi)
     {
-        _challengeReadRepository = challengeReadRepository;
+        _nearbyChallengeReadRepository = nearbyChallengeReadRepository;
         _positionsApi = positionsApi;
     }
 
@@ -22,6 +22,6 @@ public sealed class NearbyChallengesQueries
             return [];
         }
 
-        return await _challengeReadRepository.GetNearbyAsync(playerId, position.Latitude, position.Longitude);
+        return await _nearbyChallengeReadRepository.GetNearbyAsync(playerId, position.Latitude, position.Longitude);
     }
 }

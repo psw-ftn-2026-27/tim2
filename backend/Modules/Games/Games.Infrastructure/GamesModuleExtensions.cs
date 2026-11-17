@@ -42,6 +42,7 @@ public static class GamesModuleExtensions
         services.AddScoped<IQuizReadRepository, QuizReadRepository>();
         services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
         services.AddScoped<IChallengeReadRepository, ChallengeReadRepository>();
+        services.AddScoped<INearbyChallengeReadRepository, NearbyChallengeReadRepository>();
         services.AddScoped<IQuizAttemptReadRepository, QuizAttemptReadRepository>();
 
         services.AddScoped<QuizSolver>();

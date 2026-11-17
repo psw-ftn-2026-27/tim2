@@ -1,7 +1,5 @@
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
-using Games.Application.NearbyChallenges;
-using Games.Domain.Quizzes;
 using Games.Domain.SocialChallenges;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
@@ -31,49 +29,6 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
 
         var items = rows.Select(ToDto).ToList();
         return new PageResult<ChallengeDto>(items, totalCount);
-    }
-
-    // Only quizzes have a location a player can walk to, so for now the nearby list holds quizzes only.
-    // The distance is computed in memory by QuizLocation, so the list is sorted after it is loaded.
-    public async Task<List<NearbyChallengeDto>> GetNearbyAsync(Guid playerId, double latitude, double longitude)
-    {
-        var rows = await _dbContext.Quizzes
-            .Where(quiz => quiz.Status == QuizStatus.Published && quiz.Location != null)
-            .Select(quiz => new
-            {
-                quiz.Id,
-                quiz.Name,
-                quiz.Xp,
-                quiz.Location!.Latitude,
-                quiz.Location.Longitude,
-                quiz.Location.RangeInMeters,
-                Attempt = _dbContext.QuizAttempts
-                    .Where(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId)
-                    .Select(attempt => new { attempt.SolvedAt })
-                    .FirstOrDefault()
-            })
-            .ToListAsync();
-
-        return rows
-            .Select(row =>
-            {
-                var location = new QuizLocation(row.Latitude, row.Longitude, row.RangeInMeters);
-                var distance = location.DistanceInMetersTo(latitude, longitude);
-                return new NearbyChallengeDto(
-                    row.Id,
-                    ChallengeType.Quiz,
-                    row.Name,
-                    row.Xp,
-                    row.Latitude,
-                    row.Longitude,
-                    distance,
-                    (int)Math.Ceiling(Math.Max(0, distance - row.RangeInMeters)),
-                    row.Attempt != null,
-                    row.Attempt != null && row.Attempt.SolvedAt != null);
-            })
-            .OrderBy(challenge => challenge.DistanceInMeters)
-            .ThenBy(challenge => challenge.Id)
-            .ToList();
     }
 
     // All tables are projected to the same row shape, so the database pages and sorts them as one list.
