@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
+using Exploration.Contracts;
 using Exploration.Domain.Tours;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
@@ -42,9 +43,11 @@ internal sealed class TourReadRepository : ITourReadRepository
         return new PageResult<TourDto>(items, totalCount);
     }
 
-    public Task<TourDto?> GetPublishedByIdAsync(Guid id)
+    public Task<PublishedTourSummary?> GetPublishedSummaryAsync(Guid id)
     {
-        return ProjectToDtos(_dbContext.Tours.Where(tour => tour.Id == id && tour.Status == TourStatus.Published))
+        return _dbContext.Tours
+            .Where(tour => tour.Id == id && tour.Status == TourStatus.Published)
+            .Select(tour => new PublishedTourSummary(tour.Id, tour.Name, tour.AuthorId, tour.Price))
             .FirstOrDefaultAsync();
     }
 

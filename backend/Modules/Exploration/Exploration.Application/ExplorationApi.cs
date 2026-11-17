@@ -12,14 +12,8 @@ public sealed class ExplorationApi : IExplorationApi
         _tourReadRepository = tourReadRepository;
     }
 
-    public async Task<PublishedTourSummary?> GetPublishedTourAsync(Guid tourId)
+    public Task<PublishedTourSummary?> GetPublishedTourAsync(Guid tourId)
     {
-        var tour = await _tourReadRepository.GetPublishedByIdAsync(tourId);
-        if (tour is null)
-        {
-            return null;
-        }
-
-        return new PublishedTourSummary(tour.Id, tour.Name, tour.AuthorId, tour.Price);
+        return _tourReadRepository.GetPublishedSummaryAsync(tourId);
     }
 }
