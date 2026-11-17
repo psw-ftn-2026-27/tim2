@@ -258,4 +258,28 @@ public class QuizTests
 
         update.Should().Throw<DomainException>();
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public void Answer_to_a_question_the_quiz_does_not_have_cannot_be_checked(int questionIndex)
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        var checking = () => quiz.IsCorrect(questionIndex, 0);
+
+        checking.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(2)]
+    public void Answer_option_the_question_does_not_have_cannot_be_checked(int optionIndex)
+    {
+        var quiz = CreateQuizIn(QuizStatus.Published);
+
+        var checking = () => quiz.IsCorrect(0, optionIndex);
+
+        checking.Should().Throw<DomainException>();
+    }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.QuizSolving;
@@ -45,5 +46,15 @@ public class QuizSolvingQueryTests : BaseIntegrationTest
         progress.Percentage.Should().Be(50);
         progress.SolvedAt.Should().Be(seeded.SolvedAt);
         progress.CurrentQuestion.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Progress_of_a_quiz_the_player_has_not_activated_is_not_found()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+
+        var response = await client.GetAsync($"/api/games/quizzes/{QuizSeed.PublishedSynagogue.Id}/progress");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

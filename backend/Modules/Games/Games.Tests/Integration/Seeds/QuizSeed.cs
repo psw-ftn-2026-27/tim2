@@ -39,6 +39,7 @@ internal static class QuizSeed
     public static readonly Quiz ArchivedZmajJovinaStreet;
     public static readonly Quiz PublishedDanubePark;
     public static readonly Quiz RepeatedFishermansIslandWithMoreXp;
+    public static readonly Quiz RetiredSynagogueGarden;
 
     static QuizSeed()
     {
@@ -105,7 +106,19 @@ internal static class QuizSeed
             90,
             [.. RepeatedFishermansIslandWithMoreXp.Questions],
             RepeatedFishermansIslandWithMoreXp.Location);
+
+        // Shares the location and range of PublishedSynagogue, so a player standing there is in range of a quiz that is not published.
+        RetiredSynagogueGarden = new(
+            "Vrt Sinagoge",
+            "Prošetajte vrtom iza Sinagoge.",
+            20,
+            [
+                new Question("Šta raste uz ogradu vrta?", [new AnswerOption("Lipe", true), new AnswerOption("Borovi", false)])
+            ],
+            new QuizLocation(45.2559, 19.8413, 40));
+        RetiredSynagogueGarden.Publish();
+        RetiredSynagogueGarden.Retire();
     }
 
-    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum, PublishedSynagogue, RetiredBishopsPalace, ArchivedZmajJovinaStreet, PublishedDanubePark, RepeatedFishermansIslandWithMoreXp];
+    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum, PublishedSynagogue, RetiredBishopsPalace, ArchivedZmajJovinaStreet, PublishedDanubePark, RepeatedFishermansIslandWithMoreXp, RetiredSynagogueGarden];
 }
