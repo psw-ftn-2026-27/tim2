@@ -7,6 +7,8 @@ internal static class ShoppingCartSeed
 {
     public static readonly ShoppingCart ExplorersCartWithGalleryAndFortress;
     public static readonly ShoppingCart SecondExplorersCartWithVineyards;
+    public static readonly ShoppingCart WealthyBuyersCartWithGalleryAndFortress;
+    public static readonly ShoppingCart BuyerOfArchivedToursCartWithGalleryAndArchivedCastle;
 
     static ShoppingCartSeed()
     {
@@ -16,7 +18,15 @@ internal static class ShoppingCartSeed
 
         SecondExplorersCartWithVineyards = new(WellKnownUsers.SecondExplorer);
         SecondExplorersCartWithVineyards.AddItem(ProductSeed.Vineyards);
+
+        WealthyBuyersCartWithGalleryAndFortress = new(WalletSeed.WealthyBuyer);
+        WealthyBuyersCartWithGalleryAndFortress.AddItem(ProductSeed.CheapGallery);
+        WealthyBuyersCartWithGalleryAndFortress.AddItem(ProductSeed.ModeratelyPricedFortress);
+
+        BuyerOfArchivedToursCartWithGalleryAndArchivedCastle = new(WalletSeed.BuyerOfArchivedTour);
+        BuyerOfArchivedToursCartWithGalleryAndArchivedCastle.AddItem(ProductSeed.CheapGallery);
+        BuyerOfArchivedToursCartWithGalleryAndArchivedCastle.AddItem(ProductSeed.ArchivedCastle);
     }
 
-    public static ShoppingCart[] All => [ExplorersCartWithGalleryAndFortress, SecondExplorersCartWithVineyards];
+    public static ShoppingCart[] All => [ExplorersCartWithGalleryAndFortress, SecondExplorersCartWithVineyards, WealthyBuyersCartWithGalleryAndFortress, BuyerOfArchivedToursCartWithGalleryAndArchivedCastle];
 }

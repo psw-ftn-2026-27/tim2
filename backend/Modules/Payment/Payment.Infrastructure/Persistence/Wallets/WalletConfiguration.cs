@@ -28,5 +28,6 @@ internal static class WalletConfiguration
     {
         builder.ToTable("Transactions");
         builder.Property(transaction => transaction.Id).ValueGeneratedNever();
+        builder.Property(transaction => transaction.Name).HasMaxLength(200);
     }
 }

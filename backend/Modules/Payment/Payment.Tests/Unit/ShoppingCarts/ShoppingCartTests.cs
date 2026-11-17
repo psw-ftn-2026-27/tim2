@@ -48,6 +48,30 @@ public class ShoppingCartTests
         cart.TotalPrice().Should().Be(1200);
     }
 
+    [Fact]
+    public void Checkout_of_a_cart_with_a_tour_that_is_no_longer_published_is_rejected()
+    {
+        var cart = new ShoppingCart(WellKnownUsers.Explorer);
+        var published = CreateProduct(WellKnownUsers.SecondExplorer, 500);
+        var archived = CreateProduct(WellKnownUsers.SecondExplorer, 1200);
+        cart.AddItem(published);
+        cart.AddItem(archived);
+
+        var checkout = () => cart.Checkout([published.EntityId]);
+
+        checkout.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Checkout_of_an_empty_cart_is_rejected()
+    {
+        var cart = new ShoppingCart(WellKnownUsers.Explorer);
+
+        var checkout = () => cart.Checkout([]);
+
+        checkout.Should().Throw<DomainException>();
+    }
+
     private static Product CreateProduct(Guid ownerId, int price)
     {
         return new Product(Guid.NewGuid(), "Tura", ownerId, price);

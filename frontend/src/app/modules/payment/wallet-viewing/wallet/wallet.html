@@ -19,6 +19,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th scope="col">Item</th>
           <th scope="col">Amount</th>
           <th scope="col">Time</th>
           <th scope="col">Status</th>
@@ -27,6 +28,7 @@
       <tbody>
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
+            <td>{{ transaction.name }}</td>
             <td><span class="amount">{{ transaction.amount }} EC</span></td>
             <td>{{ formatTime(transaction.createdAt) }}</td>
             <td>
@@ -37,7 +39,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="meta">No transactions yet.</td>
+            <td colspan="4" class="meta">No transactions yet.</td>
           </tr>
         }
       </tbody>

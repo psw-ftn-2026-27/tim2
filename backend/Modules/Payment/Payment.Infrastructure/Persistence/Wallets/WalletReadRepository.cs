@@ -30,7 +30,8 @@ internal sealed class WalletReadRepository : IWalletReadRepository
                 transaction.Id,
                 transaction.Amount,
                 transaction.CreatedAt,
-                transaction.IsCancelled))
+                transaction.IsCancelled,
+                transaction.Name))
             .ToListAsync();
 
         return new PageResult<TransactionDto>(items, totalCount);

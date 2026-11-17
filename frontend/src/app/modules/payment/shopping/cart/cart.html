@@ -47,5 +47,22 @@
     </table>
 
     <p class="total">Total: <span class="amount">{{ cart.value()?.totalPrice ?? 0 }} EC</span></p>
+
+    <div class="row">
+      <button
+        class="button button--primary"
+        type="button"
+        [disabled]="pending() || isEmpty()"
+        (click)="purchase()"
+      >
+        Buy
+      </button>
+      @if (purchased()) {
+        <p>Purchase successful.</p>
+      }
+      @if (purchaseError()) {
+        <p class="error">{{ purchaseError() }}</p>
+      }
+    </div>
   }
 </div>
