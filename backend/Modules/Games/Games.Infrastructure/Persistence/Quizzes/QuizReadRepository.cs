@@ -29,7 +29,10 @@ internal sealed class QuizReadRepository : IQuizReadRepository
                         question.Options
                             .Select(option => new AnswerOptionDto(option.Text, option.IsCorrect))
                             .ToList()))
-                    .ToList()))
+                    .ToList(),
+                quiz.Location == null
+                    ? null
+                    : new QuizLocationDto(quiz.Location.Latitude, quiz.Location.Longitude, quiz.Location.RangeInMeters)))
             .FirstOrDefaultAsync();
     }
 }

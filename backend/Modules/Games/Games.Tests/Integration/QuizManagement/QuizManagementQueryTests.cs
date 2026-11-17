@@ -30,7 +30,19 @@ public class QuizManagementQueryTests : BaseIntegrationTest
                     .Select(question => new QuestionDto(
                         question.Text,
                         question.Options.Select(option => new AnswerOptionDto(option.Text, option.IsCorrect)).ToList()))
-                    .ToList()),
+                    .ToList(),
+                null),
             options => options.ComparingRecordsByMembers().WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Quiz_details_show_its_location_and_range()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = QuizSeed.DraftCityHall;
+
+        var quiz = await client.GetFromJsonAsync<QuizDto>($"/api/games/quizzes/{seeded.Id}", JsonOptions);
+
+        quiz!.Location.Should().Be(new QuizLocationDto(seeded.Location!.Latitude, seeded.Location.Longitude, seeded.Location.RangeInMeters));
     }
 }

@@ -37,6 +37,26 @@
     </section>
 
     <section class="stack">
+      <h2>Location</h2>
+
+      <app-quiz-location-fields
+        [location]="form.location().value()"
+        (locationPicked)="pickLocation($event)"
+        (locationRemoved)="removeLocation()"
+      />
+
+      <div class="field">
+        <label for="range">Range (m)</label>
+        <input id="range" type="number" step="1" [formField]="form.rangeInMeters" />
+        @if (form.rangeInMeters().touched()) {
+          @for (message of form.rangeInMeters().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="stack">
       <h2>Questions</h2>
 
       @for (question of form.questions; track $index; let questionIndex = $index) {
