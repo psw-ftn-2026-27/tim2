@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Positions.Application;
 using Positions.Application.PositionSimulating;
 using Positions.Application.UserPositions;
+using Positions.Contracts;
 using Positions.Infrastructure.Persistence;
 using Positions.Infrastructure.Persistence.UserPositions;
 using Shared.Infrastructure;
@@ -23,6 +24,7 @@ public static class PositionsModuleExtensions
 
         services.AddScoped<PositionSimulatingService>();
         services.AddScoped<PositionSimulatingQueries>();
+        services.AddScoped<IPositionsApi, PositionsApi>();
 
         return services;
     }

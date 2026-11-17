@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Positions.Application.PositionSimulating;
+using Positions.Application.UserPositions;
 using Positions.Infrastructure.Persistence;
 using Positions.Tests.Integration.Seeds;
 using Shared.Tests;

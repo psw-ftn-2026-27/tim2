@@ -6,7 +6,7 @@ Modul Positions je platformski modul koji pamti trenutnu poziciju turiste. Ima p
 
 Delovi Exploration i Games zavise od toga gde se turista nalazi, na primer kada turista izvodi turu ili traži skrivenu lokaciju. Mobilna aplikacija koja bi slala pravu lokaciju uređaja još ne postoji, a timovi ne mogu da isprobaju ove funkcionalnosti šetnjom po gradu. Zato modul služi kao privremeni simulator pozicije: turista klikom na mapu odredi gde se nalazi, a server to zapamti kao njegovu trenutnu poziciju. Kada mobilna aplikacija bude postojala, ona će slati poziciju umesto klika na mapu.
 
-Za svakog korisnika pamti se samo poslednja pozicija. Exploration i Games će kasnije čitati poziciju turiste kroz projekat `Positions.Contracts`, kada im zatreba. Kontrakt se dodaje tek na njihov zahtev, pa je projekat za sada prazan.
+Za svakog korisnika pamti se samo poslednja pozicija, bez vremena kada je postavljena. Exploration i Games čitaju poziciju turiste kroz projekat `Positions.Contracts`, a front-end im nikada ne šalje koordinate.
 
 ## Elementi modula
 
@@ -19,6 +19,16 @@ Vrednosni objekat `Coordinates` čuva geografsku širinu i dužinu i odbija šir
 ### Application
 
 Grupa slučajeva korišćenja `PositionSimulating` ima komandu i upit. Komanda pravi poziciju kada je korisnik nema, a inače je pomera. Upit vraća samo poziciju prijavljenog korisnika, ili ništa kada je nema.
+
+DTO `UserPositionDto` je u folderu `UserPositions`, jer ga koriste i grupa `PositionSimulating` i klasa `PositionsApi`.
+
+Klasa `PositionsApi` implementira kontrakt `IPositionsApi` i čita poziciju kroz isti repozitorijum za čitanje kao upit.
+
+### Contracts
+
+Interfejs `IPositionsApi` ima jedan upit. Metoda `GetPositionAsync` vraća poslednju poziciju korisnika po identifikatoru, kao zapis `PositionSummary` sa geografskom širinom i dužinom, ili `null` kada korisnik još nije postavio poziciju. Projekte `Exploration.Application` i `Games.Application` platforma je povezala sa ovim projektom, pa modul samo doda `IPositionsApi` u konstruktor svog servisa ili upita.
+
+Modul koji koristi kontrakt sam računa udaljenost i sam odlučuje šta je „blizu“. Kontrakt ne kaže kada je pozicija postavljena i ne vraća pozicije više korisnika odjednom. Novi član se dodaje samo na zahtev platformskom timu.
 
 ### Api
 
