@@ -60,6 +60,30 @@ public sealed class IdentityApiTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Explorer_is_found_by_email_regardless_of_letter_case()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+
+        var explorer = await identityApi.GetExplorerByEmailAsync("Explorer@Test.com");
+
+        explorer.Should().Be(new ExplorerSummary(UserSeed.Explorer.Id, UserSeed.Explorer.Email!));
+    }
+
+    [Fact]
+    public async Task Administrator_and_unknown_email_are_not_found_as_an_explorer()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var identityApi = scope.ServiceProvider.GetRequiredService<IIdentityApi>();
+
+        var administrator = await identityApi.GetExplorerByEmailAsync(UserSeed.Administrator.Email!);
+        var unknown = await identityApi.GetExplorerByEmailAsync("nobody@test.com");
+
+        administrator.Should().BeNull();
+        unknown.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Administrator_is_not_found_as_an_explorer()
     {
         using var scope = Factory.Services.CreateScope();

@@ -41,6 +41,16 @@ internal sealed class IdentityApi : IIdentityApi
             .FirstOrDefaultAsync();
     }
 
+    public Task<ExplorerSummary?> GetExplorerByEmailAsync(string email)
+    {
+        var normalizedEmail = email.Trim().ToUpperInvariant();
+
+        return Explorers()
+            .Where(user => user.NormalizedEmail == normalizedEmail)
+            .Select(user => new ExplorerSummary(user.Id, user.Email!))
+            .FirstOrDefaultAsync();
+    }
+
     private IQueryable<ApplicationUser> Explorers()
     {
         return from user in _dbContext.Users
