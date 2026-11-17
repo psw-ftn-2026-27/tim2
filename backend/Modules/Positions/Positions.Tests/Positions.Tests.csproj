@@ -18,4 +18,8 @@
     <ProjectReference Include="..\Positions.Infrastructure\Positions.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Games.Tests" />
+  </ItemGroup>
+
 </Project>
