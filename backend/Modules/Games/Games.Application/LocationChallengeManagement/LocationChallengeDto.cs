@@ -1,3 +1,4 @@
+using Games.Application.LocationChallenges;
 using Games.Domain.LocationChallenges;
 
 namespace Games.Application.LocationChallengeManagement;

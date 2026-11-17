@@ -17,11 +17,13 @@ public sealed record Location
 
     public Location(double latitude, double longitude)
     {
-        if (latitude < MinimumLatitude || latitude > MaximumLatitude)
+        // Asks "is the value inside the bounds?" rather than "is it outside?", because every
+        // comparison with double.NaN is false: an outside check would let NaN through.
+        if (!(latitude >= MinimumLatitude && latitude <= MaximumLatitude))
         {
             throw new DomainException($"A latitude must be from {MinimumLatitude} to {MaximumLatitude}.");
         }
-        if (longitude < MinimumLongitude || longitude > MaximumLongitude)
+        if (!(longitude >= MinimumLongitude && longitude <= MaximumLongitude))
         {
             throw new DomainException($"A longitude must be from {MinimumLongitude} to {MaximumLongitude}.");
         }
