@@ -37,12 +37,20 @@ public class ShoppingQueryTests : BaseIntegrationTest
         offer.Should().BeEquivalentTo(new TourOfferDto(tour.Id, tour.Name, tour.Price));
     }
 
-    [Fact]
-    public async Task A_tour_that_is_not_published_is_not_on_offer()
+    public static TheoryData<Guid> ToursThatAreNotPublished => new()
+    {
+        TourSeed.SecondExplorersTrail.Id,
+        TourSeed.ArchivedCastle.Id,
+        Guid.Parse("7a1c2e9b-0000-4000-8000-000000000404"),
+    };
+
+    [Theory]
+    [MemberData(nameof(ToursThatAreNotPublished))]
+    public async Task A_draft_archived_or_missing_tour_is_not_on_offer(Guid tourId)
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-        var response = await client.GetAsync($"/api/payment/shopping/tours/{TourSeed.SecondExplorersTrail.Id}");
+        var response = await client.GetAsync($"/api/payment/shopping/tours/{tourId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
