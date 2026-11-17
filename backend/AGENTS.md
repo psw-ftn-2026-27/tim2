@@ -48,7 +48,8 @@ is no separate tests tree; the arch tests sit in `Host.Tests` beside the host.
 **Value object placement.** A value object is born in the folder of the aggregate that
 holds it. When a second aggregate of the same module needs it, it moves to a module-level
 folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
-only, never an entity or an aggregate. Moving one changes its type name in the model
+only, never an entity or an aggregate. Its unit tests move with it, to `Unit/Locations/`
+in the module's test project. Moving one changes its type name in the model
 snapshot, so the move needs a migration added through `dotnet ef` (see Migrations).
 Similar value objects in two modules stay separate; moving one to `Shared.Domain` is a
 platform decision.
