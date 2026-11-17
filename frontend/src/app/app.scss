@@ -49,8 +49,11 @@ nav a:hover {
   min-height: 100vh;
 }
 
+// Without the width, the side margins of .container make main only as wide as its
+// content, so a map, which has no width of its own, would come out narrow.
 main {
   flex: 1;
+  width: 100%;
 }
 
 // Full width, so "Cookie settings" sits in the bottom left corner of the window.
