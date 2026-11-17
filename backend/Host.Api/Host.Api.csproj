@@ -20,6 +20,8 @@
     <ProjectReference Include="..\Modules\Social\Social.Infrastructure\Social.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Payment\Payment.Api\Payment.Api.csproj" />
     <ProjectReference Include="..\Modules\Payment\Payment.Infrastructure\Payment.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Positions\Positions.Api\Positions.Api.csproj" />
+    <ProjectReference Include="..\Modules\Positions\Positions.Infrastructure\Positions.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

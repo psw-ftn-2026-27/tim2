@@ -1,0 +1,15 @@
+<section class="stack">
+  <h1>My position</h1>
+
+  <app-map [pickLocation]="true" [selectedLocation]="youAreHere()" (locationPicked)="save($event)" />
+
+  @if (saving()) {
+    <p>Saving position...</p>
+  }
+  @if (saved()) {
+    <p>Position saved</p>
+  }
+  @if (failed()) {
+    <p class="error">Position could not be saved</p>
+  }
+</section>

@@ -33,6 +33,14 @@
     <Project Path="Modules/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj" />
     <Project Path="Modules/Payment/Payment.Tests/Payment.Tests.csproj" />
   </Folder>
+  <Folder Name="/Modules/Positions/">
+    <Project Path="Modules/Positions/Positions.Api/Positions.Api.csproj" />
+    <Project Path="Modules/Positions/Positions.Application/Positions.Application.csproj" />
+    <Project Path="Modules/Positions/Positions.Contracts/Positions.Contracts.csproj" />
+    <Project Path="Modules/Positions/Positions.Domain/Positions.Domain.csproj" />
+    <Project Path="Modules/Positions/Positions.Infrastructure/Positions.Infrastructure.csproj" />
+    <Project Path="Modules/Positions/Positions.Tests/Positions.Tests.csproj" />
+  </Folder>
   <Folder Name="/Modules/Social/">
     <Project Path="Modules/Social/Social.Api/Social.Api.csproj" />
     <Project Path="Modules/Social/Social.Application/Social.Application.csproj" />

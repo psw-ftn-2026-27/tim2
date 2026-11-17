@@ -14,6 +14,10 @@ export class App {
   protected readonly auth = inject(Auth);
   protected readonly analytics = inject(Analytics);
 
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
+  );
+
   // Whether "Cookie settings" opened the banner again; view state, not a service operation.
   private readonly settingsOpen = signal(false);
 

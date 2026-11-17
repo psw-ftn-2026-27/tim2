@@ -248,5 +248,12 @@ describe('MapView', () => {
       expect(count('.picked-pin')).toBe(1);
       expect(pickedPinPlace()).toEqual([SQUARE.latitude, SQUARE.longitude]);
     });
+
+    it('shows the name of the picked location on its pin', async () => {
+      await pick(true, { ...SQUARE, name: 'You are here' });
+
+      const tooltip = fixture.nativeElement.querySelector('.leaflet-tooltip');
+      expect(tooltip?.textContent).toBe('You are here');
+    });
   });
 });
