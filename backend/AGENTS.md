@@ -45,19 +45,23 @@ backend/
 Tests live inside the module folder they test, so a team's ownership is one folder. There
 is no separate tests tree; the arch tests sit in `Host.Tests` beside the host.
 
-**Value object placement.** A value object is born in the folder of the aggregate that
-holds it. When a second aggregate of the same module needs it, it moves to a module-level
-folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
-only, never an entity or an aggregate. Its unit tests move with it, to `Unit/Locations/`
-in the module's test project. Moving one changes its type name in the model
-snapshot, so the move needs a migration added through `dotnet ef` (see Migrations).
-Similar value objects in two modules stay separate; moving one to `Shared.Domain` is a
-platform decision.
-
 Five source projects per module. That is deliberate: `<Name>.Api` referencing only
 `<Name>.Application` means an endpoint physically cannot name the `DbContext`, so the
 usual novice shortcut of querying the database straight from an endpoint does not compile.
 The compiler enforces the layering instead of a reviewer having to spot it.
+
+**Value object placement.** A value object is born in the folder of the aggregate that
+holds it. When a second aggregate of the same module needs it, it moves to a module-level
+folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
+only, never an entity or an aggregate. Its unit tests move with it, to `Unit/Locations/`
+in the module's test project. A value object of the same module that holds the same
+values plus its own contains the shared one instead of copying it, and stays in its
+aggregate's folder (`QuizLocation` holds a `Location` and its range in `Domain/Quizzes/`).
+Moving a value object changes its type name in the model snapshot, so the move needs a
+migration added through `dotnet ef` (see Migrations); when nothing else changes, its `Up`
+and `Down` are empty, and the conflict protocol applies to it like to any other
+migration. Similar value objects in two modules stay separate; moving one to
+`Shared.Domain` is a platform decision.
 
 ## Reference rules
 
@@ -188,8 +192,9 @@ social challenges in one paged, filtered table), its rows come from one read rep
 that reads all of them, so paging, filtering and ordering happen in the database over the
 combined rows. It is named after the concept the aggregates share, not after any one of
 them, and lives in a folder of that name (`IChallengeReadRepository` in
-`Application/Challenges/`). No aggregate carries that name, so the folder holds only the
-read repository and never a write repository. It still projects directly to DTOs. It is
+`Application/Challenges/`). No aggregate carries that name, so the folder holds the
+read repository and the types promoted there from several groups, never a write
+repository. It still projects directly to DTOs. It is
 injected by the queries class named after the view (`ChallengeOverviewQueries`). It is not
 a way to read another module's tables: across modules, compose through `Contracts`.
 
