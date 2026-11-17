@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\..\Shared\Shared.Tests\Shared.Tests.csproj" />
     <ProjectReference Include="..\Payment.Infrastructure\Payment.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Identity\Identity.Tests\Identity.Tests.csproj" />
+    <ProjectReference Include="..\..\Exploration\Exploration.Tests\Exploration.Tests.csproj" />
   </ItemGroup>
 
 </Project>

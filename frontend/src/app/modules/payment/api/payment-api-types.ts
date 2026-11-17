@@ -26,3 +26,20 @@ export interface UserTransactionDto {
   adminId: string;
   isCancelled: boolean;
 }
+
+export interface TourOfferDto {
+  tourId: string;
+  name: string;
+  price: number;
+}
+
+export interface CartItemDto {
+  tourId: string;
+  name: string;
+  price: number;
+}
+
+export interface CartDto {
+  items: CartItemDto[];
+  totalPrice: number;
+}
