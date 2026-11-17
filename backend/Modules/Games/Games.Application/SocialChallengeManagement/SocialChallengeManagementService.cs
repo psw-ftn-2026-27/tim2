@@ -1,4 +1,6 @@
+using Games.Application.LocationChallenges;
 using Games.Application.SocialChallenges;
+using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 
@@ -24,7 +26,8 @@ public sealed class SocialChallengeManagementService
             dto.RequiredParticipants,
             dto.RangeInMeters,
             dto.Xp,
-            dto.CompletionMessage);
+            dto.CompletionMessage,
+            ToLocation(dto.Location));
 
         _challengeRepository.Add(challenge);
         await _unitOfWork.SaveChangesAsync();
@@ -43,7 +46,8 @@ public sealed class SocialChallengeManagementService
             dto.RequiredParticipants,
             dto.RangeInMeters,
             dto.Xp,
-            dto.CompletionMessage);
+            dto.CompletionMessage,
+            ToLocation(dto.Location));
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -64,5 +68,12 @@ public sealed class SocialChallengeManagementService
             throw new NotFoundException($"Social challenge {challengeId} does not exist.");
         }
         return challenge;
+    }
+
+    private static Location? ToLocation(LocationDto? location)
+    {
+        return location is null
+            ? null
+            : new Location(location.Latitude, location.Longitude);
     }
 }

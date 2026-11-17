@@ -101,7 +101,9 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Duration = challenge.Window.Duration,
             RequiredParticipants = challenge.RequiredParticipants,
             RangeInMeters = challenge.RangeInMeters,
-            CompletionMessage = challenge.CompletionMessage
+            CompletionMessage = challenge.CompletionMessage,
+            Latitude = challenge.Location == null ? null : challenge.Location.Latitude,
+            Longitude = challenge.Location == null ? null : challenge.Location.Longitude
         });
     }
 
@@ -118,7 +120,9 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Duration = null,
             RequiredParticipants = null,
             RangeInMeters = null,
-            CompletionMessage = null
+            CompletionMessage = null,
+            Latitude = null,
+            Longitude = null
         });
     }
 
@@ -135,7 +139,9 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Duration = null,
             RequiredParticipants = null,
             RangeInMeters = null,
-            CompletionMessage = null
+            CompletionMessage = null,
+            Latitude = null,
+            Longitude = null
         });
     }
 
@@ -152,7 +158,9 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             row.Start is null || row.Duration is null ? null : new TimeWindow(row.Start.Value, row.Duration.Value).End(),
             row.RequiredParticipants,
             row.RangeInMeters,
-            row.CompletionMessage);
+            row.CompletionMessage,
+            row.Latitude,
+            row.Longitude);
     }
 
     private sealed class ChallengeRow
@@ -167,5 +175,7 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
         public int? RequiredParticipants { get; init; }
         public int? RangeInMeters { get; init; }
         public string? CompletionMessage { get; init; }
+        public double? Latitude { get; init; }
+        public double? Longitude { get; init; }
     }
 }

@@ -1,11 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form, max, maxLength, min, minLength, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
+import { MapLocation } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
+import { QuizLocationFields } from '../../quiz-management/quiz-location-fields/quiz-location-fields';
 import { SocialChallengeManagement } from '../social-challenge-management';
 
 @Component({
-  imports: [FormField],
+  imports: [FormField, QuizLocationFields],
   selector: 'app-create-social-challenge',
   styleUrl: './create-social-challenge.scss',
   templateUrl: './create-social-challenge.html',
@@ -48,6 +50,9 @@ export class CreateSocialChallenge {
     },
   );
 
+  // The place picked on the map; null while the challenge has no location.
+  protected readonly location = signal<MapLocation | null>(null);
+
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -58,6 +63,7 @@ export class CreateSocialChallenge {
     const minutes = this.form.durationMinutes().value();
     const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
     const restMinutes = String(minutes % 60).padStart(2, '0');
+    const location = this.location();
     try {
       await this.management.create({
         name: this.form.name().value(),
@@ -67,6 +73,7 @@ export class CreateSocialChallenge {
         rangeInMeters: this.form.rangeInMeters().value(),
         xp: this.form.xp().value(),
         completionMessage: this.form.completionMessage().value(),
+        location: location ? { latitude: location.latitude, longitude: location.longitude } : null,
       });
       await this.router.navigate(['/games/challenges']);
     } catch (failure) {

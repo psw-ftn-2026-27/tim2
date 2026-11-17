@@ -6,6 +6,7 @@ export interface CreateSocialChallengeDto {
   rangeInMeters: number;
   xp: number;
   completionMessage: string;
+  location: LocationDto | null;
 }
 
 export interface UpdateSocialChallengeDto {
@@ -16,6 +17,7 @@ export interface UpdateSocialChallengeDto {
   rangeInMeters: number;
   xp: number;
   completionMessage: string;
+  location: LocationDto | null;
 }
 
 export type ChallengeType = 'SocialChallenge' | 'Quiz' | 'LocationChallenge';
@@ -32,6 +34,8 @@ export interface ChallengeDto {
   requiredParticipants: number | null;
   rangeInMeters: number | null;
   completionMessage: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export type QuizStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';

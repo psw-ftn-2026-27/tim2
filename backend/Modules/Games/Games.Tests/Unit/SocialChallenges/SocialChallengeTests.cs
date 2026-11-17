@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.LocationChallenges;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -14,9 +15,10 @@ public class SocialChallengeTests
     private const string ValidCompletionMessage = "Bravo!";
     private static readonly TimeOnly ValidStart = new(7, 0);
     private static readonly TimeSpan ValidDuration = TimeSpan.FromHours(1);
+    private static readonly Location ValidLocation = new(45.2551, 19.8451);
 
     private static SocialChallenge CreateChallenge() =>
-        new(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+        new(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
     private static SocialChallenge CreateChallengeIn(SocialChallengeStatus status)
     {
@@ -46,7 +48,7 @@ public class SocialChallengeTests
     [InlineData("1234567890123456789012345678901234567890123456789012345678901")]
     public void Challenge_rejects_a_name_outside_the_allowed_length(string name)
     {
-        var creation = () => new SocialChallenge(name, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+        var creation = () => new SocialChallenge(name, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -56,7 +58,7 @@ public class SocialChallengeTests
     [InlineData(101)]
     public void Challenge_rejects_a_number_of_participants_outside_the_allowed_range(int requiredParticipants)
     {
-        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, requiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, requiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -66,7 +68,7 @@ public class SocialChallengeTests
     [InlineData(1001)]
     public void Challenge_rejects_a_range_outside_the_allowed_meters(int rangeInMeters)
     {
-        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, rangeInMeters, ValidXp, ValidCompletionMessage);
+        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, rangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -76,7 +78,7 @@ public class SocialChallengeTests
     [InlineData(1001)]
     public void Challenge_rejects_xp_outside_the_allowed_range(int xp)
     {
-        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, xp, ValidCompletionMessage);
+        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, xp, ValidCompletionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -86,7 +88,7 @@ public class SocialChallengeTests
     [InlineData("  \t\n ")]
     public void Challenge_rejects_an_empty_completion_message(string completionMessage)
     {
-        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, completionMessage);
+        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, completionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -96,7 +98,7 @@ public class SocialChallengeTests
     {
         var completionMessage = new string('a', 201);
 
-        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, completionMessage);
+        var creation = () => new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, completionMessage, ValidLocation);
 
         creation.Should().Throw<DomainException>();
     }
@@ -104,7 +106,7 @@ public class SocialChallengeTests
     [Fact]
     public void Challenge_with_all_lower_bounds_starts_as_a_draft()
     {
-        var challenge = new SocialChallenge("abc", ValidStart, ValidDuration, 2, 10, 1, "a");
+        var challenge = new SocialChallenge("abc", ValidStart, ValidDuration, 2, 10, 1, "a", ValidLocation);
 
         challenge.Status.Should().Be(SocialChallengeStatus.Draft);
     }
@@ -112,7 +114,7 @@ public class SocialChallengeTests
     [Fact]
     public void Challenge_with_all_upper_bounds_starts_as_a_draft()
     {
-        var challenge = new SocialChallenge(new string('a', 60), ValidStart, ValidDuration, 100, 1000, 1000, new string('a', 200));
+        var challenge = new SocialChallenge(new string('a', 60), ValidStart, ValidDuration, 100, 1000, 1000, new string('a', 200), ValidLocation);
 
         challenge.Status.Should().Be(SocialChallengeStatus.Draft);
     }
@@ -120,7 +122,7 @@ public class SocialChallengeTests
     [Fact]
     public void Challenge_keeps_its_name_and_completion_message_without_surrounding_whitespace()
     {
-        var challenge = new SocialChallenge("  \tJutarnje trčanje\n ", ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, " \nBravo!\t ");
+        var challenge = new SocialChallenge("  \tJutarnje trčanje\n ", ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, " \nBravo!\t ", ValidLocation);
 
         challenge.Name.Should().Be("Jutarnje trčanje");
         challenge.CompletionMessage.Should().Be("Bravo!");
@@ -137,7 +139,7 @@ public class SocialChallengeTests
     {
         var challenge = CreateChallenge();
 
-        var update = () => challenge.Update(name, ValidStart, ValidDuration, requiredParticipants, rangeInMeters, xp, completionMessage);
+        var update = () => challenge.Update(name, ValidStart, ValidDuration, requiredParticipants, rangeInMeters, xp, completionMessage, ValidLocation);
 
         update.Should().Throw<DomainException>();
     }
@@ -147,19 +149,39 @@ public class SocialChallengeTests
     {
         var challenge = CreateChallenge();
 
-        var update = () => challenge.Update(ValidName, ValidStart, TimeSpan.FromMinutes(14), ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+        var update = () => challenge.Update(ValidName, ValidStart, TimeSpan.FromMinutes(14), ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
         update.Should().Throw<DomainException>();
     }
 
     [Fact]
-    public void Draft_challenge_is_published()
+    public void Challenge_without_a_location_is_created_as_a_draft()
+    {
+        var challenge = new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, null);
+
+        challenge.Status.Should().Be(SocialChallengeStatus.Draft);
+        challenge.Location.Should().BeNull();
+    }
+
+    [Fact]
+    public void Draft_challenge_with_a_location_is_published()
     {
         var challenge = CreateChallengeIn(SocialChallengeStatus.Draft);
 
         challenge.Publish();
 
         challenge.Status.Should().Be(SocialChallengeStatus.Published);
+    }
+
+    [Fact]
+    public void Challenge_without_a_location_cannot_be_published_and_stays_a_draft()
+    {
+        var challenge = new SocialChallenge(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, null);
+
+        var publishing = () => challenge.Publish();
+
+        publishing.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(SocialChallengeStatus.Draft);
     }
 
     [Theory]
@@ -242,6 +264,7 @@ public class SocialChallengeTests
         challenge.RangeInMeters.Should().Be(ValidRangeInMeters);
         challenge.Xp.Should().Be(ValidXp);
         challenge.CompletionMessage.Should().Be(ValidCompletionMessage);
+        challenge.Location.Should().Be(ValidLocation);
     }
 
     [Theory]
@@ -265,7 +288,7 @@ public class SocialChallengeTests
     {
         var challenge = CreateChallengeIn(status);
 
-        var update = () => challenge.Update(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage);
+        var update = () => challenge.Update(ValidName, ValidStart, ValidDuration, ValidRequiredParticipants, ValidRangeInMeters, ValidXp, ValidCompletionMessage, ValidLocation);
 
         update.Should().Throw<DomainException>();
     }

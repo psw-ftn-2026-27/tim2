@@ -3,14 +3,16 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, maxLength, min, minLength, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
+import { MapLocation } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { ChallengeDto, ChallengeType } from '../../api/games-api-types';
+import { QuizLocationFields } from '../../quiz-management/quiz-location-fields/quiz-location-fields';
 import { ChallengeOverview } from '../challenge-overview';
 
 const pageSize = 20;
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, QuizLocationFields, RouterLink],
   selector: 'app-challenge-list',
   styleUrl: './challenge-list.scss',
   templateUrl: './challenge-list.html',
@@ -42,6 +44,8 @@ export class ChallengeList {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly editError = signal<string | null>(null);
+  // The place picked on the map of the edit form; null while the challenge has no location.
+  protected readonly editLocation = signal<MapLocation | null>(null);
 
   protected readonly editForm = form(
     signal({
@@ -92,6 +96,11 @@ export class ChallengeList {
       xp: challenge.xp,
       completionMessage: challenge.completionMessage ?? '',
     });
+    this.editLocation.set(
+      challenge.latitude !== null && challenge.longitude !== null
+        ? { latitude: challenge.latitude, longitude: challenge.longitude }
+        : null,
+    );
     this.editingId.set(challenge.id);
   }
 
@@ -106,6 +115,7 @@ export class ChallengeList {
     const minutes = this.editForm.durationMinutes().value();
     const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
     const restMinutes = String(minutes % 60).padStart(2, '0');
+    const location = this.editLocation();
     try {
       await this.overview.update(challengeId, {
         name: this.editForm.name().value(),
@@ -115,6 +125,7 @@ export class ChallengeList {
         rangeInMeters: this.editForm.rangeInMeters().value(),
         xp: this.editForm.xp().value(),
         completionMessage: this.editForm.completionMessage().value(),
+        location: location ? { latitude: location.latitude, longitude: location.longitude } : null,
       });
       this.editingId.set(null);
       this.challenges.reload();
@@ -147,8 +158,8 @@ export class ChallengeList {
     try {
       if (challenge.type === 'Quiz') {
         await this.confirmQuiz(challengeId, action);
-      } else if (action === 'delete' && challenge.type === 'LocationChallenge') {
-        await this.overview.deleteLocationChallenge(challengeId);
+      } else if (challenge.type === 'LocationChallenge') {
+        await this.confirmLocationChallenge(challengeId, action);
       } else if (action === 'delete') {
         await this.overview.delete(challengeId);
       } else if (action === 'publish') {
@@ -161,7 +172,7 @@ export class ChallengeList {
       this.challenges.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, `Could not ${action} the challenge.`));
-      if (challenge.type === 'Quiz') {
+      if (challenge.type === 'Quiz' || challenge.type === 'LocationChallenge') {
         this.challenges.reload();
       }
     } finally {
@@ -184,6 +195,23 @@ export class ChallengeList {
       await this.overview.archiveQuiz(quizId);
     } else {
       await this.overview.repeatQuiz(quizId);
+    }
+  }
+
+  private async confirmLocationChallenge(
+    challengeId: string,
+    action: 'delete' | 'publish' | 'retire' | 'archive' | 'repeat',
+  ): Promise<void> {
+    if (action === 'delete') {
+      await this.overview.deleteLocationChallenge(challengeId);
+    } else if (action === 'publish') {
+      await this.overview.publishLocationChallenge(challengeId);
+    } else if (action === 'retire') {
+      await this.overview.retireLocationChallenge(challengeId);
+    } else if (action === 'archive') {
+      await this.overview.archiveLocationChallenge(challengeId);
+    } else {
+      await this.overview.repeatLocationChallenge(challengeId);
     }
   }
 

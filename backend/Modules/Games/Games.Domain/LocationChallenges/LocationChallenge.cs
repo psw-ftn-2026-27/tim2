@@ -43,10 +43,7 @@ public sealed class LocationChallenge : AggregateRoot
 
     public void Update(string name, int xp, Location startLocation, List<HiddenPoint> hiddenPoints)
     {
-        if (Status != LocationChallengeStatus.Draft)
-        {
-            throw new DomainException("Only a draft location challenge can be changed.");
-        }
+        EnsureStatusIsOneOf(LocationChallengeStatus.Draft);
 
         Validate(name, xp, startLocation, hiddenPoints);
 
@@ -59,9 +56,42 @@ public sealed class LocationChallenge : AggregateRoot
 
     public void EnsureCanBeDeleted()
     {
-        if (Status != LocationChallengeStatus.Draft)
+        EnsureStatusIsOneOf(LocationChallengeStatus.Draft, LocationChallengeStatus.Archived);
+    }
+
+    public void Publish()
+    {
+        EnsureStatusIsOneOf(LocationChallengeStatus.Draft);
+
+        Status = LocationChallengeStatus.Published;
+    }
+
+    public void Retire()
+    {
+        EnsureStatusIsOneOf(LocationChallengeStatus.Published);
+
+        Status = LocationChallengeStatus.Retired;
+    }
+
+    public void Archive()
+    {
+        EnsureStatusIsOneOf(LocationChallengeStatus.Retired);
+
+        Status = LocationChallengeStatus.Archived;
+    }
+
+    public void Repeat()
+    {
+        EnsureStatusIsOneOf(LocationChallengeStatus.Retired, LocationChallengeStatus.Archived);
+
+        Status = LocationChallengeStatus.Draft;
+    }
+
+    private void EnsureStatusIsOneOf(params LocationChallengeStatus[] allowedStatuses)
+    {
+        if (!allowedStatuses.Contains(Status))
         {
-            throw new DomainException("Only a draft location challenge can be deleted.");
+            throw new DomainException($"This action is not allowed for a location challenge in the {Status} state.");
         }
     }
 

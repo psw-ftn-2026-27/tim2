@@ -14,7 +14,7 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
     public ChallengeOverviewQueryTests(GamesApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Overview_filtered_to_social_challenges_lists_the_seeded_social_challenges_with_the_computed_end_of_their_window()
+    public async Task Overview_filtered_to_social_challenges_lists_the_seeded_social_challenges_with_the_computed_end_of_their_window_and_their_location_or_none()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -32,7 +32,9 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Window.End(),
             seeded.RequiredParticipants,
             seeded.RangeInMeters,
-            seeded.CompletionMessage)));
+            seeded.CompletionMessage,
+            seeded.Location?.Latitude,
+            seeded.Location?.Longitude)));
     }
 
     [Fact]
@@ -49,6 +51,8 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Name,
             seeded.Xp,
             seeded.Status.ToString(),
+            null,
+            null,
             null,
             null,
             null,
@@ -71,6 +75,8 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Name,
             seeded.Xp,
             seeded.Status.ToString(),
+            null,
+            null,
             null,
             null,
             null,
