@@ -39,6 +39,8 @@ export interface TourSearchDto {
   transportModes: TransportMode[] | null;
   minPrice: number | null;
   maxPrice: number | null;
+  minLengthKm: number | null;
+  maxLengthKm: number | null;
   difficultySort: SortDirection;
   priceSort: SortDirection;
 }
@@ -53,6 +55,8 @@ export interface TourLocationSearchDto {
   transportModes: TransportMode[] | null;
   minPrice: number | null;
   maxPrice: number | null;
+  minLengthKm: number | null;
+  maxLengthKm: number | null;
 }
 
 export interface LocatedTourDto {
@@ -64,6 +68,7 @@ export interface LocatedTourDto {
   price: number;
   markerLatitude: number;
   markerLongitude: number;
+  lengthKm: number | null;
 }
 
 export interface CreateTourDto {

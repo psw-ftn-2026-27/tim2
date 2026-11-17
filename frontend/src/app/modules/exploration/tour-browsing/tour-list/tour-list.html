@@ -56,6 +56,26 @@
     </div>
 
     <div class="field">
+      <label for="min-length-filter">Shortest length (km)</label>
+      <input id="min-length-filter" type="number" step="any" [formField]="form.minLengthKm" />
+      @if (form.minLengthKm().touched()) {
+        @for (message of form.minLengthKm().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="max-length-filter">Longest length (km)</label>
+      <input id="max-length-filter" type="number" step="any" [formField]="form.maxLengthKm" />
+      @if (form.maxLengthKm().touched()) {
+        @for (message of form.maxLengthKm().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
       <label for="difficulty-sort">Sort by difficulty</label>
       <select id="difficulty-sort" [formField]="form.difficultySort">
         <option value="None">No sorting</option>
