@@ -34,6 +34,14 @@ public class QuizAttemptTests
     }
 
     [Fact]
+    public void Percentage_of_correct_answers_is_rounded_down()
+    {
+        var percentage = QuizAttempt.PercentageOf(2, 3);
+
+        percentage.Should().Be(66);
+    }
+
+    [Fact]
     public void Attempt_without_a_single_correct_answer_is_solved_with_no_xp()
     {
         var attempt = CreateAttempt(2);

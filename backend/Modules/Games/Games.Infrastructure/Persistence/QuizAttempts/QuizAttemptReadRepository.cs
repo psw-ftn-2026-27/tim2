@@ -67,7 +67,7 @@ internal sealed class QuizAttemptReadRepository : IQuizAttemptReadRepository
             correctCount,
             LastAnswerCorrect(attempt),
             null,
-            Percentage(correctCount, attempt.QuestionCount),
+            QuizAttempt.PercentageOf(correctCount, attempt.QuestionCount),
             attempt.EarnedXp,
             attempt.SolvedAt);
     }
@@ -105,12 +105,6 @@ internal sealed class QuizAttemptReadRepository : IQuizAttemptReadRepository
     private static bool? LastAnswerCorrect(AttemptRow attempt)
     {
         return attempt.Answers.Count == 0 ? null : attempt.Answers[^1].IsCorrect;
-    }
-
-    // The only place the percentage of correct answers is computed; integer division rounds it down.
-    private static int Percentage(int correctCount, int questionCount)
-    {
-        return correctCount * 100 / questionCount;
     }
 
     private sealed class AttemptRow

@@ -48,4 +48,10 @@ public sealed class QuizAttempt : AggregateRoot
     {
         return _answers.Count;
     }
+
+    // Integer division rounds down, the same way as the earned XP.
+    public static int PercentageOf(int correctCount, int questionCount)
+    {
+        return correctCount * 100 / questionCount;
+    }
 }
