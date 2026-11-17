@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { PaymentHome } from './payment-home/payment-home';
+import { PurchasedTours } from './purchase-viewing/purchased-tours/purchased-tours';
 import { AddToCart } from './shopping/add-to-cart/add-to-cart';
 import { Cart } from './shopping/cart/cart';
 import { UserWallet } from './wallet-funding/user-wallet/user-wallet';
@@ -13,4 +14,5 @@ export const paymentRoutes: Routes = [
   { path: 'wallets/:userId', component: UserWallet },
   { path: 'cart', component: Cart },
   { path: 'cart/add/:tourId', component: AddToCart },
+  { path: 'purchases', component: PurchasedTours },
 ];

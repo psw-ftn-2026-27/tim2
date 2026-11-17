@@ -7,7 +7,9 @@ public sealed class Transaction : Entity
 {
     public int Amount { get; private set; }
     public DateTime CreatedAt { get; private set; }
-    public Guid AdminId { get; private set; }
+    public Guid? AdminId { get; private set; }
+    public Guid? EntityId { get; private set; }
+    public string? Name { get; private set; }
     public bool IsCancelled { get; private set; }
 
     private Transaction() { }
@@ -15,6 +17,15 @@ public sealed class Transaction : Entity
     public Transaction(Guid adminId, int amount) : base(Guid.NewGuid())
     {
         AdminId = adminId;
+        Amount = amount;
+        CreatedAt = DateTime.UtcNow;
+        IsCancelled = false;
+    }
+
+    public Transaction(Guid entityId, string name, int amount) : base(Guid.NewGuid())
+    {
+        EntityId = entityId;
+        Name = name;
         Amount = amount;
         CreatedAt = DateTime.UtcNow;
         IsCancelled = false;

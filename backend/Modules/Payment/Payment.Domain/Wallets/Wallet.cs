@@ -1,3 +1,4 @@
+using Payment.Domain.ShoppingCarts;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -47,5 +48,18 @@ public sealed class Wallet : AggregateRoot
         }
 
         transaction.Cancel(adminId, now);
+    }
+
+    public void Purchase(IReadOnlyList<OrderItem> items)
+    {
+        if (Balance() < items.Sum(item => item.Price))
+        {
+            throw new DomainException("There is not enough EC in the wallet for this purchase.");
+        }
+
+        foreach (var item in items)
+        {
+            _transactions.Add(new Transaction(item.EntityId, item.Name, -item.Price));
+        }
     }
 }

@@ -7,6 +7,7 @@ export interface TransactionDto {
   amount: number;
   createdAt: string;
   isCancelled: boolean;
+  name: string | null;
 }
 
 export interface UserWalletDto {
@@ -23,8 +24,9 @@ export interface UserTransactionDto {
   id: string;
   amount: number;
   createdAt: string;
-  adminId: string;
+  adminId: string | null;
   isCancelled: boolean;
+  name: string | null;
 }
 
 export interface TourOfferDto {
@@ -42,4 +44,11 @@ export interface CartItemDto {
 export interface CartDto {
   items: CartItemDto[];
   totalPrice: number;
+}
+
+export interface PurchasedTourDto {
+  tourId: string;
+  name: string;
+  price: number;
+  purchasedAt: string;
 }

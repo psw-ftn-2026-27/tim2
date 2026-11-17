@@ -14,9 +14,20 @@ public class ShoppingCartTests
     {
         var cart = new ShoppingCart(WellKnownUsers.Explorer);
         var product = CreateProduct(WellKnownUsers.SecondExplorer, 500);
-        cart.AddItem(product);
+        cart.AddItem(product, false);
 
-        var add = () => cart.AddItem(product);
+        var add = () => cart.AddItem(product, false);
+
+        add.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Adding_a_tour_the_buyer_has_already_purchased_is_rejected()
+    {
+        var cart = new ShoppingCart(WellKnownUsers.Explorer);
+        var product = CreateProduct(WellKnownUsers.SecondExplorer, 500);
+
+        var add = () => cart.AddItem(product, true);
 
         add.Should().Throw<DomainException>();
     }
@@ -27,7 +38,7 @@ public class ShoppingCartTests
         var cart = new ShoppingCart(WellKnownUsers.Explorer);
         var ownProduct = CreateProduct(WellKnownUsers.Explorer, 500);
 
-        var add = () => cart.AddItem(ownProduct);
+        var add = () => cart.AddItem(ownProduct, false);
 
         add.Should().Throw<DomainException>();
     }
@@ -38,14 +49,38 @@ public class ShoppingCartTests
         var cart = new ShoppingCart(WellKnownUsers.Explorer);
         var cheap = CreateProduct(WellKnownUsers.SecondExplorer, 500);
         var expensive = CreateProduct(WellKnownUsers.SecondExplorer, 1200);
-        cart.AddItem(cheap);
-        cart.AddItem(expensive);
+        cart.AddItem(cheap, false);
+        cart.AddItem(expensive, false);
         var totalBefore = cart.TotalPrice();
 
         cart.RemoveItem(cheap.EntityId);
 
         totalBefore.Should().Be(1700);
         cart.TotalPrice().Should().Be(1200);
+    }
+
+    [Fact]
+    public void Checkout_of_a_cart_with_a_tour_that_is_no_longer_published_is_rejected()
+    {
+        var cart = new ShoppingCart(WellKnownUsers.Explorer);
+        var published = CreateProduct(WellKnownUsers.SecondExplorer, 500);
+        var archived = CreateProduct(WellKnownUsers.SecondExplorer, 1200);
+        cart.AddItem(published, false);
+        cart.AddItem(archived, false);
+
+        var checkout = () => cart.Checkout([published.EntityId]);
+
+        checkout.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Checkout_of_an_empty_cart_is_rejected()
+    {
+        var cart = new ShoppingCart(WellKnownUsers.Explorer);
+
+        var checkout = () => cart.Checkout([]);
+
+        checkout.Should().Throw<DomainException>();
     }
 
     private static Product CreateProduct(Guid ownerId, int price)

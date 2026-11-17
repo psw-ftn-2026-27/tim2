@@ -23,8 +23,12 @@ public sealed class ShoppingCart : AggregateRoot
         return _items.Sum(item => item.Price);
     }
 
-    public void AddItem(Product product)
+    public void AddItem(Product product, bool isAlreadyPurchased)
     {
+        if (isAlreadyPurchased)
+        {
+            throw new DomainException("You have already purchased this tour.");
+        }
         if (_items.Any(item => item.EntityId == product.EntityId))
         {
             throw new DomainException("The product is already in the cart.");
@@ -46,5 +50,22 @@ public sealed class ShoppingCart : AggregateRoot
         }
 
         _items.Remove(item);
+    }
+
+    public List<OrderItem> Checkout(IReadOnlyCollection<Guid> publishedTourIds)
+    {
+        if (_items.Count == 0)
+        {
+            throw new DomainException("An empty cart cannot be purchased.");
+        }
+        var unavailableItem = _items.FirstOrDefault(item => !publishedTourIds.Contains(item.EntityId));
+        if (unavailableItem is not null)
+        {
+            throw new DomainException($"The tour {unavailableItem.Name} is no longer available.");
+        }
+
+        var purchasedItems = _items.ToList();
+        _items.Clear();
+        return purchasedItems;
     }
 }
