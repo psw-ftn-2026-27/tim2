@@ -158,8 +158,8 @@ export class ChallengeList {
     try {
       if (challenge.type === 'Quiz') {
         await this.confirmQuiz(challengeId, action);
-      } else if (action === 'delete' && challenge.type === 'LocationChallenge') {
-        await this.overview.deleteLocationChallenge(challengeId);
+      } else if (challenge.type === 'LocationChallenge') {
+        await this.confirmLocationChallenge(challengeId, action);
       } else if (action === 'delete') {
         await this.overview.delete(challengeId);
       } else if (action === 'publish') {
@@ -172,7 +172,7 @@ export class ChallengeList {
       this.challenges.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, `Could not ${action} the challenge.`));
-      if (challenge.type === 'Quiz') {
+      if (challenge.type === 'Quiz' || challenge.type === 'LocationChallenge') {
         this.challenges.reload();
       }
     } finally {
@@ -195,6 +195,23 @@ export class ChallengeList {
       await this.overview.archiveQuiz(quizId);
     } else {
       await this.overview.repeatQuiz(quizId);
+    }
+  }
+
+  private async confirmLocationChallenge(
+    challengeId: string,
+    action: 'delete' | 'publish' | 'retire' | 'archive' | 'repeat',
+  ): Promise<void> {
+    if (action === 'delete') {
+      await this.overview.deleteLocationChallenge(challengeId);
+    } else if (action === 'publish') {
+      await this.overview.publishLocationChallenge(challengeId);
+    } else if (action === 'retire') {
+      await this.overview.retireLocationChallenge(challengeId);
+    } else if (action === 'archive') {
+      await this.overview.archiveLocationChallenge(challengeId);
+    } else {
+      await this.overview.repeatLocationChallenge(challengeId);
     }
   }
 
