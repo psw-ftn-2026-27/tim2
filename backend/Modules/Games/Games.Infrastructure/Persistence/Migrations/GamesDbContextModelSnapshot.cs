@@ -47,6 +47,38 @@ namespace Games.Infrastructure.Persistence.Migrations
                     b.ToTable("LocationChallenges", "games");
                 });
 
+            modelBuilder.Entity("Games.Domain.QuizAttempts.QuizAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EarnedXp")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId", "PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("QuizAttempts", "games");
+                });
+
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>
                 {
                     b.Property<Guid>("Id")
@@ -179,6 +211,36 @@ namespace Games.Infrastructure.Persistence.Migrations
 
                     b.Navigation("StartLocation")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Games.Domain.QuizAttempts.QuizAttempt", b =>
+                {
+                    b.OwnsMany("Games.Domain.QuizAttempts.QuizAnswer", "Answers", b1 =>
+                        {
+                            b1.Property<Guid>("QuizAttemptId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<DateTime>("AnsweredAt");
+
+                            b1.Property<bool>("IsCorrect");
+
+                            b1.Property<int>("SelectedOptionIndex");
+
+                            b1.HasKey("QuizAttemptId", "__synthesizedOrdinal");
+
+                            b1.ToTable("QuizAttempts", "games");
+
+                            b1
+                                .ToJson("Answers")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizAttemptId");
+                        });
+
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("Games.Domain.Quizzes.Quiz", b =>

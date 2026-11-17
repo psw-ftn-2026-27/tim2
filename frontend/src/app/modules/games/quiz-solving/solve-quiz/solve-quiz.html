@@ -1,0 +1,70 @@
+<div class="stack">
+  <p><a routerLink="/games/play">Back to challenges</a></p>
+
+  <header class="page-header">
+    <h1>Quiz</h1>
+  </header>
+
+  @if (progress.isLoading()) {
+    <p>Loading the quiz...</p>
+  } @else if (progress.error()) {
+    <p class="error">Could not load the quiz. Activate it from the list of challenges first, and log in as an explorer.</p>
+  } @else {
+    @if (progress.value(); as current) {
+      <!-- The feedback comes first, so it is shown after the last answer too, before the result. -->
+      @if (answered()) {
+        <section class="card stack">
+          @if (current.lastAnswerCorrect) {
+            <p>Your answer is correct.</p>
+          } @else {
+            <p>Your answer is not correct.</p>
+          }
+          <p>Correct answers so far: {{ current.correctCount }}</p>
+          <div class="row">
+            <button class="button button--primary" type="button" (click)="nextQuestion()">
+              @if (current.currentQuestion) {
+                Next question
+              } @else {
+                See result
+              }
+            </button>
+          </div>
+        </section>
+      } @else if (current.currentQuestion; as question) {
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <section class="card stack">
+          <p class="meta">Question {{ question.index + 1 }} of {{ current.questionCount }}</p>
+          <h2>{{ question.text }}</h2>
+          <div class="stack">
+            @for (option of question.options; track $index; let optionIndex = $index) {
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="answer(question.index, optionIndex)"
+              >
+                {{ option }}
+              </button>
+            }
+          </div>
+        </section>
+      } @else if (current.solvedAt === null) {
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <p class="error">This quiz changed after you activated it, so this attempt cannot be finished.</p>
+      } @else {
+        <section class="card stack">
+          <h2>Result</h2>
+          <p>Correct answers: {{ current.correctCount }} of {{ current.questionCount }}</p>
+          <p>Score: {{ current.percentage }}%</p>
+          <p>Earned: <span class="amount">{{ current.earnedXp }} XP</span></p>
+          <p><a routerLink="/games/play">Back to challenges</a></p>
+        </section>
+      }
+    }
+  }
+</div>

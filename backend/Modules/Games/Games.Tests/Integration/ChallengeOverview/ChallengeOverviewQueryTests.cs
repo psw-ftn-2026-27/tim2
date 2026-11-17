@@ -1,6 +1,7 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.ChallengeOverview;
+using Games.Application.Challenges;
 using Games.Tests.Integration.Seeds;
 using Shared.Domain;
 using Shared.Tests;
@@ -89,7 +90,7 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var challenges = await client.GetFromJsonAsync<PageResult<ChallengeDto>>("/api/games/challenges", JsonOptions);
+        var challenges = await client.GetFromJsonAsync<PageResult<ChallengeDto>>("/api/games/challenges?pageSize=100", JsonOptions);
 
         challenges!.TotalCount.Should().Be(SocialChallengeSeed.All.Length + QuizSeed.All.Length + LocationChallengeSeed.All.Length);
         challenges.Items.Select(challenge => challenge.Id).Should().BeEquivalentTo(
@@ -99,15 +100,20 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Second_page_of_the_overview_continues_the_list_sorted_by_name_with_challenges_of_all_three_kinds()
+    public async Task Second_page_of_the_overview_continues_the_list_of_all_three_kinds_sorted_by_name()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var expectedIds = SocialChallengeSeed.All.Select(seeded => (seeded.Id, seeded.Name))
+            .Concat(QuizSeed.All.Select(seeded => (seeded.Id, seeded.Name)))
+            .Concat(LocationChallengeSeed.All.Select(seeded => (seeded.Id, seeded.Name)))
+            .OrderBy(seeded => seeded.Name, StringComparer.Ordinal)
+            .ThenBy(seeded => seeded.Id.ToString(), StringComparer.Ordinal)
+            .Skip(3)
+            .Take(3)
+            .Select(seeded => seeded.Id);
 
         var challenges = await client.GetFromJsonAsync<PageResult<ChallengeDto>>("/api/games/challenges?page=2&pageSize=3", JsonOptions);
 
-        challenges!.Items.Select(challenge => challenge.Id).Should().Equal(
-            SocialChallengeSeed.ArchivedMarketVisit.Id,
-            LocationChallengeSeed.DraftQuayByTheBridge.Id,
-            QuizSeed.DraftMuseum.Id);
+        challenges!.Items.Select(challenge => challenge.Id).Should().Equal(expectedIds);
     }
 }

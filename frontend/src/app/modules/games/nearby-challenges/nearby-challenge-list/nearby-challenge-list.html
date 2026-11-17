@@ -1,0 +1,98 @@
+<div class="stack">
+  <p><a routerLink="/games">Back to games</a></p>
+
+  <header class="page-header">
+    <h1>Play</h1>
+  </header>
+
+  <app-map
+    [locations]="challengePins()"
+    [pickLocation]="true"
+    [selectedLocation]="youAreHere()"
+    (locationPicked)="save($event)"
+  />
+
+  @if (saving()) {
+    <p>Saving position...</p>
+  }
+  @if (saved()) {
+    <p>Position saved</p>
+  }
+  @if (failed()) {
+    <p class="error">Position could not be saved</p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (position.isLoading() || challenges.isLoading()) {
+    <p>Loading challenges near you...</p>
+  } @else if (position.error() || challenges.error()) {
+    <p class="error">Could not load the challenges near you. Log in as an explorer and try again.</p>
+  } @else if (youAreHere() === null) {
+    <p>Click on the map to set your position and see the challenges near you.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">Distance (m)</th>
+          <th scope="col">XP</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (challenge of challenges.value() ?? []; track challenge.id) {
+          <tr>
+            <td>{{ challenge.name }}</td>
+            <td>
+              @switch (challenge.type) {
+                @case ('SocialChallenge') {
+                  Social challenge
+                }
+                @case ('Quiz') {
+                  Quiz
+                }
+                @case ('LocationChallenge') {
+                  Location challenge
+                }
+              }
+            </td>
+            <td>{{ challenge.distanceInMeters.toFixed(0) }}</td>
+            <td><span class="amount">{{ challenge.xp }} XP</span></td>
+            <td>
+              @if (challenge.isSolved) {
+                <span class="badge">Solved</span>
+              }
+            </td>
+            <td>
+              @if (challenge.type === 'Quiz' && !challenge.isSolved) {
+                @if (challenge.isStarted) {
+                  <a class="button" [routerLink]="['/games/play/quiz', challenge.id]">Continue</a>
+                } @else if (challenge.metersToRange > 0) {
+                  <span class="meta">Get {{ challenge.metersToRange }} m closer</span>
+                } @else {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="activate(challenge.id)"
+                  >
+                    Activate
+                  </button>
+                }
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">There are no challenges near you.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
