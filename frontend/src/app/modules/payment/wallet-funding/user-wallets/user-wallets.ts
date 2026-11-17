@@ -40,7 +40,7 @@ export class UserWallets {
       // is created again, empty.
       this.wallets.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Uplata nije uspela.'));
+      this.error.set(serverMessage(failure, 'The deposit failed.'));
     } finally {
       this.pending.set(false);
     }

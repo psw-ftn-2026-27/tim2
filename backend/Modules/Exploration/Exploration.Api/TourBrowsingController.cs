@@ -27,6 +27,15 @@ public sealed class TourBrowsingController : ControllerBase
         return await _browsingQueries.GetPublishedAsync(search, page, pageSize);
     }
 
+    [HttpGet("published/by-location")]
+    public async Task<ActionResult<PageResult<LocatedTourDto>>> GetPublishedByLocation(
+        [FromQuery] TourLocationSearchDto search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        return await _browsingQueries.GetPublishedByLocationAsync(search, page, pageSize);
+    }
+
     [HttpGet("featured")]
     [AllowAnonymous]
     public async Task<ActionResult<List<FeaturedTourDto>>> GetFeatured()

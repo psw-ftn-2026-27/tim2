@@ -63,7 +63,7 @@ export class MyBlogs {
   }
 
   protected formatDate(value: string): string {
-    return new Date(value).toLocaleString('sr-RS');
+    return new Date(value).toLocaleString('en-GB');
   }
 
   protected startEdit(blog: BlogDto): void {

@@ -14,6 +14,9 @@ namespace Exploration.Tests.Integration.TourBrowsing;
 
 public class TourBrowsingQueryTests : BaseIntegrationTest
 {
+    // A 3 km circle around Trg republike in Belgrade, where only the Belgrade tours of the seed have key points.
+    private const string BelgradeCenterSearch = "/api/exploration/tours/published/by-location?latitude=44.8176&longitude=20.4569&radiusKm=3";
+
     public TourBrowsingQueryTests(ExplorationApiFactory factory) : base(factory) { }
 
     [Fact]
@@ -218,18 +221,92 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Location_search_returns_exactly_the_published_tours_with_a_visible_key_point_in_the_area()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => tour.Id).Should().BeEquivalentTo(
+            [TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id, TourSeed.PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.Id]);
+    }
+
+    [Fact]
+    public async Task Tour_whose_only_key_point_in_the_area_is_hidden_is_not_found_by_location()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.Id);
+    }
+
+    [Fact]
+    public async Task Tour_is_marked_at_its_first_visible_key_point_even_when_that_point_is_outside_the_area()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var firstVisibleLocation = TourSeed.PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.KeyPoints[1].Location;
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&pageSize=100", JsonOptions);
+
+        var markedTour = tours!.Items.Single(tour => tour.Id == TourSeed.PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.Id);
+        markedTour.MarkerLatitude.Should().Be(firstVisibleLocation.Latitude);
+        markedTour.MarkerLongitude.Should().Be(firstVisibleLocation.Longitude);
+    }
+
+    [Fact]
+    public async Task Location_search_with_a_price_limit_returns_only_tours_in_the_area_that_also_meet_the_price()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&maxPrice=1000&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => tour.Id).Should().BeEquivalentTo([TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id]);
+    }
+
+    [Fact]
+    public async Task Total_count_covers_every_tour_in_the_area_when_only_one_page_is_returned()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        Guid[] toursInArea = [TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id, TourSeed.PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade.Id];
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&pageSize=1", JsonOptions);
+
+        tours!.Items.Should().ContainSingle();
+        tours.TotalCount.Should().Be(toursInArea.Length);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_search_tours_by_location()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync(BelgradeCenterSearch);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
     public async Task Guest_gets_only_the_three_most_recently_first_published_tours_newest_first_even_when_asking_for_a_larger_page()
     {
         var client = Factory.CreateClient();
-        var expectedNames = TourSeed.All
-            .Where(tour => tour.Status == TourStatus.Published)
-            .OrderByDescending(tour => tour.PublishedAt)
-            .Take(3)
-            .Select(tour => tour.Name);
+        var published = TourSeed.All.Where(tour => tour.Status == TourStatus.Published).ToList();
 
         var tours = await client.GetFromJsonAsync<List<FeaturedTourDto>>("/api/exploration/tours/featured?page=1&pageSize=100", JsonOptions);
 
-        tours!.Select(tour => tour.Name).Should().Equal(expectedNames);
+        var featuredNames = tours!.Select(tour => tour.Name).ToList();
+        var featuredTimes = featuredNames.Select(name => PublishedMicroseconds(published.Single(tour => tour.Name == name))).ToList();
+        var newerTourLeftOut = published
+            .Where(tour => !featuredNames.Contains(tour.Name))
+            .Any(tour => PublishedMicroseconds(tour) > featuredTimes.Min());
+        featuredTimes.Should().HaveCount(Math.Min(3, published.Count)).And.BeInDescendingOrder();
+        newerTourLeftOut.Should().BeFalse();
+    }
+
+    // The database keeps publishing times to the microsecond, so tours published within one microsecond tie there.
+    private static long PublishedMicroseconds(Tour tour)
+    {
+        return tour.PublishedAt!.Value.Ticks / 10;
     }
 
     [Fact]

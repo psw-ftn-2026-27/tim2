@@ -1,0 +1,152 @@
+<div class="card stack">
+  <h1>New location challenge</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <section class="stack">
+      <h2>Basics</h2>
+
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" type="text" [formField]="form.name" />
+        @if (form.name().touched()) {
+          @for (message of form.name().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="xp">XP</label>
+        <input id="xp" type="number" step="1" [formField]="form.xp" />
+        @if (form.xp().touched()) {
+          @for (message of form.xp().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="stack">
+      <h2>Places</h2>
+
+      @if (pickingName(); as name) {
+        <div class="placing actions">
+          <p><strong>Placing: {{ name }}</strong> – click the map.</p>
+          <button class="button" type="button" (click)="cancelPicking()">Cancel</button>
+        </div>
+      } @else {
+        <p class="hint">Choose a place below with "Set on map" or "Move on map", then click the map once.</p>
+      }
+
+      <app-map
+        [pickLocation]="picking() !== null"
+        [locations]="otherPlaces()"
+        [selectedLocation]="pickedPlace()"
+        (locationPicked)="placePicked($event)"
+      />
+
+      <div class="place stack">
+        <h3>Start</h3>
+
+        @if (form.startLocation().value(); as start) {
+          <p class="meta">{{ start.latitude.toFixed(5) }}, {{ start.longitude.toFixed(5) }}</p>
+        }
+        @for (message of form.startLocation().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+
+        <div class="actions">
+          <button
+            class="button"
+            type="button"
+            [class.button--primary]="picking() === 'start'"
+            [disabled]="picking() === 'start'"
+            (click)="pick('start')"
+          >
+            {{ picking() === 'start' ? 'Placing…' : form.startLocation().value() ? 'Move on map' : 'Set on map' }}
+          </button>
+        </div>
+      </div>
+
+      @for (point of form.hiddenPoints; track $index; let pointIndex = $index) {
+        <div class="place stack">
+          <h3>Point {{ pointIndex + 1 }}</h3>
+
+          <app-image-upload
+            [pending]="uploads()[pointIndex].pending"
+            [error]="uploads()[pointIndex].error"
+            [uploadedUrl]="point.imageUrl().value() || null"
+            (upload)="upload(pointIndex, $event)"
+          />
+          @for (message of point.imageUrl().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+
+          @if (point.location().value(); as location) {
+            <p class="meta">{{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+          }
+          @for (message of point.location().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+
+          <div class="actions">
+            <button
+              class="button"
+              type="button"
+              [class.button--primary]="picking() === pointIndex"
+              [disabled]="picking() === pointIndex"
+              (click)="pick(pointIndex)"
+            >
+              {{ picking() === pointIndex ? 'Placing…' : point.location().value() ? 'Move on map' : 'Set on map' }}
+            </button>
+            <button
+              class="button"
+              type="button"
+              [disabled]="form.hiddenPoints.length <= 1 || uploading()"
+              (click)="removePoint(pointIndex)"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (form.hiddenPoints.length <= 1) {
+        <p class="hint">A location challenge needs at least 1 point.</p>
+      }
+
+      <p>
+        <button
+          class="button"
+          type="button"
+          [disabled]="form.hiddenPoints.length >= 10"
+          (click)="addPoint()"
+        >
+          Add point
+        </button>
+      </p>
+      @if (form.hiddenPoints.length >= 10) {
+        <p class="hint">A location challenge can have at most 10 points.</p>
+      }
+    </section>
+
+    @if (!form().valid()) {
+      <p class="hint">Saving is possible once every field is filled in correctly, the start is picked, and each point has a photo and a location.</p>
+    }
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!form().valid() || pending() || uploading()"
+      >
+        Save
+      </button>
+      <a class="button" routerLink="/games/challenges">Cancel</a>
+    </div>
+  </form>
+</div>

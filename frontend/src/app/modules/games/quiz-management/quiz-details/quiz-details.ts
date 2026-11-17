@@ -31,7 +31,9 @@ export class QuizDetails {
 
   protected readonly quiz = httpResource<QuizDto>(() => `/api/games/quizzes/${this.id()}`);
 
-  protected readonly confirmingDelete = signal(false);
+  protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive' | 'repeat' | null>(
+    null,
+  );
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -51,7 +53,7 @@ export class QuizDetails {
   protected startEdit(quiz: QuizDto): void {
     this.error.set(null);
     this.editError.set(null);
-    this.confirmingDelete.set(false);
+    this.confirmingAction.set(null);
     this.editForm().reset(toQuizFormModel(quiz));
     this.editing.set(true);
   }
@@ -91,25 +93,40 @@ export class QuizDetails {
     }
   }
 
-  protected askToConfirmDelete(): void {
+  protected askToConfirm(action: 'delete' | 'publish' | 'retire' | 'archive' | 'repeat'): void {
     this.error.set(null);
-    this.confirmingDelete.set(true);
+    this.confirmingAction.set(action);
   }
 
-  protected cancelDelete(): void {
-    this.confirmingDelete.set(false);
+  protected cancelConfirm(): void {
+    this.confirmingAction.set(null);
   }
 
-  protected async confirmDelete(): Promise<void> {
+  protected async confirm(): Promise<void> {
+    const action = this.confirmingAction();
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.management.delete(this.id());
-      await this.router.navigate(['/games/challenges']);
+      if (action === 'delete') {
+        await this.management.delete(this.id());
+        await this.router.navigate(['/games/challenges']);
+        return;
+      }
+      if (action === 'publish') {
+        await this.management.publish(this.id());
+      } else if (action === 'retire') {
+        await this.management.retire(this.id());
+      } else if (action === 'archive') {
+        await this.management.archive(this.id());
+      } else {
+        await this.management.repeat(this.id());
+      }
+      this.quiz.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not delete the quiz.'));
+      this.error.set(serverMessage(failure, `Could not ${action} the quiz.`));
+      this.quiz.reload();
     } finally {
-      this.confirmingDelete.set(false);
+      this.confirmingAction.set(null);
       this.pending.set(false);
     }
   }

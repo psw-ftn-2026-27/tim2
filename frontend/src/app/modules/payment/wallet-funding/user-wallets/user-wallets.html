@@ -1,35 +1,35 @@
 <div class="stack">
-  <h1>Novčanici korisnika</h1>
+  <h1>User wallets</h1>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
   }
 
   @if (wallets.isLoading()) {
-    <p>Učitavanje novčanika...</p>
+    <p>Loading wallets...</p>
   } @else if (wallets.error()) {
-    <p class="error">Novčanike nije moguće učitati. Prijavite se kao administrator.</p>
+    <p class="error">Could not load the wallets. Log in as an administrator.</p>
   } @else {
     <table class="table">
       <thead>
         <tr>
-          <th scope="col">Imejl</th>
-          <th scope="col">Stanje</th>
-          <th scope="col">Uplata</th>
+          <th scope="col">Email</th>
+          <th scope="col">Balance</th>
+          <th scope="col">Deposit</th>
         </tr>
       </thead>
       <tbody>
         @for (wallet of wallets.value()?.items ?? []; track wallet.userId) {
           <tr>
             <td><a [routerLink]="[wallet.userId]">{{ wallet.email }}</a></td>
-            <td>{{ wallet.balance }} EC</td>
+            <td><span class="amount">{{ wallet.balance }} EC</span></td>
             <td>
               <app-deposit-form [disabled]="pending()" (deposit)="deposit(wallet.userId, $event)" />
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="meta">Nema registrovanih korisnika.</td>
+            <td colspan="3" class="meta">No registered users.</td>
           </tr>
         }
       </tbody>
@@ -42,16 +42,16 @@
         [disabled]="page() === 1 || pending()"
         (click)="previousPage()"
       >
-        Prethodna
+        Previous
       </button>
-      <span class="meta">Strana {{ page() }}</span>
+      <span class="meta">Page {{ page() }}</span>
       <button
         class="button"
         type="button"
         [disabled]="!hasNextPage() || pending()"
         (click)="nextPage()"
       >
-        Sledeća
+        Next
       </button>
     </p>
   }

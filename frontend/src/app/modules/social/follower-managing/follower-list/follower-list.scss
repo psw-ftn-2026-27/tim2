@@ -17,19 +17,3 @@
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.status {
-  font-weight: 600;
-}
-
-.paging {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}

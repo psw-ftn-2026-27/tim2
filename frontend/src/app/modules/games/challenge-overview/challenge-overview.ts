@@ -5,6 +5,7 @@ import { UpdateSocialChallengeDto } from '../api/games-api-types';
 
 const SOCIAL_CHALLENGES_URL = '/api/games/challenges';
 const QUIZZES_URL = '/api/games/quizzes';
+const LOCATION_CHALLENGES_URL = '/api/games/location-challenges';
 
 @Injectable({ providedIn: 'root' })
 export class ChallengeOverview {
@@ -36,5 +37,25 @@ export class ChallengeOverview {
 
   async deleteQuiz(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${QUIZZES_URL}/${id}`));
+  }
+
+  async publishQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/publish`, null));
+  }
+
+  async retireQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/retire`, null));
+  }
+
+  async archiveQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/archive`, null));
+  }
+
+  async repeatQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/repeat`, null));
+  }
+
+  async deleteLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${LOCATION_CHALLENGES_URL}/${id}`));
   }
 }
