@@ -58,4 +58,20 @@ export class ChallengeOverview {
   async deleteLocationChallenge(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${LOCATION_CHALLENGES_URL}/${id}`));
   }
+
+  async publishLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/publish`, null));
+  }
+
+  async retireLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/retire`, null));
+  }
+
+  async archiveLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/archive`, null));
+  }
+
+  async repeatLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/repeat`, null));
+  }
 }

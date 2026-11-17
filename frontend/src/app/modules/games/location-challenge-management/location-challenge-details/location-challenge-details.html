@@ -9,7 +9,10 @@
     @if (challenge.value(); as current) {
       <h1>{{ current.name }}</h1>
 
-      <p class="meta">{{ current.xp }} XP · {{ current.status }}</p>
+      <p class="row">
+        <span class="amount">{{ current.xp }} XP</span>
+        <span class="badge" [class.badge--muted]="current.status !== 'Published'">{{ current.status }}</span>
+      </p>
 
       @if (editing()) {
         <form class="card stack" (submit)="saveEdit($event)">
@@ -41,7 +44,7 @@
             <h2>Places</h2>
 
             @if (pickingName(); as name) {
-              <div class="placing actions">
+              <div class="placing row">
                 <p><strong>Placing: {{ name }}</strong> – click the map.</p>
                 <button class="button" type="button" (click)="cancelPicking()">Cancel</button>
               </div>
@@ -66,7 +69,7 @@
                 <p class="error">{{ message.message }}</p>
               }
 
-              <div class="actions">
+              <div class="row">
                 <button
                   class="button"
                   type="button"
@@ -100,7 +103,7 @@
                   <p class="error">{{ message.message }}</p>
                 }
 
-                <div class="actions">
+                <div class="row">
                   <button
                     class="button"
                     type="button"
@@ -111,7 +114,7 @@
                     {{ picking() === pointIndex ? 'Placing…' : point.location().value() ? 'Move on map' : 'Set on map' }}
                   </button>
                   <button
-                    class="button"
+                    class="button button--danger"
                     type="button"
                     [disabled]="editForm.hiddenPoints.length <= 1 || uploading()"
                     (click)="removePoint(pointIndex)"
@@ -149,7 +152,7 @@
             <p class="error">{{ editError() }}</p>
           }
 
-          <div class="actions">
+          <div class="row">
             <button
               class="button button--primary"
               type="submit"
@@ -190,26 +193,56 @@
           <p class="error">{{ error() }}</p>
         }
 
-        @if (current.status === 'Draft') {
-          <div class="actions">
-            @if (confirmingDelete()) {
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="confirmDelete()"
-              >
-                Confirm delete
-              </button>
-              <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
-                Cancel
-              </button>
-            } @else {
+        <div class="row">
+          @if (confirmingAction()) {
+            <button
+              class="button"
+              [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+              [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirm()"
+            >
+              @switch (confirmingAction()) {
+                @case ('delete') {
+                  Confirm delete
+                }
+                @case ('publish') {
+                  Confirm publish
+                }
+                @case ('retire') {
+                  Confirm retire
+                }
+                @case ('archive') {
+                  Confirm archive
+                }
+                @case ('repeat') {
+                  Confirm repeat
+                }
+              }
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+              Cancel
+            </button>
+          } @else {
+            @if (current.status === 'Draft') {
               <button class="button" type="button" (click)="startEdit(current)">Edit</button>
-              <button class="button" type="button" (click)="askToConfirmDelete()">Delete</button>
+              <button class="button" type="button" (click)="askToConfirm('publish')">Publish</button>
             }
-          </div>
-        }
+            @if (current.status === 'Draft' || current.status === 'Archived') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('delete')">Delete</button>
+            }
+            @if (current.status === 'Published') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('retire')">Retire</button>
+            }
+            @if (current.status === 'Retired') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('archive')">Archive</button>
+            }
+            @if (current.status === 'Retired' || current.status === 'Archived') {
+              <button class="button" type="button" (click)="askToConfirm('repeat')">Repeat</button>
+            }
+          }
+        </div>
       }
     }
   }
