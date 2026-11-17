@@ -1,4 +1,5 @@
 using Games.Application.ChallengeOverview;
+using Games.Application.Challenges;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Domain;

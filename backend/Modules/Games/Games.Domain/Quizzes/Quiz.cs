@@ -95,6 +95,26 @@ public sealed class Quiz : AggregateRoot
         Status = QuizStatus.Draft;
     }
 
+    public bool IsWithinRange(double latitude, double longitude)
+    {
+        return Location is not null && Location.DistanceInMetersTo(latitude, longitude) <= Location.RangeInMeters;
+    }
+
+    public bool IsCorrect(int questionIndex, int optionIndex)
+    {
+        if (questionIndex < 0 || questionIndex >= _questions.Count)
+        {
+            throw new DomainException("The quiz has no question with this number.");
+        }
+        var options = _questions[questionIndex].Options;
+        if (optionIndex < 0 || optionIndex >= options.Count)
+        {
+            throw new DomainException("The question has no answer option with this number.");
+        }
+
+        return options[optionIndex].IsCorrect;
+    }
+
     private void EnsureStatusIsOneOf(params QuizStatus[] allowedStatuses)
     {
         if (!allowedStatuses.Contains(Status))

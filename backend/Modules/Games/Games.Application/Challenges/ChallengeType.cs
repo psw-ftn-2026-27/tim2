@@ -1,4 +1,4 @@
-namespace Games.Application.ChallengeOverview;
+namespace Games.Application.Challenges;
 
 public enum ChallengeType
 {

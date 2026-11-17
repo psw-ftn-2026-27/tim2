@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Shared.Domain.Exceptions;
 
 namespace Games.Domain.Quizzes;
@@ -29,6 +30,12 @@ public sealed record QuizLocation
         Latitude = latitude;
         Longitude = longitude;
         RangeInMeters = rangeInMeters;
+    }
+
+    // Reuses the distance formula of the location challenge's Location instead of repeating it here.
+    public double DistanceInMetersTo(double latitude, double longitude)
+    {
+        return new Location(Latitude, Longitude).DistanceInMetersTo(new Location(latitude, longitude));
     }
 
     // Asks "is the value inside the bounds?" rather than "is it outside?", because every
