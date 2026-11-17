@@ -11,43 +11,46 @@
     <p class="error">Could not load the quiz. Activate it from the list of challenges first, and log in as an explorer.</p>
   } @else {
     @if (progress.value(); as current) {
-      @if (current.currentQuestion; as question) {
-        @if (answered()) {
-          <section class="card stack">
-            @if (current.lastAnswerCorrect) {
-              <p>Your answer is correct.</p>
-            } @else {
-              <p>Your answer is not correct.</p>
-            }
-            <p>Correct answers so far: {{ current.correctCount }}</p>
-            <div class="row">
-              <button class="button button--primary" type="button" (click)="nextQuestion()">
-                Next question
-              </button>
-            </div>
-          </section>
-        } @else {
-          @if (error()) {
-            <p class="error">{{ error() }}</p>
+      <!-- The feedback comes first, so it is shown after the last answer too, before the result. -->
+      @if (answered()) {
+        <section class="card stack">
+          @if (current.lastAnswerCorrect) {
+            <p>Your answer is correct.</p>
+          } @else {
+            <p>Your answer is not correct.</p>
           }
-
-          <section class="card stack">
-            <p class="meta">Question {{ question.index + 1 }} of {{ current.questionCount }}</p>
-            <h2>{{ question.text }}</h2>
-            <div class="stack">
-              @for (option of question.options; track $index; let optionIndex = $index) {
-                <button
-                  class="button"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="answer(question.index, optionIndex)"
-                >
-                  {{ option }}
-                </button>
+          <p>Correct answers so far: {{ current.correctCount }}</p>
+          <div class="row">
+            <button class="button button--primary" type="button" (click)="nextQuestion()">
+              @if (current.currentQuestion) {
+                Next question
+              } @else {
+                See result
               }
-            </div>
-          </section>
+            </button>
+          </div>
+        </section>
+      } @else if (current.currentQuestion; as question) {
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
         }
+
+        <section class="card stack">
+          <p class="meta">Question {{ question.index + 1 }} of {{ current.questionCount }}</p>
+          <h2>{{ question.text }}</h2>
+          <div class="stack">
+            @for (option of question.options; track $index; let optionIndex = $index) {
+              <button
+                class="button"
+                type="button"
+                [disabled]="pending()"
+                (click)="answer(question.index, optionIndex)"
+              >
+                {{ option }}
+              </button>
+            }
+          </div>
+        </section>
       } @else if (current.solvedAt === null) {
         @if (error()) {
           <p class="error">{{ error() }}</p>
