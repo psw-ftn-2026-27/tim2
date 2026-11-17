@@ -322,9 +322,10 @@ assigned to the platform team, and misalignment is an accepted learning experien
   ```
 
   The page only sets and shows the position. When a module's backend needs to know where
-  the explorer is (to decide that a key point is reached, for example), it asks the
-  platform team for a member in `Positions.Contracts`; the platform adds it on request,
-  and the module that owns the consequence calls it from its own backend.
+  the explorer is (to decide that a key point is reached, for example), the page calls
+  that module's own endpoint without coordinates, and the module's backend reads the
+  position through `IPositionsApi` in `Positions.Contracts`. A page never sends the
+  explorer's coordinates to its own module.
 - A page that records a GA4 event injects `Analytics` from `shared/analytics` and calls
   `logEvent` on the line after the awaited command, never in `catch`, so a failed command
   is not recorded. The event must exist in the catalog `analytics-events.ts`, with only

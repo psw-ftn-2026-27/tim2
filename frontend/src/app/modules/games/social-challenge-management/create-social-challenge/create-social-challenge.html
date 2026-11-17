@@ -52,6 +52,16 @@
       }
     </div>
 
+    <section class="stack">
+      <h2>Location</h2>
+
+      <app-quiz-location-fields
+        [location]="location()"
+        (locationPicked)="location.set($event)"
+        (locationRemoved)="location.set(null)"
+      />
+    </section>
+
     <div class="field">
       <label for="xp">XP</label>
       <input id="xp" type="number" step="1" [formField]="form.xp" />

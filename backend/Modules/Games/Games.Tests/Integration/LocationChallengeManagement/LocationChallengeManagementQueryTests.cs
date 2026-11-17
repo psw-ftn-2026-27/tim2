@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.LocationChallengeManagement;
+using Games.Application.LocationChallenges;
 using Games.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;

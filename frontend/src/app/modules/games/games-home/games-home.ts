@@ -9,6 +9,10 @@ import { Auth } from '../../../core/auth/auth';
     <div class="stack">
       <h1>Games</h1>
 
+      @if (isExplorer()) {
+        <p><a routerLink="/games/play">Play</a></p>
+      }
+
       @if (isAdministrator()) {
         <p><a routerLink="/games/challenges">Challenges</a></p>
       }
@@ -20,5 +24,9 @@ export class GamesHome {
 
   protected readonly isAdministrator = computed(
     () => this.auth.user()?.roles.includes('administrator') ?? false,
+  );
+
+  protected readonly isExplorer = computed(
+    () => this.auth.user()?.roles.includes('explorer') ?? false,
   );
 }

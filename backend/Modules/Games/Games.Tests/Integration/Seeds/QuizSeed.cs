@@ -37,6 +37,9 @@ internal static class QuizSeed
     public static readonly Quiz PublishedSynagogue;
     public static readonly Quiz RetiredBishopsPalace;
     public static readonly Quiz ArchivedZmajJovinaStreet;
+    public static readonly Quiz PublishedDanubePark;
+    public static readonly Quiz RepeatedFishermansIslandWithMoreXp;
+    public static readonly Quiz RetiredSynagogueGarden;
 
     static QuizSeed()
     {
@@ -72,7 +75,50 @@ internal static class QuizSeed
         ArchivedZmajJovinaStreet.Publish();
         ArchivedZmajJovinaStreet.Retire();
         ArchivedZmajJovinaStreet.Archive();
+
+        PublishedDanubePark = new(
+            "Park uz Dunav",
+            "Prošetajte Dunavskim parkom i odgovorite na pitanja.",
+            90,
+            [
+                new Question("Šta se nalazi na ostrvu u jezeru?", [new AnswerOption("Paviljon", false), new AnswerOption("Vrba", true)]),
+                new Question("Koje godine je park uređen?", [new AnswerOption("1895", true), new AnswerOption("1950", false), new AnswerOption("1820", false)]),
+                new Question("Čija bista stoji u parku?", [new AnswerOption("Đure Jakšića", true), new AnswerOption("Laze Kostića", false)])
+            ],
+            new QuizLocation(45.2546, 19.8510, 80));
+        PublishedDanubePark.Publish();
+
+        RepeatedFishermansIslandWithMoreXp = new(
+            "Ribarsko ostrvo",
+            "Obiđite Ribarsko ostrvo i odgovorite na pitanja.",
+            60,
+            [
+                new Question("Na kojoj reci je ostrvo?", [new AnswerOption("Dunav", true), new AnswerOption("Tisa", false)]),
+                new Question("Čime je ostrvo poznato?", [new AnswerOption("Ribljom čorbom", true), new AnswerOption("Vinogradima", false)])
+            ],
+            new QuizLocation(45.2440, 19.8770, 200));
+        RepeatedFishermansIslandWithMoreXp.Publish();
+        RepeatedFishermansIslandWithMoreXp.Retire();
+        RepeatedFishermansIslandWithMoreXp.Repeat();
+        RepeatedFishermansIslandWithMoreXp.Update(
+            RepeatedFishermansIslandWithMoreXp.Name,
+            RepeatedFishermansIslandWithMoreXp.Instructions,
+            90,
+            [.. RepeatedFishermansIslandWithMoreXp.Questions],
+            RepeatedFishermansIslandWithMoreXp.Location);
+
+        // Shares the location and range of PublishedSynagogue, so a player standing there is in range of a quiz that is not published.
+        RetiredSynagogueGarden = new(
+            "Vrt Sinagoge",
+            "Prošetajte vrtom iza Sinagoge.",
+            20,
+            [
+                new Question("Šta raste uz ogradu vrta?", [new AnswerOption("Lipe", true), new AnswerOption("Borovi", false)])
+            ],
+            new QuizLocation(45.2559, 19.8413, 40));
+        RetiredSynagogueGarden.Publish();
+        RetiredSynagogueGarden.Retire();
     }
 
-    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum, PublishedSynagogue, RetiredBishopsPalace, ArchivedZmajJovinaStreet];
+    public static Quiz[] All => [DraftFortressArchitecture, DraftCityHall, DraftMuseum, PublishedSynagogue, RetiredBishopsPalace, ArchivedZmajJovinaStreet, PublishedDanubePark, RepeatedFishermansIslandWithMoreXp, RetiredSynagogueGarden];
 }

@@ -1,6 +1,7 @@
 using Exploration.Contracts;
 using Payment.Application.Products;
 using Payment.Application.ShoppingCarts;
+using Payment.Application.TourPurchaseTokens;
 using Payment.Domain.Products;
 using Payment.Domain.ShoppingCarts;
 using Shared.Domain.Exceptions;
@@ -11,13 +12,20 @@ public sealed class ShoppingService
 {
     private readonly IProductRepository _productRepository;
     private readonly IShoppingCartRepository _cartRepository;
+    private readonly ITourPurchaseTokenRepository _tokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IExplorationApi _explorationApi;
 
-    public ShoppingService(IProductRepository productRepository, IShoppingCartRepository cartRepository, IUnitOfWork unitOfWork, IExplorationApi explorationApi)
+    public ShoppingService(
+        IProductRepository productRepository,
+        IShoppingCartRepository cartRepository,
+        ITourPurchaseTokenRepository tokenRepository,
+        IUnitOfWork unitOfWork,
+        IExplorationApi explorationApi)
     {
         _productRepository = productRepository;
         _cartRepository = cartRepository;
+        _tokenRepository = tokenRepository;
         _unitOfWork = unitOfWork;
         _explorationApi = explorationApi;
     }
@@ -44,7 +52,8 @@ public sealed class ShoppingService
             _cartRepository.Add(cart);
         }
 
-        cart.AddItem(product);
+        var isAlreadyPurchased = await _tokenRepository.ExistsAsync(buyerId, tourId);
+        cart.AddItem(product, isAlreadyPurchased);
         await _unitOfWork.SaveChangesAsync();
     }
 

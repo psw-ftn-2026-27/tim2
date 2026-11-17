@@ -39,6 +39,7 @@
           <th scope="col">End</th>
           <th scope="col">People</th>
           <th scope="col">Range (m)</th>
+          <th scope="col">Location</th>
           <th scope="col">XP</th>
           <th scope="col">Status</th>
           <th scope="col">Actions</th>
@@ -74,6 +75,15 @@
             <td>{{ challenge.end?.slice(0, 5) }}</td>
             <td>{{ challenge.requiredParticipants }}</td>
             <td>{{ challenge.rangeInMeters }}</td>
+            <td>
+              @if (challenge.type === 'SocialChallenge') {
+                @if (challenge.latitude !== null && challenge.longitude !== null) {
+                  {{ challenge.latitude.toFixed(5) }}, {{ challenge.longitude.toFixed(5) }}
+                } @else {
+                  <span class="meta">Not set</span>
+                }
+              }
+            </td>
             <td><span class="amount">{{ challenge.xp }} XP</span></td>
             <td>
               <span class="badge" [class.badge--muted]="challenge.status !== 'Published'">
@@ -140,8 +150,28 @@
                   }
                 } @else if (challenge.type === 'LocationChallenge') {
                   @if (challenge.status === 'Draft') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'publish')">
+                      Publish
+                    </button>
+                  }
+                  @if (challenge.status === 'Draft' || challenge.status === 'Archived') {
                     <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'delete')">
                       Delete
+                    </button>
+                  }
+                  @if (challenge.status === 'Published') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'retire')">
+                      Retire
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired') {
+                    <button class="button button--danger" type="button" (click)="askToConfirm(challenge.id, 'archive')">
+                      Archive
+                    </button>
+                  }
+                  @if (challenge.status === 'Retired' || challenge.status === 'Archived') {
+                    <button class="button" type="button" (click)="askToConfirm(challenge.id, 'repeat')">
+                      Repeat
                     </button>
                   }
                 } @else if (editingId() !== challenge.id) {
@@ -184,7 +214,7 @@
           </tr>
           @if (editingId() === challenge.id) {
             <tr>
-              <td colspan="10">
+              <td colspan="11">
                 <form class="card stack" (submit)="saveEdit($event, challenge.id)">
                   <h2>Edit challenge</h2>
 
@@ -253,6 +283,16 @@
                     }
                   </div>
 
+                  <section class="stack">
+                    <h3>Location</h3>
+
+                    <app-quiz-location-fields
+                      [location]="editLocation()"
+                      (locationPicked)="editLocation.set($event)"
+                      (locationRemoved)="editLocation.set(null)"
+                    />
+                  </section>
+
                   <div class="field">
                     <label for="edit-xp">XP</label>
                     <input id="edit-xp" type="number" step="1" [formField]="editForm.xp" />
@@ -299,7 +339,7 @@
           }
         } @empty {
           <tr>
-            <td colspan="10">There are no challenges yet.</td>
+            <td colspan="11">There are no challenges yet.</td>
           </tr>
         }
       </tbody>

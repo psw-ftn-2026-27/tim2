@@ -50,6 +50,19 @@ Five source projects per module. That is deliberate: `<Name>.Api` referencing on
 usual novice shortcut of querying the database straight from an endpoint does not compile.
 The compiler enforces the layering instead of a reviewer having to spot it.
 
+**Value object placement.** A value object is born in the folder of the aggregate that
+holds it. When a second aggregate of the same module needs it, it moves to a module-level
+folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
+only, never an entity or an aggregate. Its unit tests move with it, to `Unit/Locations/`
+in the module's test project. A value object of the same module that holds the same
+values plus its own contains the shared one instead of copying it, and stays in its
+aggregate's folder (`QuizLocation` holds a `Location` and its range in `Domain/Quizzes/`).
+Moving a value object changes its type name in the model snapshot, so the move needs a
+migration added through `dotnet ef` (see Migrations); when nothing else changes, its `Up`
+and `Down` are empty, and the conflict protocol applies to it like to any other
+migration. Similar value objects in two modules stay separate; moving one to
+`Shared.Domain` is a platform decision.
+
 ## Reference rules
 
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
@@ -91,8 +104,8 @@ that students use but never modify or reference. It holds ASP.NET Core Identity 
 (`administrator`, `explorer`); the details live in the project itself.
 
 `Identity.Contracts` is its only surface toward other modules: `IIdentityApi`, read-only
-and minimal, with a page of explorers and one explorer by ID (`null` when there is
-none), each carrying only the user ID and email. It references nothing, like every
+and minimal, with a page of explorers and one explorer by ID or by email (`null` when
+there is none), each carrying only the user ID and email. It references nothing, like every
 `Contracts` project, and is implemented in `Identity/Infrastructure`. Accounts,
 passwords and `UserManager` stay behind it. Adding a member is a request to the
 platform team.
@@ -139,7 +152,9 @@ the two repository interfaces.
 **DTO placement.** A DTO is born in the use-case folder that accepts or returns it and
 moves to the aggregate-named folder (`Application/Tours/`, which also holds the two
 repository interfaces) only when a second group needs it — the same promotion rule as
-for `Shared`, one level down.
+for `Shared`, one level down. The DTO of a value object that several aggregates hold
+follows it into the folder of the same name (`Application/Locations/`), which holds DTOs
+only, never a repository.
 
 Business rules live in the domain, not in the service. A service method that contains an
 `if` about business state is a smell; move it into the aggregate.
@@ -177,8 +192,9 @@ social challenges in one paged, filtered table), its rows come from one read rep
 that reads all of them, so paging, filtering and ordering happen in the database over the
 combined rows. It is named after the concept the aggregates share, not after any one of
 them, and lives in a folder of that name (`IChallengeReadRepository` in
-`Application/Challenges/`). No aggregate carries that name, so the folder holds only the
-read repository and never a write repository. It still projects directly to DTOs. It is
+`Application/Challenges/`). No aggregate carries that name, so the folder holds the
+read repository and the types promoted there from several groups, never a write
+repository. It still projects directly to DTOs. It is
 injected by the queries class named after the view (`ChallengeOverviewQueries`). It is not
 a way to read another module's tables: across modules, compose through `Contracts`.
 

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Positions.Application.PositionSimulating;
 using Positions.Application.UserPositions;
 
 namespace Positions.Infrastructure.Persistence.UserPositions;

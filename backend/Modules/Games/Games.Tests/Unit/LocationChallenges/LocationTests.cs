@@ -19,6 +19,16 @@ public class LocationTests
         creation.Should().Throw<DomainException>();
     }
 
+    [Theory]
+    [InlineData(double.NaN, 0)]
+    [InlineData(0, double.NaN)]
+    public void Location_with_a_latitude_or_longitude_that_is_not_a_number_cannot_exist(double latitude, double longitude)
+    {
+        var creation = () => new Location(latitude, longitude);
+
+        creation.Should().Throw<DomainException>();
+    }
+
     // On a sphere of radius 6371 km one degree along a meridian is 111 195 m; along a parallel it shrinks
     // by the cosine of the latitude (0.704 at Trg slobode in Novi Sad, latitude 45.2551).
     [Theory]

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Positions.Application.PositionSimulating;
+using Positions.Application.UserPositions;
 using Shared.Api;
 
 namespace Positions.Api;

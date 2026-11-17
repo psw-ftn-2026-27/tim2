@@ -6,6 +6,7 @@ export interface CreateSocialChallengeDto {
   rangeInMeters: number;
   xp: number;
   completionMessage: string;
+  location: LocationDto | null;
 }
 
 export interface UpdateSocialChallengeDto {
@@ -16,6 +17,7 @@ export interface UpdateSocialChallengeDto {
   rangeInMeters: number;
   xp: number;
   completionMessage: string;
+  location: LocationDto | null;
 }
 
 export type ChallengeType = 'SocialChallenge' | 'Quiz' | 'LocationChallenge';
@@ -32,6 +34,8 @@ export interface ChallengeDto {
   requiredParticipants: number | null;
   rangeInMeters: number | null;
   completionMessage: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export type QuizStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
@@ -111,4 +115,39 @@ export interface LocationChallengeDto {
   status: LocationChallengeStatus;
   startLocation: LocationDto;
   hiddenPoints: HiddenPointDto[];
+}
+
+export interface NearbyChallengeDto {
+  id: string;
+  type: ChallengeType;
+  name: string;
+  xp: number;
+  latitude: number;
+  longitude: number;
+  distanceInMeters: number;
+  metersToRange: number;
+  isStarted: boolean;
+  isSolved: boolean;
+}
+
+export interface AnswerQuizDto {
+  questionIndex: number;
+  optionIndex: number;
+}
+
+export interface CurrentQuestionDto {
+  index: number;
+  text: string;
+  options: string[];
+}
+
+export interface QuizProgressDto {
+  quizId: string;
+  questionCount: number;
+  correctCount: number;
+  lastAnswerCorrect: boolean | null;
+  currentQuestion: CurrentQuestionDto | null;
+  percentage: number | null;
+  earnedXp: number | null;
+  solvedAt: string | null;
 }
