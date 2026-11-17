@@ -11,7 +11,8 @@ internal static class QuizSeed
         [
             new Question("Ko je projektovao tvrđavu?", [new AnswerOption("Sebastijan Vauban", true), new AnswerOption("Eugen Savojski", false)]),
             new Question("Koliko kilometara podzemnih hodnika ima tvrđava?", [new AnswerOption("16", true), new AnswerOption("2", false), new AnswerOption("40", false)])
-        ]);
+        ],
+        null);
 
     public static readonly Quiz DraftCityHall = new(
         "Gradska kuća",
@@ -19,7 +20,8 @@ internal static class QuizSeed
         30,
         [
             new Question("Na kom trgu je Gradska kuća?", [new AnswerOption("Trg slobode", true), new AnswerOption("Trg mladenaca", false)])
-        ]);
+        ],
+        new QuizLocation(45.2551, 19.8451, 50));
 
     public static readonly Quiz DraftMuseum = new(
         "Muzej Vojvodine",
@@ -29,7 +31,8 @@ internal static class QuizSeed
             new Question("Koji predmet je najstariji u postavci?", [new AnswerOption("Kameni idol", false), new AnswerOption("Zlatni šlem", false), new AnswerOption("Keramička posuda", true)]),
             new Question("U kojoj ulici je muzej?", [new AnswerOption("Dunavska", true), new AnswerOption("Zmaj Jovina", false)]),
             new Question("Iz kog veka je zgrada muzeja?", [new AnswerOption("Dvadesetog", false), new AnswerOption("Devetnaestog", true)])
-        ]);
+        ],
+        null);
 
     public static readonly Quiz PublishedSynagogue;
     public static readonly Quiz RetiredBishopsPalace;
@@ -43,7 +46,8 @@ internal static class QuizSeed
             40,
             [
                 new Question("Koje godine je završena Sinagoga?", [new AnswerOption("1909", true), new AnswerOption("1850", false)])
-            ]);
+            ],
+            new QuizLocation(45.2559, 19.8413, 40));
         PublishedSynagogue.Publish();
 
         RetiredBishopsPalace = new(
@@ -52,7 +56,8 @@ internal static class QuizSeed
             35,
             [
                 new Question("Kojim materijalom je ukrašena fasada?", [new AnswerOption("Opekom", true), new AnswerOption("Mermerom", false)])
-            ]);
+            ],
+            new QuizLocation(45.2556, 19.8449, 30));
         RetiredBishopsPalace.Publish();
         RetiredBishopsPalace.Retire();
 
@@ -62,7 +67,8 @@ internal static class QuizSeed
             25,
             [
                 new Question("Čiji spomenik stoji na početku ulice?", [new AnswerOption("Jovana Jovanovića Zmaja", true), new AnswerOption("Svetozara Miletića", false)])
-            ]);
+            ],
+            new QuizLocation(45.2554, 19.8466, 100));
         ArchivedZmajJovinaStreet.Publish();
         ArchivedZmajJovinaStreet.Retire();
         ArchivedZmajJovinaStreet.Archive();

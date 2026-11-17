@@ -108,6 +108,26 @@
           </section>
 
           <section class="stack">
+            <h2>Location</h2>
+
+            <app-quiz-location-fields
+              [location]="editForm.location().value()"
+              (locationPicked)="pickLocation($event)"
+              (locationRemoved)="removeLocation()"
+            />
+
+            <div class="field">
+              <label for="range">Range (m)</label>
+              <input id="range" type="number" step="1" [formField]="editForm.rangeInMeters" />
+              @if (editForm.rangeInMeters().touched()) {
+                @for (message of editForm.rangeInMeters().errors(); track $index) {
+                  <p class="error">{{ message.message }}</p>
+                }
+              }
+            </div>
+          </section>
+
+          <section class="stack">
             <h2>Questions</h2>
 
             @for (question of editForm.questions; track $index; let questionIndex = $index) {
@@ -238,6 +258,20 @@
         <section class="stack">
           <h2>Instructions</h2>
           <p class="instructions">{{ current.instructions }}</p>
+        </section>
+
+        <section class="stack">
+          <h2>Location</h2>
+          @if (current.location; as location) {
+            <app-map [locations]="savedLocation()" />
+            <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+            <p>Range: {{ location.rangeInMeters }} m</p>
+          } @else {
+            <p>Location not set</p>
+            @if (current.status === 'Draft') {
+              <p class="hint">The quiz cannot be published until a location and range are set.</p>
+            }
+          }
         </section>
 
         <section class="stack">

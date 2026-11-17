@@ -1,0 +1,19 @@
+<div class="stack">
+  <app-map
+    [pickLocation]="true"
+    [selectedLocation]="location()"
+    (locationPicked)="locationPicked.emit($event)"
+  />
+
+  @if (location(); as picked) {
+    <p>Location: {{ picked.latitude.toFixed(5) }}, {{ picked.longitude.toFixed(5) }}</p>
+  } @else {
+    <p class="hint">No location set. Click the map to place the pin.</p>
+  }
+
+  <p>
+    <button class="button button--danger" type="button" (click)="locationRemoved.emit()">
+      Remove location
+    </button>
+  </p>
+</div>

@@ -4,4 +4,5 @@ public sealed record UpdateQuizDto(
     string Name,
     string Instructions,
     int Xp,
-    List<QuestionDto> Questions);
+    List<QuestionDto> Questions,
+    QuizLocationDto? Location);
