@@ -93,7 +93,8 @@ namespace Payment.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BuyerId");
+                    b.HasIndex("BuyerId", "TourId")
+                        .IsUnique();
 
                     b.ToTable("TourPurchaseTokens", "payment");
                 });
