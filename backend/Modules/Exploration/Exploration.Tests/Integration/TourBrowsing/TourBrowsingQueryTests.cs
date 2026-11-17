@@ -169,6 +169,48 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedFreeParkWalk.Id);
     }
 
+    [Fact]
+    public async Task Tour_as_long_as_the_shortest_or_longest_given_length_is_listed_and_a_tour_outside_the_range_is_not()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?minLengthKm=1.2&maxLengthKm=4.2&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedModeratelyPricedFortress.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedCheapGallery.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedMonasteries.Id);
+    }
+
+    [Theory]
+    [InlineData("minLengthKm=3", 3, double.MaxValue)]
+    [InlineData("maxLengthKm=3", 0, 3)]
+    public async Task Tours_are_narrowed_only_on_the_side_of_the_single_given_length(
+        string lengthBound, double shortestListedLengthKm, double longestListedLengthKm)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var expectedIds = TourSeed.All
+            .Where(tour => tour.Status == TourStatus.Published && tour.LengthKm >= shortestListedLengthKm && tour.LengthKm <= longestListedLengthKm)
+            .Select(tour => tour.Id);
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>($"/api/exploration/tours/published?{lengthBound}&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => tour.Id).Should().BeEquivalentTo(expectedIds);
+    }
+
+    [Fact]
+    public async Task Only_tours_in_the_length_range_that_also_meet_another_filter_are_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var tours = await client.GetFromJsonAsync<PageResult<TourDto>>("/api/exploration/tours/published?difficulties=Easy&minLengthKm=1&maxLengthKm=5&pageSize=100", JsonOptions);
+
+        tours!.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedLakeside.Id);
+        tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+        tours.Items.Should().NotContain(tour => tour.Id == TourSeed.PublishedFreeParkWalk.Id);
+    }
+
     [Theory]
     [InlineData("Ascending", 1)]
     [InlineData("Descending", -1)]
@@ -262,6 +304,23 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&maxPrice=1000&pageSize=100", JsonOptions);
 
         tours!.Items.Select(tour => tour.Id).Should().BeEquivalentTo([TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id]);
+    }
+
+    [Theory]
+    [InlineData("minLengthKm=10", 10, double.MaxValue)]
+    [InlineData("maxLengthKm=10", 0, 10)]
+    public async Task Location_search_with_a_length_limit_returns_only_tours_in_the_area_in_that_range_each_with_its_length(
+        string lengthBound, double shortestListedLengthKm, double longestListedLengthKm)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        Tour[] toursInArea = [TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade, TourSeed.PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade];
+        var expectedTours = toursInArea
+            .Where(tour => tour.LengthKm >= shortestListedLengthKm && tour.LengthKm <= longestListedLengthKm)
+            .Select(tour => (tour.Id, tour.LengthKm));
+
+        var tours = await client.GetFromJsonAsync<PageResult<LocatedTourDto>>($"{BelgradeCenterSearch}&{lengthBound}&pageSize=100", JsonOptions);
+
+        tours!.Items.Select(tour => (tour.Id, tour.LengthKm)).Should().BeEquivalentTo(expectedTours);
     }
 
     [Fact]
