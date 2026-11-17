@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Games.Application.QuizSolving;
@@ -51,7 +51,7 @@ public class QuizSolvingQueryTests : BaseIntegrationTest
     [Fact]
     public async Task Progress_of_a_quiz_the_player_has_not_activated_is_not_found()
     {
-        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
 
         var response = await client.GetAsync($"/api/games/quizzes/{QuizSeed.PublishedSynagogue.Id}/progress");
 

@@ -50,6 +50,16 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Player_without_a_saved_position_gets_an_empty_list()
+    {
+        var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+
+        var nearby = await client.GetFromJsonAsync<List<NearbyChallengeDto>>("/api/games/nearby-challenges", JsonOptions);
+
+        nearby.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Draft_quiz_and_quiz_without_a_location_are_not_listed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
