@@ -95,8 +95,12 @@ export class MapView {
         return;
       }
 
-      const pick = (event: L.LeafletMouseEvent) =>
-        this.locationPicked.emit({ latitude: event.latlng.lat, longitude: event.latlng.lng });
+      // After the map is panned past the date line, Leaflet reports longitudes outside
+      // -180..180; wrap() brings the clicked place back into that range.
+      const pick = (event: L.LeafletMouseEvent) => {
+        const place = event.latlng.wrap();
+        this.locationPicked.emit({ latitude: place.lat, longitude: place.lng });
+      };
       map.on('click', pick);
       onCleanup(() => map.off('click', pick));
     });
