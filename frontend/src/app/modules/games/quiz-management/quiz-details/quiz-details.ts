@@ -19,9 +19,10 @@ import {
   toQuizDto,
   toQuizFormModel,
 } from '../quiz-form-schema';
+import { QuizLocationFields } from '../quiz-location-fields/quiz-location-fields';
 
 @Component({
-  imports: [FormField, MapView, RouterLink],
+  imports: [FormField, MapView, QuizLocationFields, RouterLink],
   selector: 'app-quiz-details',
   styleUrl: './quiz-details.scss',
   templateUrl: './quiz-details.html',

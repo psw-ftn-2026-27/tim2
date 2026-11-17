@@ -39,17 +39,11 @@
     <section class="stack">
       <h2>Location</h2>
 
-      <app-map
-        [pickLocation]="true"
-        [selectedLocation]="form.location().value()"
+      <app-quiz-location-fields
+        [location]="form.location().value()"
         (locationPicked)="pickLocation($event)"
+        (locationRemoved)="removeLocation()"
       />
-
-      @if (form.location().value(); as location) {
-        <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
-      } @else {
-        <p class="hint">No location set. Click the map to place the pin.</p>
-      }
 
       <div class="field">
         <label for="range">Range (m)</label>
@@ -60,12 +54,6 @@
           }
         }
       </div>
-
-      <p>
-        <button class="button button--danger" type="button" (click)="removeLocation()">
-          Remove location
-        </button>
-      </p>
     </section>
 
     <section class="stack">

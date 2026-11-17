@@ -14,6 +14,10 @@ import { CreateQuizDto, QuizDto } from '../api/games-api-types';
 // A pin placed while the range is empty gets this range, so a picked location is valid at once.
 const DEFAULT_RANGE_IN_METERS = 50;
 
+// The same bounds as QuizLocation on the server; the server domain still enforces them.
+const MIN_RANGE_IN_METERS = 10;
+const MAX_RANGE_IN_METERS = 1000;
+
 // P3: the same message for a pin without a range and for a range without a pin.
 const LOCATION_AND_RANGE_TOGETHER =
   'Location and range must be set together. Click the map to set the location, or clear the range.';
@@ -52,8 +56,12 @@ export function quizFormSchema(path: SchemaPathTree<QuizFormModel>): void {
   required(path.xp, { message: 'XP is required.' });
   min(path.xp, 1, { message: 'XP must be at least 1.' });
   max(path.xp, 1000, { message: 'XP can be at most 1000.' });
-  min(path.rangeInMeters, 10, { message: 'Range must be at least 10 m.' });
-  max(path.rangeInMeters, 1000, { message: 'Range can be at most 1000 m.' });
+  min(path.rangeInMeters, MIN_RANGE_IN_METERS, {
+    message: `Range must be at least ${MIN_RANGE_IN_METERS} m.`,
+  });
+  max(path.rangeInMeters, MAX_RANGE_IN_METERS, {
+    message: `Range can be at most ${MAX_RANGE_IN_METERS} m.`,
+  });
   required(path.rangeInMeters, {
     when: ({ valueOf }) => valueOf(path.location) !== null,
     message: LOCATION_AND_RANGE_TOGETHER,

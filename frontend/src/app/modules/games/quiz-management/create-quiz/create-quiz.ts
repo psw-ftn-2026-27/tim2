@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
-import { MapLocation, MapView } from '../../../../shared/map/map';
+import { MapLocation } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { QuizManagement } from '../quiz-management';
 import {
@@ -16,9 +16,10 @@ import {
   removeQuestion,
   toQuizDto,
 } from '../quiz-form-schema';
+import { QuizLocationFields } from '../quiz-location-fields/quiz-location-fields';
 
 @Component({
-  imports: [FormField, MapView, RouterLink],
+  imports: [FormField, QuizLocationFields, RouterLink],
   selector: 'app-create-quiz',
   styleUrl: './create-quiz.scss',
   templateUrl: './create-quiz.html',
