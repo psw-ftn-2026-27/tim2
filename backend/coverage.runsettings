@@ -5,6 +5,8 @@
   bez ručnih anotacija u kodu:
     - Migracije, Program.cs (startup), generisani kod (*.Designer.cs)
     - DTO klase (obično bez logike)
+    - Test projekti (*.Tests): kada jedan test projekat referencira drugi (Payment.Tests -> Identity.Tests),
+      njegovi testovi se u tuđem procesu ne izvršavaju i računali bi se kao nepokriveni
   SkipAutoProps=true -> auto-property-ji se ne broje kao pokrivive linije.
 
   Koristi se sa:  dotnet test (settings=coverage.runsettings, collect "XPlat Code Coverage")
@@ -23,7 +25,7 @@
           -->
           <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
           <ExcludeByFile>**/Migrations/**/*.cs,**/*.Designer.cs,**/Program.cs</ExcludeByFile>
-          <Exclude>[*]*.Migrations.*,[*]*Dto,[*]*Dtos.*</Exclude>
+          <Exclude>[*]*.Migrations.*,[*]*Dto,[*]*Dtos.*,[*.Tests]*</Exclude>
           <IncludeTestAssembly>false</IncludeTestAssembly>
         </Configuration>
       </DataCollector>
