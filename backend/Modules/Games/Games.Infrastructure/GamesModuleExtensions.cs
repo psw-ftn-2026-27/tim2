@@ -1,4 +1,4 @@
-using Games.Application;
+﻿using Games.Application;
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
 using Games.Application.LocationChallengeLifecycle;
@@ -34,6 +34,15 @@ public static class GamesModuleExtensions
         services.AddHostedService<GamesModuleInitializer>();
         services.AddAutoMapper(mapper => mapper.AddProfile<GamesMapperProfile>());
 
+        AddRepositories(services);
+        AddServices(services);
+        AddQueries(services);
+
+        return services;
+    }
+
+    private static void AddRepositories(IServiceCollection services)
+    {
         services.AddScoped<ISocialChallengeRepository, SocialChallengeRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
@@ -44,22 +53,26 @@ public static class GamesModuleExtensions
         services.AddScoped<IChallengeReadRepository, ChallengeReadRepository>();
         services.AddScoped<INearbyChallengeReadRepository, NearbyChallengeReadRepository>();
         services.AddScoped<IQuizAttemptReadRepository, QuizAttemptReadRepository>();
+    }
 
+    private static void AddServices(IServiceCollection services)
+    {
         services.AddScoped<QuizSolver>();
-
         services.AddScoped<SocialChallengeManagementService>();
         services.AddScoped<SocialChallengeLifecycleService>();
         services.AddScoped<QuizManagementService>();
-        services.AddScoped<QuizManagementQueries>();
         services.AddScoped<QuizLifecycleService>();
         services.AddScoped<LocationChallengeManagementService>();
-        services.AddScoped<LocationChallengeManagementQueries>();
         services.AddScoped<LocationChallengeLifecycleService>();
+        services.AddScoped<QuizSolvingService>();
+    }
+
+    private static void AddQueries(IServiceCollection services)
+    {
+        services.AddScoped<QuizManagementQueries>();
+        services.AddScoped<LocationChallengeManagementQueries>();
         services.AddScoped<ChallengeOverviewQueries>();
         services.AddScoped<NearbyChallengesQueries>();
-        services.AddScoped<QuizSolvingService>();
         services.AddScoped<QuizSolvingQueries>();
-
-        return services;
     }
 }
