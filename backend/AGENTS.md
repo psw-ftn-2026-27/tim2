@@ -45,6 +45,14 @@ backend/
 Tests live inside the module folder they test, so a team's ownership is one folder. There
 is no separate tests tree; the arch tests sit in `Host.Tests` beside the host.
 
+**Value object placement.** A value object is born in the folder of the aggregate that
+holds it. When a second aggregate of the same module needs it, it moves to a module-level
+folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
+only, never an entity or an aggregate. Moving one changes its type name in the model
+snapshot, so the move needs a migration added through `dotnet ef` (see Migrations).
+Similar value objects in two modules stay separate; moving one to `Shared.Domain` is a
+platform decision.
+
 Five source projects per module. That is deliberate: `<Name>.Api` referencing only
 `<Name>.Application` means an endpoint physically cannot name the `DbContext`, so the
 usual novice shortcut of querying the database straight from an endpoint does not compile.
@@ -139,7 +147,9 @@ the two repository interfaces.
 **DTO placement.** A DTO is born in the use-case folder that accepts or returns it and
 moves to the aggregate-named folder (`Application/Tours/`, which also holds the two
 repository interfaces) only when a second group needs it — the same promotion rule as
-for `Shared`, one level down.
+for `Shared`, one level down. The DTO of a value object that several aggregates hold
+follows it into the folder of the same name (`Application/Locations/`), which holds DTOs
+only, never a repository.
 
 Business rules live in the domain, not in the service. A service method that contains an
 `if` about business state is a smell; move it into the aggregate.
