@@ -46,6 +46,19 @@ public class PositionSimulatingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Explorer_cannot_set_a_position_outside_the_bounds_and_keeps_the_previous_one()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.PutAsJsonAsync(Url, new UserPositionDto(91, 19), JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PositionsDbContext>();
+        var position = assertContext.UserPositions.Should().ContainSingle(position => position.UserId == WellKnownUsers.Explorer).Subject;
+        position.Coordinates.Should().Be(UserPositionSeed.ExplorersPositionInNoviSad.Coordinates);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_set_a_position()
     {
         var client = Factory.CreateClient();
