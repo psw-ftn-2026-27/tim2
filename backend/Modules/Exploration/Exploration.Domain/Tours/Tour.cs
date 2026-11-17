@@ -6,8 +6,10 @@ namespace Exploration.Domain.Tours;
 public sealed class Tour : AggregateRoot
 {
     private const int MinimumDescriptionLengthForPublishing = 100;
+    private const int MinimumKeyPointsForPath = 2;
 
     private readonly List<TransportTime> _transportTimes = [];
+    private readonly List<KeyPoint> _keyPoints = [];
 
     public Guid AuthorId { get; private set; }
     public string Name { get; private set; }
@@ -19,7 +21,9 @@ public sealed class Tour : AggregateRoot
     public DateTime? ArchivedAt { get; private set; }
     public RecommendedGroupSize? RecommendedGroupSize { get; private set; }
     public int Price { get; private set; }
+    public double? LengthKm { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
+    public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
 
     private Tour()
     {
@@ -50,6 +54,7 @@ public sealed class Tour : AggregateRoot
         Difficulty = difficulty;
         Tags = tags;
         Status = TourStatus.Draft;
+        LengthKm = 0;
     }
 
     public void AddTransportTime(TransportMode transport, int minutes)
@@ -86,6 +91,89 @@ public sealed class Tour : AggregateRoot
         Price = newPrice;
     }
 
+    public void AddKeyPoint(string name, string description, string imageUrl, Location location,
+        string? secret, bool isVisibleBeforePurchase)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be added only while the tour is a draft.");
+        }
+
+        _keyPoints.Add(new KeyPoint(_keyPoints.Count + 1, name, description, imageUrl, location, secret, isVisibleBeforePurchase));
+        ResetLength();
+    }
+
+    public void ChangeKeyPoint(Guid keyPointId, string name, string description, string imageUrl, Location location,
+        string? secret, bool isVisibleBeforePurchase)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be changed only while the tour is a draft.");
+        }
+
+        var keyPoint = GetKeyPoint(keyPointId);
+        var locationChanged = keyPoint.Location != location;
+        keyPoint.Change(name, description, imageUrl, location, secret, isVisibleBeforePurchase);
+        if (locationChanged)
+        {
+            ResetLength();
+        }
+    }
+
+    public void RemoveKeyPoint(Guid keyPointId)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be removed only while the tour is a draft.");
+        }
+
+        var keyPoint = GetKeyPoint(keyPointId);
+        _keyPoints.Remove(keyPoint);
+        foreach (var following in _keyPoints.Where(point => point.Order > keyPoint.Order))
+        {
+            following.ChangeOrder(following.Order - 1);
+        }
+        ResetLength();
+    }
+
+    public void MoveKeyPoint(Guid keyPointId, KeyPointMoveDirection direction)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("Key points can be reordered only while the tour is a draft.");
+        }
+
+        var keyPoint = GetKeyPoint(keyPointId);
+        var neighbourOrder = direction == KeyPointMoveDirection.Up ? keyPoint.Order - 1 : keyPoint.Order + 1;
+        var neighbour = _keyPoints.FirstOrDefault(point => point.Order == neighbourOrder);
+        if (neighbour is null)
+        {
+            throw new DomainException("A key point cannot be moved outside the list.");
+        }
+
+        neighbour.ChangeOrder(keyPoint.Order);
+        keyPoint.ChangeOrder(neighbourOrder);
+        ResetLength();
+    }
+
+    public void SetCalculatedLength(double lengthKm)
+    {
+        if (Status != TourStatus.Draft)
+        {
+            throw new DomainException("The length can be set only while the tour is a draft.");
+        }
+        if (_keyPoints.Count < MinimumKeyPointsForPath)
+        {
+            throw new DomainException($"The length can be set only for a tour with at least {MinimumKeyPointsForPath} key points.");
+        }
+        if (!double.IsFinite(lengthKm) || lengthKm < 0)
+        {
+            throw new DomainException("A tour length must be a finite number that is not negative.");
+        }
+
+        LengthKm = lengthKm;
+    }
+
     public void Publish()
     {
         if (Status != TourStatus.Draft)
@@ -103,6 +191,14 @@ public sealed class Tour : AggregateRoot
         if (RecommendedGroupSize is null)
         {
             throw new DomainException("A tour can be published only with a recommended group size.");
+        }
+        if (_keyPoints.Count < MinimumKeyPointsForPath)
+        {
+            throw new DomainException($"A tour can be published only with at least {MinimumKeyPointsForPath} key points.");
+        }
+        if (LengthKm is null)
+        {
+            throw new DomainException("A tour can be published only with a calculated length.");
         }
 
         Status = TourStatus.Published;
@@ -129,5 +225,21 @@ public sealed class Tour : AggregateRoot
 
         Status = TourStatus.Published;
         ArchivedAt = null;
+    }
+
+    // A changed list has no path yet, so its length waits for a new calculation; fewer than two points have no path at all.
+    private void ResetLength()
+    {
+        LengthKm = _keyPoints.Count < MinimumKeyPointsForPath ? 0 : null;
+    }
+
+    private KeyPoint GetKeyPoint(Guid keyPointId)
+    {
+        var keyPoint = _keyPoints.FirstOrDefault(point => point.Id == keyPointId);
+        if (keyPoint is null)
+        {
+            throw new NotFoundException($"Key point {keyPointId} does not exist.");
+        }
+        return keyPoint;
     }
 }

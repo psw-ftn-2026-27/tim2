@@ -64,39 +64,41 @@
                     <td>follows you · request pending</td>
                   }
                 }
-                <td class="actions">
-                  @switch (follower.state) {
-                    @case ('Follow') {
-                      <button
-                        class="button button--primary"
-                        type="button"
-                        [disabled]="pending()"
-                        (click)="followBack(follower.userId)"
-                      >
-                        Follow back
-                      </button>
-                    }
-                    @case ('Pending') {
-                      @if (follower.pendingRequestId; as requestId) {
+                <td>
+                  <div class="row">
+                    @switch (follower.state) {
+                      @case ('Follow') {
                         <button
-                          class="button"
+                          class="button button--primary"
                           type="button"
                           [disabled]="pending()"
-                          (click)="cancelRequest(requestId)"
+                          (click)="followBack(follower.userId)"
                         >
-                          Cancel request
+                          Follow back
                         </button>
                       }
+                      @case ('Pending') {
+                        @if (follower.pendingRequestId; as requestId) {
+                          <button
+                            class="button"
+                            type="button"
+                            [disabled]="pending()"
+                            (click)="cancelRequest(requestId)"
+                          >
+                            Cancel request
+                          </button>
+                        }
+                      }
                     }
-                  }
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="removeFollower(follower.followRequestId)"
-                  >
-                    Remove
-                  </button>
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="removeFollower(follower.followRequestId)"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             } @empty {
@@ -146,15 +148,17 @@
             @for (user of following.value()?.items ?? []; track user.userId) {
               <tr>
                 <td>{{ user.userId }}</td>
-                <td class="actions">
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="unfollow(user.followRequestId)"
-                  >
-                    Unfollow
-                  </button>
+                <td>
+                  <div class="row">
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="unfollow(user.followRequestId)"
+                    >
+                      Unfollow
+                    </button>
+                  </div>
                 </td>
               </tr>
             } @empty {
@@ -208,23 +212,25 @@
               <tr>
                 <td>{{ request.senderId }} wants to follow you</td>
                 <td>{{ formatDate(request.createdAt) }}</td>
-                <td class="actions">
-                  <button
-                    class="button"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="decline(request.id)"
-                  >
-                    Decline
-                  </button>
-                  <button
-                    class="button button--primary"
-                    type="button"
-                    [disabled]="pending()"
-                    (click)="accept(request.id)"
-                  >
-                    Accept
-                  </button>
+                <td>
+                  <div class="row">
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="decline(request.id)"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      class="button button--primary"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="accept(request.id)"
+                    >
+                      Accept
+                    </button>
+                  </div>
                 </td>
               </tr>
             } @empty {
@@ -260,24 +266,26 @@
                 <td>
                   @switch (request.status) {
                     @case ('Pending') {
-                      <span class="status">PENDING</span>
+                      <span class="badge badge--muted">Pending</span>
                     }
                     @case ('Rejected') {
-                      <span class="status">DECLINED</span>
+                      <span class="badge badge--muted">Declined</span>
                     }
                   }
                 </td>
-                <td class="actions">
-                  @if (request.status === 'Pending') {
-                    <button
-                      class="button"
-                      type="button"
-                      [disabled]="pending()"
-                      (click)="cancelRequest(request.id)"
-                    >
-                      Cancel request
-                    </button>
-                  }
+                <td>
+                  <div class="row">
+                    @if (request.status === 'Pending') {
+                      <button
+                        class="button"
+                        type="button"
+                        [disabled]="pending()"
+                        (click)="cancelRequest(request.id)"
+                      >
+                        Cancel request
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             } @empty {

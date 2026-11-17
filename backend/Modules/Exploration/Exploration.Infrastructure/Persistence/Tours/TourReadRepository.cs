@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Domain.Tours;
@@ -27,10 +28,7 @@ internal sealed class TourReadRepository : ITourReadRepository
 
     public async Task<PageResult<TourDto>> GetPublishedAsync(TourSearchDto search, int page, int pageSize)
     {
-        var published = _dbContext.Tours.Where(tour => tour.Status == TourStatus.Published);
-        published = FilterByNameAndDifficulty(published, search);
-        published = FilterByTagsAndTransport(published, search);
-        published = FilterByPrice(published, search);
+        var published = TourSearchFilters.ByCriteria(_dbContext.Tours.Where(tour => tour.Status == TourStatus.Published), search);
 
         var totalCount = await published.CountAsync();
         var items = await ProjectToDtos(Sort(published, search))
@@ -39,6 +37,22 @@ internal sealed class TourReadRepository : ITourReadRepository
             .ToListAsync();
 
         return new PageResult<TourDto>(items, totalCount);
+    }
+
+    // Only key points visible before purchase count, both for the area (in TourSearchFilters) and for the map marker.
+    public async Task<PageResult<LocatedTourDto>> GetPublishedByLocationAsync(SearchArea area, TourSearchDto search, int page, int pageSize)
+    {
+        var inArea = TourSearchFilters.ByArea(_dbContext.Tours.Where(tour => tour.Status == TourStatus.Published), area);
+        var published = TourSearchFilters.ByCriteria(inArea, search);
+
+        var totalCount = await published.CountAsync();
+        var sorted = published.OrderByDescending(tour => tour.PublishedAt).ThenBy(tour => tour.Id);
+        var items = await ProjectToLocatedDtos(sorted)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PageResult<LocatedTourDto>(items, totalCount);
     }
 
     // For now the newest tours are featured; reactivating an archived tour keeps its first publishing time.
@@ -53,49 +67,28 @@ internal sealed class TourReadRepository : ITourReadRepository
             .ToListAsync();
     }
 
-    private static IQueryable<Tour> FilterByNameAndDifficulty(IQueryable<Tour> tours, TourSearchDto search)
+    public Task<TourKeyPointsDto?> GetKeyPointsAsync(Guid tourId, Guid authorId)
     {
-        if (!string.IsNullOrWhiteSpace(search.Name))
-        {
-            var name = search.Name.ToLower();
-            tours = tours.Where(tour => tour.Name.ToLower().Contains(name));
-        }
-        if (search.Difficulties is { Count: > 0 })
-        {
-            var difficulties = search.Difficulties;
-            tours = tours.Where(tour => difficulties.Contains(tour.Difficulty));
-        }
-        return tours;
-    }
-
-    private static IQueryable<Tour> FilterByTagsAndTransport(IQueryable<Tour> tours, TourSearchDto search)
-    {
-        if (search.Tags is { Count: > 0 })
-        {
-            var tags = search.Tags;
-            tours = tours.Where(tour => tour.Tags.Any(tag => tags.Contains(tag)));
-        }
-        if (search.TransportModes is { Count: > 0 })
-        {
-            var transportModes = search.TransportModes;
-            tours = tours.Where(tour => tour.TransportTimes.Any(time => transportModes.Contains(time.Transport)));
-        }
-        return tours;
-    }
-
-    private static IQueryable<Tour> FilterByPrice(IQueryable<Tour> tours, TourSearchDto search)
-    {
-        if (search.MinPrice is not null)
-        {
-            var minPrice = search.MinPrice.Value;
-            tours = tours.Where(tour => tour.Price >= minPrice);
-        }
-        if (search.MaxPrice is not null)
-        {
-            var maxPrice = search.MaxPrice.Value;
-            tours = tours.Where(tour => tour.Price <= maxPrice);
-        }
-        return tours;
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId && tour.AuthorId == authorId)
+            .Select(tour => new TourKeyPointsDto(
+                tour.Name,
+                tour.Status,
+                tour.KeyPoints
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => new KeyPointDto(
+                        keyPoint.Id,
+                        keyPoint.Order,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.ImageUrl,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude,
+                        keyPoint.Secret,
+                        keyPoint.IsVisibleBeforePurchase))
+                    .ToList(),
+                tour.LengthKm))
+            .FirstOrDefaultAsync();
     }
 
     // Difficulty comes first and price decides within the same difficulty; the newest tour wins every remaining tie.
@@ -114,6 +107,29 @@ internal sealed class TourReadRepository : ITourReadRepository
             _ => sorted
         };
         return sorted.ThenByDescending(tour => tour.PublishedAt);
+    }
+
+    // The marker stands on the first visible key point, even when that point lies outside the search area.
+    private static IQueryable<LocatedTourDto> ProjectToLocatedDtos(IQueryable<Tour> tours)
+    {
+        return tours
+            .Select(tour => new LocatedTourDto(
+                tour.Id,
+                tour.Name,
+                tour.Description,
+                tour.Difficulty,
+                tour.Tags,
+                tour.Price,
+                tour.KeyPoints
+                    .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => keyPoint.Location.Latitude)
+                    .First(),
+                tour.KeyPoints
+                    .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => keyPoint.Location.Longitude)
+                    .First()));
     }
 
     private static IQueryable<TourDto> ProjectToDtos(IQueryable<Tour> tours)
@@ -135,6 +151,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                     ? null
                     : new RecommendedGroupSizeDto(tour.RecommendedGroupSize.Min, tour.RecommendedGroupSize.Max),
                 tour.Price,
-                tour.ArchivedAt));
+                tour.ArchivedAt,
+                tour.LengthKm));
     }
 }

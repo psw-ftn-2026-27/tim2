@@ -18,7 +18,7 @@ export interface UpdateSocialChallengeDto {
   completionMessage: string;
 }
 
-export type ChallengeType = 'SocialChallenge' | 'Quiz';
+export type ChallengeType = 'SocialChallenge' | 'Quiz' | 'LocationChallenge';
 
 export interface ChallengeDto {
   id: string;
@@ -76,4 +76,39 @@ export interface QuizDto {
   status: QuizStatus;
   questions: QuestionDto[];
   location: QuizLocationDto | null;
+}
+
+export type LocationChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
+
+export interface LocationDto {
+  latitude: number;
+  longitude: number;
+}
+
+export interface HiddenPointDto {
+  imageUrl: string;
+  location: LocationDto;
+}
+
+export interface CreateLocationChallengeDto {
+  name: string;
+  xp: number;
+  startLocation: LocationDto;
+  hiddenPoints: HiddenPointDto[];
+}
+
+export interface UpdateLocationChallengeDto {
+  name: string;
+  xp: number;
+  startLocation: LocationDto;
+  hiddenPoints: HiddenPointDto[];
+}
+
+export interface LocationChallengeDto {
+  id: string;
+  name: string;
+  xp: number;
+  status: LocationChallengeStatus;
+  startLocation: LocationDto;
+  hiddenPoints: HiddenPointDto[];
 }

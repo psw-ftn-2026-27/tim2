@@ -25,21 +25,32 @@ frontend/src/
   styles/
     _tokens.scss             colours, spacing, radius, type as CSS custom properties
     _base.scss               reset, body, headings, links
-    _layout.scss             page container, stack, grid helpers
-    _components.scss         global classes: button, card, form field, table
+    _layout.scss             page container, stack, grid, page header, row, form page
+    _components.scss         global classes: button, card, form field, table, badge,
+                             amount, paging
+    README.md                styling guide: which class to use when, page structure,
+                             review checklist
+  environments/              environment.ts (production) and environment.development.ts,
+                             swapped by fileReplacements; the GA4 measurement ID   [platform]
   app/
     core/                    auth (state, interceptor, login, register), home,
                              map-demo (live example of shared/map for the team),
+                             my-position (sets the explorer's simulated position),
                              app.routes.ts                                    [platform]
     shared/
       util/
-      api/                   shared types (PageResult, ProblemDetails, UploadedImageDto),
-                             mirror the server, no client-only fields          [platform]
+      api/                   shared types (PageResult, ProblemDetails, UploadedImageDto,
+                             UserPositionDto), mirror the server, no client-only
+                             fields                                            [platform]
       images/                Images service: sends one file to POST /api/images [platform]
+      positions/             Positions service: sends the user's position to
+                             PUT /api/positions/mine                           [platform]
       image-upload/          presentational component for choosing and sending
                              an image, see Conventions                         [platform]
       map/                   presentational component showing locations and a
                              walking path on a map, see Conventions            [platform]
+      analytics/             Analytics service, event catalog, consent banner
+                             rendered by the app shell, see Conventions        [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -127,7 +138,8 @@ construct means adding a lesson, so treat it as a platform decision.
   exception is `<div #map>` in `shared/map`, read with `viewChild`, because Leaflet
   needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
-  drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
+  drive something outside the component tree, and it needs a reason (the example is
+  `shared/analytics`, where consent switches Google's opt-out flag on the window). Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
 - HTTP: `httpResource()` in the page for reads (it carries loading and error state as
   signals, and a fresh one is created on every visit); `HttpClient` with
@@ -159,6 +171,10 @@ lean files that students extend, not a design system. The four global partials i
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
 
+`src/styles/README.md` is the styling guide every team follows: the palette, the page
+structure, which global class to use when, and the review checklist for frontend PRs.
+Read it before styling a page.
+
 Where a style goes, in order:
 
 1. A token value changes: `_tokens.scss`.
@@ -169,8 +185,9 @@ Where a style goes, in order:
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
 `shared/ui` wrappers unprompted. The two shared components, `shared/image-upload` and
-`shared/map`, exist because several modules need the same upload and the same map;
-adding another is a platform decision. Visual consistency across modules is an open problem
+`shared/map`, exist because several modules need the same upload and the same map; the
+consent banner in `shared/analytics` is rendered only by the app shell, never by a module.
+Adding another is a platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -247,6 +264,76 @@ assigned to the platform team, and misalignment is an accepted learning experien
 
   ```html
   <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
+  ```
+
+  The map shows the `name` of `selectedLocation` on its pin.
+- The explorer's position is simulated: until there is a mobile app, the explorer clicks
+  on a map to say where they are. The server keeps exactly one position per explorer, so
+  it does not matter on which page it was set. `/my-position` is the temporary place to
+  set it until the pages that need it exist (the running tour of E22, for example).
+  A page of any module that wants the explorer to set their position right there, next
+  to its own key points or challenges, turns on `pickLocation` of `app-map` and passes
+  the saved position as `selectedLocation`, named `You are here`. It reads that position
+  with an `httpResource` on `/api/positions/mine`, which gives `null` while there is
+  none, so there is no pin. On `locationPicked` it ignores the click while a save is
+  running; otherwise it shows `Saving position...` below the map and sends the place to
+  `save` of the `Positions` service from `shared/positions`. On success it reloads the
+  resource, so the pin moves only after the server confirms, and shows `Position saved`;
+  on failure the pin stays and it shows `Position could not be saved`. `/my-position` is
+  the live example:
+
+  ```html
+  <app-map [locations]="keyPoints()" [pickLocation]="true" [selectedLocation]="youAreHere()"
+           (locationPicked)="save($event)" />
+  ```
+
+  ```ts
+  private readonly positions = inject(Positions);
+
+  protected readonly position = httpResource<UserPositionDto | null>(() => '/api/positions/mine');
+  protected readonly youAreHere = computed<MapLocation | null>(() => {
+    const position = this.position.hasValue() ? this.position.value() : null;
+    return position === null ? null : { ...position, name: 'You are here' };
+  });
+
+  protected readonly saving = signal(false);
+  protected readonly saved = signal(false);
+  protected readonly failed = signal(false);
+
+  protected async save(location: MapLocation): Promise<void> {
+    if (this.saving()) {
+      return;
+    }
+    this.saving.set(true);
+    this.saved.set(false);
+    this.failed.set(false);
+    try {
+      await this.positions.save({ latitude: location.latitude, longitude: location.longitude });
+      this.position.reload();
+      this.saved.set(true);
+    } catch {
+      this.failed.set(true);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+  ```
+
+  The page only sets and shows the position. When a module's backend needs to know where
+  the explorer is (to decide that a key point is reached, for example), it asks the
+  platform team for a member in `Positions.Contracts`; the platform adds it on request,
+  and the module that owns the consequence calls it from its own backend.
+- A page that records a GA4 event injects `Analytics` from `shared/analytics` and calls
+  `logEvent` on the line after the awaited command, never in `catch`, so a failed command
+  is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
+  content identifiers or closed-set values as params, never a user id, name, email or
+  free text. The service adds the role and checks sign-in, consent and the measurement
+  ID itself; a module never calls `gtag` or checks consent. `shared/analytics/README.md`
+  shows how to add an event and how to check it in the browser:
+
+  ```ts
+  await this.tourAuthoring.publish(tourId);
+  this.analytics.logEvent({ name: 'tour_published', params: { tour_id: tourId } });
   ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.

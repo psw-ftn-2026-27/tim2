@@ -22,7 +22,7 @@
             @if (openMenuId() === comment.id) {
               <div class="menu">
                 <button class="button" type="button" (click)="startEdit(comment)">Edit</button>
-                <button class="button" type="button" (click)="askDelete(comment.id)">Delete</button>
+                <button class="button button--danger" type="button" (click)="askDelete(comment.id)">Delete</button>
               </div>
             }
           </div>
@@ -42,7 +42,7 @@
         } @else if (confirmingDeleteId() === comment.id) {
           <div class="comment-actions">
             <p>Are you sure?</p>
-            <button class="button button--primary" type="button" (click)="confirmDelete(comment.id)">
+            <button class="button button--danger" type="button" (click)="confirmDelete(comment.id)">
               Yes
             </button>
             <button class="button" type="button" (click)="confirmingDeleteId.set(null)">No</button>

@@ -1,6 +1,8 @@
-<form class="deposit" (submit)="submit($event)">
-  <input type="number" aria-label="Iznos u EC" [formField]="form.amount" />
+<form class="row deposit" (submit)="submit($event)">
+  <div class="field">
+    <input type="number" aria-label="Amount in EC" [formField]="form.amount" />
+  </div>
   <button class="button button--primary" type="submit" [disabled]="!form().valid() || disabled()">
-    Uplati
+    Deposit
   </button>
 </form>
