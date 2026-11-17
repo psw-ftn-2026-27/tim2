@@ -190,26 +190,56 @@
           <p class="error">{{ error() }}</p>
         }
 
-        @if (current.status === 'Draft') {
-          <div class="actions">
-            @if (confirmingDelete()) {
-              <button
-                class="button button--primary"
-                type="button"
-                [disabled]="pending()"
-                (click)="confirmDelete()"
-              >
-                Confirm delete
-              </button>
-              <button class="button" type="button" [disabled]="pending()" (click)="cancelDelete()">
-                Cancel
-              </button>
-            } @else {
+        <div class="row">
+          @if (confirmingAction()) {
+            <button
+              class="button"
+              [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+              [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirm()"
+            >
+              @switch (confirmingAction()) {
+                @case ('delete') {
+                  Confirm delete
+                }
+                @case ('publish') {
+                  Confirm publish
+                }
+                @case ('retire') {
+                  Confirm retire
+                }
+                @case ('archive') {
+                  Confirm archive
+                }
+                @case ('repeat') {
+                  Confirm repeat
+                }
+              }
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+              Cancel
+            </button>
+          } @else {
+            @if (current.status === 'Draft') {
               <button class="button" type="button" (click)="startEdit(current)">Edit</button>
-              <button class="button" type="button" (click)="askToConfirmDelete()">Delete</button>
+              <button class="button" type="button" (click)="askToConfirm('publish')">Publish</button>
             }
-          </div>
-        }
+            @if (current.status === 'Draft' || current.status === 'Archived') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('delete')">Delete</button>
+            }
+            @if (current.status === 'Published') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('retire')">Retire</button>
+            }
+            @if (current.status === 'Retired') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('archive')">Archive</button>
+            }
+            @if (current.status === 'Retired' || current.status === 'Archived') {
+              <button class="button" type="button" (click)="askToConfirm('repeat')">Repeat</button>
+            }
+          }
+        </div>
       }
     }
   }

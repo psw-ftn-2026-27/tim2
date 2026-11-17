@@ -189,6 +189,36 @@ public class LocationChallengeManagementCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Administrator_deletes_an_archived_location_challenge_and_it_is_gone()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.LocationChallenges.Count();
+
+        var response = await client.DeleteAsync($"/api/games/location-challenges/{LocationChallengeSeed.ArchivedFortressTunnels.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.LocationChallenges.Count().Should().Be(challengeCountBefore - 1);
+        assertContext.LocationChallenges.Should().NotContain(challenge => challenge.Id == LocationChallengeSeed.ArchivedFortressTunnels.Id);
+    }
+
+    [Fact]
+    public async Task Deleting_a_published_location_challenge_is_rejected_and_it_stays_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.LocationChallenges.Count();
+
+        var response = await client.DeleteAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedStrandBeach.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.LocationChallenges.Count().Should().Be(challengeCountBefore);
+        assertContext.LocationChallenges.Should().Contain(challenge => challenge.Id == LocationChallengeSeed.PublishedStrandBeach.Id);
+    }
+
+    [Fact]
     public async Task Deleting_an_unknown_location_challenge_is_rejected_and_nothing_is_removed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");

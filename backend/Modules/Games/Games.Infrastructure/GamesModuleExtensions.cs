@@ -1,6 +1,7 @@
 using Games.Application;
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
+using Games.Application.LocationChallengeLifecycle;
 using Games.Application.LocationChallengeManagement;
 using Games.Application.LocationChallenges;
 using Games.Application.QuizLifecycle;
@@ -43,6 +44,7 @@ public static class GamesModuleExtensions
         services.AddScoped<QuizLifecycleService>();
         services.AddScoped<LocationChallengeManagementService>();
         services.AddScoped<LocationChallengeManagementQueries>();
+        services.AddScoped<LocationChallengeLifecycleService>();
         services.AddScoped<ChallengeOverviewQueries>();
 
         return services;
