@@ -161,7 +161,7 @@ export class ChallengeList {
       this.challenges.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, `Could not ${action} the challenge.`));
-      if (challenge.type === 'Quiz') {
+      if (challenge.type === 'Quiz' || challenge.type === 'LocationChallenge') {
         this.challenges.reload();
       }
     } finally {
