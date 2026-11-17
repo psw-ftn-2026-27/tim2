@@ -21,7 +21,8 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         [
             new QuestionDto("Koliko je visok toranj katedrale?", [new AnswerOptionDto("72 metra", true), new AnswerOptionDto("30 metara", false)]),
             new QuestionDto("Kojim stilom je građena?", [new AnswerOptionDto("Barok", false), new AnswerOptionDto("Neogotika", true), new AnswerOptionDto("Secesija", false)])
-        ]);
+        ],
+        null);
 
     private static UpdateQuizDto UpdateRequest() => new(
         "Gradska kuća na Trgu slobode",
@@ -29,7 +30,8 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         60,
         [
             new QuestionDto("Koje godine je završena Gradska kuća?", [new AnswerOptionDto("1895", true), new AnswerOptionDto("1920", false)])
-        ]);
+        ],
+        new QuizLocationDto(45.2552, 19.8452, 80));
 
     private static List<QuestionDto> ToDtos(IEnumerable<Question> questions) =>
         questions
@@ -58,6 +60,21 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         stored.Instructions.Should().Be(request.Instructions);
         stored.Xp.Should().Be(request.Xp);
         ToDtos(stored.Questions).Should().BeEquivalentTo(request.Questions, options => options.ComparingRecordsByMembers().WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Administrator_creates_a_quiz_with_a_location_and_range_and_they_are_stored()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = CreateRequest() with { Location = new QuizLocationDto(45.2573, 19.8445, 120) };
+
+        var response = await client.PostAsJsonAsync("/api/games/quizzes", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var createdId = await response.Content.ReadFromJsonAsync<Guid>(JsonOptions);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.Quizzes.Single(quiz => quiz.Id == createdId);
+        stored.Location.Should().Be(new QuizLocation(45.2573, 19.8445, 120));
     }
 
     [Fact]
@@ -111,6 +128,21 @@ public class QuizManagementCommandTests : BaseIntegrationTest
         stored.Xp.Should().Be(request.Xp);
         stored.Status.Should().Be(QuizStatus.Draft);
         ToDtos(stored.Questions).Should().BeEquivalentTo(request.Questions, options => options.ComparingRecordsByMembers().WithStrictOrdering());
+        stored.Location.Should().Be(new QuizLocation(request.Location!.Latitude, request.Location.Longitude, request.Location.RangeInMeters));
+    }
+
+    [Fact]
+    public async Task Administrator_changes_a_draft_quiz_with_an_empty_location_and_its_location_is_removed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = UpdateRequest() with { Location = null };
+
+        var response = await client.PutAsJsonAsync($"/api/games/quizzes/{QuizSeed.DraftCityHall.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.Quizzes.Single(quiz => quiz.Id == QuizSeed.DraftCityHall.Id);
+        stored.Location.Should().BeNull();
     }
 
     [Fact]

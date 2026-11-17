@@ -46,11 +46,18 @@ export interface QuestionDto {
   options: AnswerOptionDto[];
 }
 
+export interface QuizLocationDto {
+  latitude: number;
+  longitude: number;
+  rangeInMeters: number;
+}
+
 export interface CreateQuizDto {
   name: string;
   instructions: string;
   xp: number;
   questions: QuestionDto[];
+  location: QuizLocationDto | null;
 }
 
 export interface UpdateQuizDto {
@@ -58,6 +65,7 @@ export interface UpdateQuizDto {
   instructions: string;
   xp: number;
   questions: QuestionDto[];
+  location: QuizLocationDto | null;
 }
 
 export interface QuizDto {
@@ -67,6 +75,7 @@ export interface QuizDto {
   xp: number;
   status: QuizStatus;
   questions: QuestionDto[];
+  location: QuizLocationDto | null;
 }
 
 export type LocationChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';

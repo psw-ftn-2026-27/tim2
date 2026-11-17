@@ -1,7 +1,8 @@
 import { httpResource } from '@angular/common/http';
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { MapLocation, MapView } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { QuizDto } from '../../api/games-api-types';
 import { QuizManagement } from '../quiz-management';
@@ -10,15 +11,18 @@ import {
   addAnswer,
   addQuestion,
   emptyQuestion,
+  pickLocation,
   quizFormSchema,
   removeAnswer,
+  removeLocation,
   removeQuestion,
   toQuizDto,
   toQuizFormModel,
 } from '../quiz-form-schema';
+import { QuizLocationFields } from '../quiz-location-fields/quiz-location-fields';
 
 @Component({
-  imports: [FormField, RouterLink],
+  imports: [FormField, MapView, QuizLocationFields, RouterLink],
   selector: 'app-quiz-details',
   styleUrl: './quiz-details.scss',
   templateUrl: './quiz-details.html',
@@ -30,6 +34,12 @@ export class QuizDetails {
   readonly id = input.required<string>();
 
   protected readonly quiz = httpResource<QuizDto>(() => `/api/games/quizzes/${this.id()}`);
+
+  // The read-only map gets the saved location as its only pin.
+  protected readonly savedLocation = computed<MapLocation[]>(() => {
+    const location = this.quiz.value()?.location;
+    return location ? [{ latitude: location.latitude, longitude: location.longitude }] : [];
+  });
 
   protected readonly confirmingAction = signal<'delete' | 'publish' | 'retire' | 'archive' | 'repeat' | null>(
     null,
@@ -45,6 +55,8 @@ export class QuizDetails {
     instructions: '',
     xp: 10,
     questions: [emptyQuestion()],
+    location: null,
+    rangeInMeters: null,
   });
 
   protected readonly editForm = form(this.model, quizFormSchema);
@@ -60,6 +72,14 @@ export class QuizDetails {
 
   protected cancelEdit(): void {
     this.editing.set(false);
+  }
+
+  protected pickLocation(location: MapLocation): void {
+    this.model.update((quiz) => pickLocation(quiz, location));
+  }
+
+  protected removeLocation(): void {
+    this.model.update((quiz) => removeLocation(quiz));
   }
 
   protected addQuestion(): void {

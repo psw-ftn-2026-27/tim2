@@ -22,5 +22,7 @@ internal static class QuizConfiguration
             questions.ToJson();
             questions.OwnsMany(question => question.Options);
         });
+
+        builder.OwnsOne(quiz => quiz.Location);
     }
 }

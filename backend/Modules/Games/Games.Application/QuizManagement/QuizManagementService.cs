@@ -17,7 +17,7 @@ public sealed class QuizManagementService
 
     public async Task<Guid> CreateAsync(CreateQuizDto dto)
     {
-        var quiz = new Quiz(dto.Name, dto.Instructions, dto.Xp, ToQuestions(dto.Questions));
+        var quiz = new Quiz(dto.Name, dto.Instructions, dto.Xp, ToQuestions(dto.Questions), ToLocation(dto.Location));
 
         _quizRepository.Add(quiz);
         await _unitOfWork.SaveChangesAsync();
@@ -29,7 +29,7 @@ public sealed class QuizManagementService
     {
         var quiz = await GetQuizAsync(quizId);
 
-        quiz.Update(dto.Name, dto.Instructions, dto.Xp, ToQuestions(dto.Questions));
+        quiz.Update(dto.Name, dto.Instructions, dto.Xp, ToQuestions(dto.Questions), ToLocation(dto.Location));
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -61,5 +61,12 @@ public sealed class QuizManagementService
                     .Select(option => new AnswerOption(option.Text, option.IsCorrect))
                     .ToList()))
             .ToList();
+    }
+
+    private static QuizLocation? ToLocation(QuizLocationDto? location)
+    {
+        return location is null
+            ? null
+            : new QuizLocation(location.Latitude, location.Longitude, location.RangeInMeters);
     }
 }

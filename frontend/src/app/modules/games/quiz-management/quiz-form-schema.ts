@@ -6,8 +6,21 @@ import {
   min,
   minLength,
   required,
+  validate,
 } from '@angular/forms/signals';
+import { MapLocation } from '../../../shared/map/map';
 import { CreateQuizDto, QuizDto } from '../api/games-api-types';
+
+// A pin placed while the range is empty gets this range, so a picked location is valid at once.
+const DEFAULT_RANGE_IN_METERS = 50;
+
+// The same bounds as QuizLocation on the server; the server domain still enforces them.
+const MIN_RANGE_IN_METERS = 10;
+const MAX_RANGE_IN_METERS = 1000;
+
+// P3: the same message for a pin without a range and for a range without a pin.
+const LOCATION_AND_RANGE_TOGETHER =
+  'Location and range must be set together. Click the map to set the location, or clear the range.';
 
 // The client-only model of the quiz form, used by the create page and the details page.
 export interface QuizFormModel {
@@ -15,6 +28,9 @@ export interface QuizFormModel {
   instructions: string;
   xp: number;
   questions: QuizFormQuestion[];
+  // The pin on the map and the range are kept apart, so the form can show that one is missing.
+  location: MapLocation | null;
+  rangeInMeters: number | null;
 }
 
 export interface QuizFormQuestion {
@@ -40,6 +56,21 @@ export function quizFormSchema(path: SchemaPathTree<QuizFormModel>): void {
   required(path.xp, { message: 'XP is required.' });
   min(path.xp, 1, { message: 'XP must be at least 1.' });
   max(path.xp, 1000, { message: 'XP can be at most 1000.' });
+  min(path.rangeInMeters, MIN_RANGE_IN_METERS, {
+    message: `Range must be at least ${MIN_RANGE_IN_METERS} m.`,
+  });
+  max(path.rangeInMeters, MAX_RANGE_IN_METERS, {
+    message: `Range can be at most ${MAX_RANGE_IN_METERS} m.`,
+  });
+  required(path.rangeInMeters, {
+    when: ({ valueOf }) => valueOf(path.location) !== null,
+    message: LOCATION_AND_RANGE_TOGETHER,
+  });
+  validate(path.rangeInMeters, ({ value, valueOf }) =>
+    value() !== null && valueOf(path.location) === null
+      ? { kind: 'locationAndRange', message: LOCATION_AND_RANGE_TOGETHER }
+      : undefined,
+  );
 
   applyEach(path.questions, (question) => {
     required(question.text, { message: 'Question text is required.' });
@@ -51,6 +82,19 @@ export function quizFormSchema(path: SchemaPathTree<QuizFormModel>): void {
       maxLength(answer.text, 100, { message: 'Answer text can have at most 100 characters.' });
     });
   });
+}
+
+// A click on the map places or moves the pin; an existing range stays as it is.
+export function pickLocation(quiz: QuizFormModel, location: MapLocation): QuizFormModel {
+  return {
+    ...quiz,
+    location,
+    rangeInMeters: quiz.rangeInMeters ?? DEFAULT_RANGE_IN_METERS,
+  };
+}
+
+export function removeLocation(quiz: QuizFormModel): QuizFormModel {
+  return { ...quiz, location: null, rangeInMeters: null };
 }
 
 export function emptyQuestion(): QuizFormQuestion {
@@ -111,6 +155,14 @@ export function toQuizDto(quiz: QuizFormModel): CreateQuizDto {
         isCorrect: String(index) === question.correct,
       })),
     })),
+    location:
+      quiz.location === null || quiz.rangeInMeters === null
+        ? null
+        : {
+            latitude: quiz.location.latitude,
+            longitude: quiz.location.longitude,
+            rangeInMeters: quiz.rangeInMeters,
+          },
   };
 }
 
@@ -127,6 +179,11 @@ export function toQuizFormModel(quiz: QuizDto): QuizFormModel {
         correct: correctIndex === -1 ? '' : String(correctIndex),
       };
     }),
+    location:
+      quiz.location === null
+        ? null
+        : { latitude: quiz.location.latitude, longitude: quiz.location.longitude },
+    rangeInMeters: quiz.location?.rangeInMeters ?? null,
   };
 }
 

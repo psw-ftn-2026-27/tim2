@@ -6,6 +6,8 @@ export interface MapLocation {
   latitude: number;
   longitude: number;
   name?: string;
+  // A short mark written on the pin itself, such as "S" or "1", so pins can be told apart.
+  label?: string;
 }
 
 const NOVI_SAD: L.LatLngTuple = [45.2551, 19.8451];
@@ -18,6 +20,20 @@ const ROUTING_TIMEOUT_MS = 10_000;
 
 // The marker images are copied to /leaflet by angular.json.
 const PIN = new L.Icon.Default({ imagePath: 'leaflet/' });
+const LABEL_SIZE = 28;
+
+// Leaflet draws the pin outside the component, so its look is the global class .map-label.
+function labeledPin(label: string): L.DivIcon {
+  const text = document.createElement('span');
+  // textContent, not HTML, so a label is always shown as plain text.
+  text.textContent = label;
+  return L.divIcon({
+    className: 'map-label',
+    html: text,
+    iconSize: [LABEL_SIZE, LABEL_SIZE],
+    tooltipAnchor: [LABEL_SIZE / 2, 0],
+  });
+}
 
 function sameStops(first: L.LatLng[], second: L.LatLng[]): boolean {
   return first.length === second.length && first.every((stop, index) => stop.equals(second[index]));
@@ -69,7 +85,8 @@ export class MapView {
       }
 
       const pins = this.locations().map((location) => {
-        const pin = L.marker([location.latitude, location.longitude], { icon: PIN });
+        const icon = location.label ? labeledPin(location.label) : PIN;
+        const pin = L.marker([location.latitude, location.longitude], { icon });
         if (location.name) {
           pin.bindTooltip(location.name);
         }
