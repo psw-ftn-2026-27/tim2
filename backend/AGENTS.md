@@ -104,8 +104,8 @@ that students use but never modify or reference. It holds ASP.NET Core Identity 
 (`administrator`, `explorer`); the details live in the project itself.
 
 `Identity.Contracts` is its only surface toward other modules: `IIdentityApi`, read-only
-and minimal, with a page of explorers and one explorer by ID (`null` when there is
-none), each carrying only the user ID and email. It references nothing, like every
+and minimal, with a page of explorers and one explorer by ID or by email (`null` when
+there is none), each carrying only the user ID and email. It references nothing, like every
 `Contracts` project, and is implemented in `Identity/Infrastructure`. Accounts,
 passwords and `UserManager` stay behind it. Adding a member is a request to the
 platform team.
