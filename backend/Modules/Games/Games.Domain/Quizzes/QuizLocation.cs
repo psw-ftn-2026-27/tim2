@@ -19,21 +19,25 @@ public sealed record QuizLocation
 
     public QuizLocation(double latitude, double longitude, int rangeInMeters)
     {
-        if (latitude < MinimumLatitude || latitude > MaximumLatitude)
-        {
-            throw new DomainException($"A quiz location latitude must be from {MinimumLatitude} to {MaximumLatitude}.");
-        }
-        if (longitude < MinimumLongitude || longitude > MaximumLongitude)
-        {
-            throw new DomainException($"A quiz location longitude must be from {MinimumLongitude} to {MaximumLongitude}.");
-        }
-        if (rangeInMeters < MinimumRangeInMeters || rangeInMeters > MaximumRangeInMeters)
-        {
-            throw new DomainException($"A quiz range must be from {MinimumRangeInMeters} to {MaximumRangeInMeters} meters.");
-        }
+        EnsureWithin(latitude, MinimumLatitude, MaximumLatitude,
+            $"A quiz location latitude must be from {MinimumLatitude} to {MaximumLatitude}.");
+        EnsureWithin(longitude, MinimumLongitude, MaximumLongitude,
+            $"A quiz location longitude must be from {MinimumLongitude} to {MaximumLongitude}.");
+        EnsureWithin(rangeInMeters, MinimumRangeInMeters, MaximumRangeInMeters,
+            $"A quiz range must be from {MinimumRangeInMeters} to {MaximumRangeInMeters} meters.");
 
         Latitude = latitude;
         Longitude = longitude;
         RangeInMeters = rangeInMeters;
+    }
+
+    // Asks "is the value inside the bounds?" rather than "is it outside?", because every
+    // comparison with double.NaN is false: an outside check would let NaN through.
+    private static void EnsureWithin(double value, double minimum, double maximum, string message)
+    {
+        if (!(value >= minimum && value <= maximum))
+        {
+            throw new DomainException(message);
+        }
     }
 }

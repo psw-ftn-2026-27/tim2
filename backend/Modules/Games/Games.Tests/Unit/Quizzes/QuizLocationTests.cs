@@ -22,6 +22,16 @@ public class QuizLocationTests
     }
 
     [Theory]
+    [InlineData(double.NaN, 0)]
+    [InlineData(0, double.NaN)]
+    public void Location_with_a_coordinate_that_is_not_a_number_cannot_be_created(double latitude, double longitude)
+    {
+        var creation = () => new QuizLocation(latitude, longitude, 50);
+
+        creation.Should().Throw<DomainException>();
+    }
+
+    [Theory]
     [InlineData(-90, -180, 10)]
     [InlineData(90, 180, 1000)]
     public void Location_with_coordinates_and_range_exactly_on_the_bounds_is_created(double latitude, double longitude, int rangeInMeters)
