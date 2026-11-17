@@ -28,6 +28,48 @@ public class LocationChallengeTests
 
     private static LocationChallenge CreateChallenge() => new(ValidName, ValidXp, new Location(StartLatitude, StartLongitude), CreateHiddenPoints(2));
 
+    private static LocationChallenge CreateChallengeIn(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallenge();
+        if (status == LocationChallengeStatus.Draft)
+        {
+            return challenge;
+        }
+        challenge.Publish();
+        if (status == LocationChallengeStatus.Published)
+        {
+            return challenge;
+        }
+        challenge.Retire();
+        if (status == LocationChallengeStatus.Retired)
+        {
+            return challenge;
+        }
+        challenge.Archive();
+        return challenge;
+    }
+
+    private static void Perform(LocationChallenge challenge, string action)
+    {
+        switch (action)
+        {
+            case "publish":
+                challenge.Publish();
+                break;
+            case "retire":
+                challenge.Retire();
+                break;
+            case "archive":
+                challenge.Archive();
+                break;
+            case "repeat":
+                challenge.Repeat();
+                break;
+            default:
+                throw new ArgumentException($"Unknown action {action}.", nameof(action));
+        }
+    }
+
     [Fact]
     public void New_location_challenge_starts_as_a_draft_with_the_given_name_xp_start_and_hidden_points()
     {
@@ -130,6 +172,101 @@ public class LocationChallengeTests
         var movedStartLocation = LocationNorthOfStart(-0.0090);
 
         var update = () => challenge.Update(ValidName, ValidXp, movedStartLocation, challenge.HiddenPoints.ToList());
+
+        update.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Draft, "publish", LocationChallengeStatus.Published)]
+    [InlineData(LocationChallengeStatus.Published, "retire", LocationChallengeStatus.Retired)]
+    [InlineData(LocationChallengeStatus.Retired, "archive", LocationChallengeStatus.Archived)]
+    [InlineData(LocationChallengeStatus.Retired, "repeat", LocationChallengeStatus.Draft)]
+    [InlineData(LocationChallengeStatus.Archived, "repeat", LocationChallengeStatus.Draft)]
+    public void Allowed_transition_moves_the_location_challenge_to_the_next_state(
+        LocationChallengeStatus status, string action, LocationChallengeStatus expectedStatus)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        Perform(challenge, action);
+
+        challenge.Status.Should().Be(expectedStatus);
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Published, "publish")]
+    [InlineData(LocationChallengeStatus.Retired, "publish")]
+    [InlineData(LocationChallengeStatus.Archived, "publish")]
+    [InlineData(LocationChallengeStatus.Draft, "retire")]
+    [InlineData(LocationChallengeStatus.Retired, "retire")]
+    [InlineData(LocationChallengeStatus.Archived, "retire")]
+    [InlineData(LocationChallengeStatus.Draft, "archive")]
+    [InlineData(LocationChallengeStatus.Published, "archive")]
+    [InlineData(LocationChallengeStatus.Archived, "archive")]
+    [InlineData(LocationChallengeStatus.Draft, "repeat")]
+    [InlineData(LocationChallengeStatus.Published, "repeat")]
+    public void Transition_that_is_not_allowed_is_rejected_and_the_location_challenge_keeps_its_state(
+        LocationChallengeStatus status, string action)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var transition = () => Perform(challenge, action);
+
+        transition.Should().Throw<DomainException>();
+        challenge.Status.Should().Be(status);
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Retired)]
+    [InlineData(LocationChallengeStatus.Archived)]
+    public void Repeated_location_challenge_keeps_its_identity_name_xp_start_and_all_hidden_points(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+        var id = challenge.Id;
+        var startLocation = challenge.StartLocation;
+        var hiddenPoints = challenge.HiddenPoints.ToList();
+
+        challenge.Repeat();
+
+        challenge.Id.Should().Be(id);
+        challenge.Name.Should().Be(ValidName);
+        challenge.Xp.Should().Be(ValidXp);
+        challenge.StartLocation.Should().Be(startLocation);
+        challenge.HiddenPoints.Should().Equal(hiddenPoints);
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Draft)]
+    [InlineData(LocationChallengeStatus.Archived)]
+    public void Draft_or_archived_location_challenge_can_be_deleted(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var deletion = () => challenge.EnsureCanBeDeleted();
+
+        deletion.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Published)]
+    [InlineData(LocationChallengeStatus.Retired)]
+    public void Published_or_retired_location_challenge_cannot_be_deleted(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var deletion = () => challenge.EnsureCanBeDeleted();
+
+        deletion.Should().Throw<DomainException>();
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Published)]
+    [InlineData(LocationChallengeStatus.Retired)]
+    [InlineData(LocationChallengeStatus.Archived)]
+    public void Location_challenge_that_is_not_a_draft_cannot_be_changed(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var update = () => challenge.Update(ValidName, ValidXp, new Location(StartLatitude, StartLongitude), CreateHiddenPoints(1));
 
         update.Should().Throw<DomainException>();
     }
