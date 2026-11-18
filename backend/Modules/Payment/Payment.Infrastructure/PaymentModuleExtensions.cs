@@ -12,6 +12,7 @@ using Payment.Application.TourPurchaseTokens;
 using Payment.Application.WalletFunding;
 using Payment.Application.Wallets;
 using Payment.Application.WalletViewing;
+using Payment.Contracts;
 using Payment.Domain.ShoppingCarts;
 using Payment.Infrastructure.Persistence;
 using Payment.Infrastructure.Persistence.GiftCards;
@@ -52,6 +53,8 @@ public static class PaymentModuleExtensions
         services.AddScoped<PurchaseViewingQueries>();
         services.AddScoped<GiftCardGiftingService>();
         services.AddScoped<GiftCardGiftingQueries>();
+
+        services.AddScoped<IPaymentApi, PaymentApi>();
 
         return services;
     }
