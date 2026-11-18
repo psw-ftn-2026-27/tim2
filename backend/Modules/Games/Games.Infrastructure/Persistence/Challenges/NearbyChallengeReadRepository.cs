@@ -50,8 +50,6 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                 RangeInMeters = quiz.Location.RangeInMeters,
                 IsStarted = _dbContext.QuizAttempts
                     .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId),
-                IsSolved = _dbContext.QuizAttempts
-                    .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId && attempt.SolvedAt != null),
                 EarnedXp = _dbContext.QuizAttempts
                     .Where(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId)
                     .Select(attempt => attempt.EarnedXp)
@@ -137,11 +135,6 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                     .Any(attempt => attempt.ChallengeId == challenge.Id
                         && attempt.PlayerId == playerId
                         && attempt.Round == challenge.CurrentRound),
-                IsSolved = _dbContext.LocationChallengeAttempts
-                    .Any(attempt => attempt.ChallengeId == challenge.Id
-                        && attempt.PlayerId == playerId
-                        && attempt.Round == challenge.CurrentRound
-                        && attempt.SolvedAt != null),
                 EarnedXp = _dbContext.LocationChallengeAttempts
                     .Where(attempt => attempt.ChallengeId == challenge.Id
                         && attempt.PlayerId == playerId
@@ -214,8 +207,9 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         public double Longitude { get; init; }
         public int RangeInMeters { get; init; }
         public bool IsStarted { get; init; }
-        public bool IsSolved { get; init; }
         public int? EarnedXp { get; init; }
+        // An attempt earns XP only when it is solved, so the earned XP alone tells whether the challenge is solved.
+        public bool IsSolved => EarnedXp is not null;
     }
 
     private sealed class NearbySocialChallengeRow

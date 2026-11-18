@@ -11,6 +11,6 @@ export class LocationChallengeSolving {
   // No coordinates are sent: the server reads the saved position itself.
   // A check that finds no point also succeeds; the page learns what was found from the progress.
   async check(id: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/check`, null));
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/checks`, null));
   }
 }

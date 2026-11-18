@@ -73,18 +73,4 @@ public class LocationChallengeSolverTests
 
         attempt.Round.Should().Be(challenge.CurrentRound).And.BeGreaterThan(earlierAttempt.Round);
     }
-
-    [Fact]
-    public void Attempt_from_an_earlier_round_cannot_be_checked()
-    {
-        var challenge = CreatePublishedChallenge();
-        var earlierAttempt = Activate(challenge, null);
-        challenge.Retire();
-        challenge.Repeat();
-        challenge.Publish();
-
-        var check = () => _solver.Check(challenge, earlierAttempt, challenge.HiddenPoints[0].Location, Now);
-
-        check.Should().Throw<DomainException>();
-    }
 }

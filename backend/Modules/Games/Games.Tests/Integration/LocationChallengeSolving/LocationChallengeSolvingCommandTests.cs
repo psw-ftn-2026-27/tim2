@@ -107,7 +107,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
         var challenge = LocationChallengeSeed.PublishedLimanPark;
         var attempt = LocationChallengeAttemptSeed.ExplorersLimanParkWithoutTheFirstPoint;
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{challenge.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{challenge.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
@@ -123,7 +123,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
         var attempt = LocationChallengeAttemptSeed.PlayerWithoutPositionsLimanParkInCurrentRound;
         var client = Factory.CreateClientFor(attempt.PlayerId, "explorer");
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
@@ -138,7 +138,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var attempt = LocationChallengeAttemptSeed.ExplorersFishermansIslandBeforeItWasRetired;
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.RetiredFishermansIsland.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.RetiredFishermansIsland.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
@@ -153,7 +153,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
         var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
         var attempt = LocationChallengeAttemptSeed.ThirdExplorersStrandBeachInCurrentRound;
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedStrandBeach.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedStrandBeach.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         using var assertContext = Factory.CreateContext<GamesDbContext>();
@@ -168,7 +168,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
     {
         var client = Factory.CreateClient();
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -178,7 +178,7 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
-        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/checks", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
