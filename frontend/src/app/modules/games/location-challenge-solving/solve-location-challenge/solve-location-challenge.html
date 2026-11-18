@@ -17,6 +17,7 @@
 
         <app-map
           [locations]="pins()"
+          [circle]="searchArea()"
           [pickLocation]="true"
           [selectedLocation]="youAreHere()"
           (locationPicked)="save($event)"

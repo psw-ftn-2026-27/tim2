@@ -2,7 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { UserPositionDto } from '../../../../shared/api/user-position';
-import { MapLocation, MapView } from '../../../../shared/map/map';
+import { MapCircle, MapLocation, MapView } from '../../../../shared/map/map';
 import { Positions } from '../../../../shared/positions/positions';
 import { LocationChallengeProgressDto } from '../../api/games-api-types';
 
@@ -47,6 +47,15 @@ export class SolveLocationChallenge {
       }
     }
     return [{ ...progress.center, name: 'Start', label: 'S' }, ...discovered];
+  });
+
+  // The search area around the start; the points are somewhere inside it, never shown where.
+  protected readonly searchArea = computed<MapCircle | null>(() => {
+    const progress = this.progress.hasValue() ? this.progress.value() : null;
+    if (progress === null || progress.center === null || progress.searchRadiusInMeters === null) {
+      return null;
+    }
+    return { ...progress.center, radiusMeters: progress.searchRadiusInMeters };
   });
 
   protected readonly discoveredCount = computed(() => {

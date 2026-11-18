@@ -9,14 +9,14 @@ public sealed class LocationChallengeSolver
     // The extra radius is chosen by the caller, so the activation stays deterministic and testable.
     public LocationChallengeAttempt Activate(
         LocationChallenge challenge,
-        LocationChallengeAttempt? currentAttempt,
+        LocationChallengeAttempt? attemptInCurrentRound,
         Location position,
         Guid playerId,
         int extraRadiusInMeters,
         DateTime now)
     {
         challenge.EnsureCanBePlayed();
-        if (currentAttempt is not null && currentAttempt.Round == challenge.CurrentRound)
+        if (attemptInCurrentRound is not null)
         {
             throw new DomainException("You have already activated this location challenge in this round.");
         }

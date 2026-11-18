@@ -30,9 +30,9 @@ public class LocationChallengeSolverTests
         return challenge;
     }
 
-    private LocationChallengeAttempt Activate(LocationChallenge challenge, LocationChallengeAttempt? currentAttempt)
+    private LocationChallengeAttempt Activate(LocationChallenge challenge, LocationChallengeAttempt? attemptInCurrentRound)
     {
-        return _solver.Activate(challenge, currentAttempt, StartLocation, _playerId, ExtraRadiusInMeters, Now);
+        return _solver.Activate(challenge, attemptInCurrentRound, StartLocation, _playerId, ExtraRadiusInMeters, Now);
     }
 
     [Fact]
@@ -53,15 +53,15 @@ public class LocationChallengeSolverTests
     public void Player_with_an_attempt_in_the_current_round_cannot_activate_the_challenge_again()
     {
         var challenge = CreatePublishedChallenge();
-        var currentAttempt = Activate(challenge, null);
+        var attemptInCurrentRound = Activate(challenge, null);
 
-        var activation = () => Activate(challenge, currentAttempt);
+        var activation = () => Activate(challenge, attemptInCurrentRound);
 
         activation.Should().Throw<DomainException>();
     }
 
     [Fact]
-    public void Player_with_an_attempt_from_an_earlier_round_activates_the_challenge_in_the_new_round()
+    public void Player_without_an_attempt_in_the_new_round_of_a_republished_challenge_activates_it_in_that_round()
     {
         var challenge = CreatePublishedChallenge();
         var earlierAttempt = Activate(challenge, null);
@@ -69,8 +69,8 @@ public class LocationChallengeSolverTests
         challenge.Repeat();
         challenge.Publish();
 
-        var attempt = Activate(challenge, earlierAttempt);
+        var attempt = Activate(challenge, null);
 
-        attempt.Round.Should().Be(challenge.CurrentRound);
+        attempt.Round.Should().Be(challenge.CurrentRound).And.BeGreaterThan(earlierAttempt.Round);
     }
 }
