@@ -238,7 +238,7 @@ public class LocationChallengeManagementCommandTests : BaseIntegrationTest
     public async Task Administrator_deletes_an_archived_location_challenge_with_an_unfinished_attempt_and_both_are_gone()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var seeded = LocationChallengeSeed.ArchivedDanubeParkWithAnUnfinishedAttempt;
+        var seeded = LocationChallengeSeed.ArchivedDanubePark;
         using var arrangeContext = Factory.CreateContext<GamesDbContext>();
         var challengeCountBefore = arrangeContext.LocationChallenges.Count();
         var attemptCountBefore = arrangeContext.LocationChallengeAttempts.Count();

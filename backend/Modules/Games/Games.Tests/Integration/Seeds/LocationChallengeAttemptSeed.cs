@@ -91,10 +91,10 @@ internal static class LocationChallengeAttemptSeed
             new DateTime(2026, 11, 14, 9, 30, 0, DateTimeKind.Utc));
 
         ExplorersDanubeParkUnfinishedInFirstRound = new(
-            LocationChallengeSeed.ArchivedDanubeParkWithAnUnfinishedAttempt.Id,
+            LocationChallengeSeed.ArchivedDanubePark.Id,
             WellKnownUsers.Explorer,
             1,
-            LocationChallengeSeed.ArchivedDanubeParkWithAnUnfinishedAttempt.SearchRadiusInMeters(40),
+            LocationChallengeSeed.ArchivedDanubePark.SearchRadiusInMeters(40),
             new DateTime(2026, 11, 13, 10, 0, 0, DateTimeKind.Utc));
 
         // Solved in the first round; the challenge was repeated, published again, and archived in its second round.
