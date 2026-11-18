@@ -1,9 +1,10 @@
-using Exploration.Domain.Tours;
+using Exploration.Domain.Locations;
+using Exploration.Domain.TourLocationSearchRecords;
 using FluentAssertions;
 using Shared.Domain.Exceptions;
 using Xunit;
 
-namespace Exploration.Tests.Unit.Tours;
+namespace Exploration.Tests.Unit.TourLocationSearchRecords;
 
 public class SearchAreaTests
 {

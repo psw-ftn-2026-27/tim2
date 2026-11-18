@@ -1,6 +1,6 @@
 using Shared.Domain.Exceptions;
 
-namespace Exploration.Domain.Tours;
+namespace Exploration.Domain.Locations;
 
 public sealed record Location
 {

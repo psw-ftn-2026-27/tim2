@@ -1,3 +1,4 @@
+using Exploration.Domain.Locations;
 using Exploration.Domain.Tours;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
