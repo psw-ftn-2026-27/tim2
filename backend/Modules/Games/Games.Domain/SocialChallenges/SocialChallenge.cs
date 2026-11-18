@@ -84,6 +84,17 @@ public sealed class SocialChallenge : AggregateRoot
         Location = location;
     }
 
+    public bool IsWithinRange(double latitude, double longitude)
+    {
+        return Location is not null
+            && Location.DistanceInMetersTo(new Location(latitude, longitude)) <= RangeInMeters;
+    }
+
+    public bool IsOpenAt(DateTime utcNow)
+    {
+        return Window.Contains(utcNow);
+    }
+
     public void EnsureCanBeDeleted()
     {
         if (Status != SocialChallengeStatus.Draft && Status != SocialChallengeStatus.Archived)
