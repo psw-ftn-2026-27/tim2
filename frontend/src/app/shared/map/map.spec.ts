@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import L from 'leaflet';
-import { MapLocation, MapView } from './map';
+import { MapCircle, MapLocation, MapView } from './map';
 
 const FORTRESS: MapLocation = {
   latitude: 45.2517,
@@ -204,6 +204,101 @@ describe('MapView', () => {
     const label = fixture.nativeElement.querySelector('.map-label');
     expect(label.querySelector('b')).toBeNull();
     expect(label.textContent).toBe('<b>1</b>');
+  });
+
+  describe('showing a circle', () => {
+    const SEARCH_AREA: MapCircle = { latitude: BEACH.latitude, longitude: BEACH.longitude, radiusMeters: 800 };
+    let leafletMap: L.Map;
+
+    // Keeps the Leaflet map the component creates, so a test can look at what is drawn on it.
+    beforeEach(() => {
+      const createMap = L.map;
+      vi.spyOn(L, 'map').mockImplementation((element, options) => {
+        leafletMap = createMap(element, options);
+        return leafletMap;
+      });
+    });
+
+    async function showCircle(circle: MapCircle | null): Promise<void> {
+      fixture.componentRef.setInput('circle', circle);
+      await fixture.whenStable();
+    }
+
+    function circles(): L.Circle[] {
+      const found: L.Circle[] = [];
+      leafletMap.eachLayer((layer) => {
+        if (layer instanceof L.Circle) {
+          found.push(layer);
+        }
+      });
+      return found;
+    }
+
+    it('draws no circle when the page passes none, so the map looks as before', async () => {
+      await show([FORTRESS, SQUARE], false);
+
+      expect(count('.map-circle')).toBe(0);
+      expect(circles()).toEqual([]);
+    });
+
+    it('draws one circle with the given centre and radius in metres', async () => {
+      await show([FORTRESS, SQUARE], false);
+      await showCircle(SEARCH_AREA);
+
+      expect(count('.map-circle')).toBe(1);
+      const [circle] = circles();
+      expect([circle.getLatLng().lat, circle.getLatLng().lng]).toEqual([SEARCH_AREA.latitude, SEARCH_AREA.longitude]);
+      expect(circle.getRadius()).toBe(SEARCH_AREA.radiusMeters);
+    });
+
+    it('removes the circle when the page passes null', async () => {
+      await showCircle(SEARCH_AREA);
+
+      await showCircle(null);
+
+      expect(count('.map-circle')).toBe(0);
+      expect(circles()).toEqual([]);
+    });
+
+    it('fits the view around every pin and the whole circle together', async () => {
+      const fitBounds = vi.spyOn(L.Map.prototype, 'fitBounds');
+      await show([FORTRESS, SQUARE], false);
+      await showCircle(SEARCH_AREA);
+
+      const view = fitBounds.mock.lastCall![0] as L.LatLngBounds;
+      const circleBounds = L.latLng(SEARCH_AREA.latitude, SEARCH_AREA.longitude).toBounds(
+        SEARCH_AREA.radiusMeters * 2,
+      );
+      expect(view.contains([FORTRESS.latitude, FORTRESS.longitude])).toBe(true);
+      expect(view.contains([SQUARE.latitude, SQUARE.longitude])).toBe(true);
+      expect(view.contains(circleBounds)).toBe(true);
+    });
+
+    it('fits the view around the circle when there are no pins', async () => {
+      const fitBounds = vi.spyOn(L.Map.prototype, 'fitBounds');
+      await show([], false);
+      await showCircle(SEARCH_AREA);
+
+      const view = fitBounds.mock.lastCall![0] as L.LatLngBounds;
+      const circleBounds = L.latLng(SEARCH_AREA.latitude, SEARCH_AREA.longitude).toBounds(
+        SEARCH_AREA.radiusMeters * 2,
+      );
+      expect(view.contains(circleBounds)).toBe(true);
+    });
+
+    it('still reports a click inside the circle while pickLocation is on', async () => {
+      const picks: MapLocation[] = [];
+      fixture.componentInstance.locationPicked.subscribe((location) => picks.push(location));
+      fixture.componentRef.setInput('pickLocation', true);
+      await showCircle(SEARCH_AREA);
+
+      leafletMap.fire('click', { latlng: L.latLng(BEACH.latitude, BEACH.longitude) });
+
+      // Leaflet's arithmetic can change the last decimal places, far below a metre.
+      expect(picks.length).toBe(1);
+      expect(picks[0].latitude).toBeCloseTo(BEACH.latitude, 6);
+      expect(picks[0].longitude).toBeCloseTo(BEACH.longitude, 6);
+    });
   });
 
   describe('picking a location', () => {

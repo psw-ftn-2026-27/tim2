@@ -20,3 +20,9 @@
 
   <p>Picked: {{ picked().latitude.toFixed(5) }}, {{ picked().longitude.toFixed(5) }}</p>
 </section>
+
+<section class="stack">
+  <h2>Search area</h2>
+
+  <app-map [locations]="locations" [circle]="searchArea" />
+</section>
