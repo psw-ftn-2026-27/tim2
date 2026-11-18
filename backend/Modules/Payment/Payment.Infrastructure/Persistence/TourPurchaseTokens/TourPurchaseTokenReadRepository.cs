@@ -33,4 +33,10 @@ internal sealed class TourPurchaseTokenReadRepository : ITourPurchaseTokenReadRe
 
         return new PageResult<PurchasedTourDto>(items, totalCount);
     }
+
+    public Task<bool> ExistsAsync(Guid buyerId, Guid tourId)
+    {
+        return _dbContext.TourPurchaseTokens
+            .AnyAsync(token => token.BuyerId == buyerId && token.TourId == tourId);
+    }
 }
