@@ -32,7 +32,7 @@ Modul koji koristi kontrakt sam računa udaljenost i sam odlučuje šta je „bl
 
 ### Testovi drugih modula
 
-Test modula koji koristi kontrakt ne postavlja poziciju pozivom `PUT /api/positions/mine`, jer bi greška u modulu Positions tada obarala i njegove testove. Umesto toga, pre svakog testa pozove `PositionsReseed.Apply(Factory)` u svom `BaseIntegrationTest.cs`, pa `IPositionsApi` vraća gotove pozicije iz `UserPositionSeed`. Za sada je ovo povezano samo za `Games.Tests`. Pozicija igrača `ThirdExplorer` je u centru kviza `PublishedSynagogue`, pozicija igrača `Explorer` je daleko od svih kvizova, a igrač bez pozicije je novi korisnik sa `Guid.NewGuid()`.
+Test modula koji koristi kontrakt ne postavlja poziciju pozivom `PUT /api/positions/mine`, jer bi greška u modulu Positions tada obarala i njegove testove. Umesto toga, pre svakog testa pozove `PositionsReseed.Apply(Factory)` u svom `BaseIntegrationTest.cs`, pa `IPositionsApi` vraća gotove pozicije iz `UserPositionSeed`. Za sada je ovo povezano za `Games.Tests` i `Exploration.Tests`. Pozicija igrača `ThirdExplorer` je u centru kviza `PublishedSynagogue`, pozicija igrača `Explorer` je daleko od svih kvizova, a igrač bez pozicije je novi korisnik sa `Guid.NewGuid()`.
 
 ### Api
 
