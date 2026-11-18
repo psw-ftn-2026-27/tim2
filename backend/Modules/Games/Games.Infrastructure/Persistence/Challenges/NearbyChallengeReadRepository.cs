@@ -51,7 +51,22 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             .ToListAsync();
     }
 
+    // Three short queries instead of one with two subqueries: the challenges, then the player's part in their runs.
     private async Task<List<NearbySocialChallengeRow>> LoadSocialChallengesAsync(Guid playerId, DateTime now)
+    {
+        var challenges = await LoadPublishedSocialChallengesAsync();
+        var inActiveRun = await LoadChallengeIdsInActiveRunAsync(playerId, now);
+        var earnedXp = await LoadEarnedXpByChallengeAsync(playerId);
+
+        foreach (var challenge in challenges)
+        {
+            challenge.IsInActiveRun = inActiveRun.Contains(challenge.Id);
+            challenge.EarnedXp = earnedXp.GetValueOrDefault(challenge.Id);
+        }
+        return challenges;
+    }
+
+    private async Task<List<NearbySocialChallengeRow>> LoadPublishedSocialChallengesAsync()
     {
         return await _dbContext.SocialChallenges
             .Where(challenge => challenge.Status == SocialChallengeStatus.Published && challenge.Location != null)
@@ -65,21 +80,33 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                 RangeInMeters = challenge.RangeInMeters,
                 RequiredParticipants = challenge.RequiredParticipants,
                 WindowStart = challenge.Window.Start,
-                WindowDuration = challenge.Window.Duration,
-                IsInActiveRun = _dbContext.SocialChallengeRuns
-                    .Any(run => run.ChallengeId == challenge.Id
-                        && run.Status == SocialChallengeRunStatus.Active
-                        && run.EndsAt > now
-                        && run.Participants.Any(participant => participant.PlayerId == playerId)),
-                EarnedXp = _dbContext.SocialChallengeRuns
-                    .Where(run => run.ChallengeId == challenge.Id
-                        && run.Status == SocialChallengeRunStatus.Solved
-                        && run.Participants.Any(participant => participant.PlayerId == playerId))
-                    .OrderByDescending(run => run.SolvedAt)
-                    .Select(run => run.EarnedXp)
-                    .FirstOrDefault()
+                WindowDuration = challenge.Window.Duration
             })
             .ToListAsync();
+    }
+
+    private async Task<HashSet<Guid>> LoadChallengeIdsInActiveRunAsync(Guid playerId, DateTime now)
+    {
+        var challengeIds = await _dbContext.SocialChallengeRuns
+            .Where(run => run.Status == SocialChallengeRunStatus.Active
+                && run.EndsAt > now
+                && run.Participants.Any(participant => participant.PlayerId == playerId))
+            .Select(run => run.ChallengeId)
+            .ToListAsync();
+        return challengeIds.ToHashSet();
+    }
+
+    // A challenge solved more than once (after it was repeated) shows the XP of the latest solution.
+    private async Task<Dictionary<Guid, int?>> LoadEarnedXpByChallengeAsync(Guid playerId)
+    {
+        var solvedRuns = await _dbContext.SocialChallengeRuns
+            .Where(run => run.Status == SocialChallengeRunStatus.Solved
+                && run.Participants.Any(participant => participant.PlayerId == playerId))
+            .Select(run => new SolvedRunRow { ChallengeId = run.ChallengeId, SolvedAt = run.SolvedAt, EarnedXp = run.EarnedXp })
+            .ToListAsync();
+        return solvedRuns
+            .GroupBy(run => run.ChallengeId)
+            .ToDictionary(group => group.Key, group => group.OrderByDescending(run => run.SolvedAt).First().EarnedXp);
     }
 
     private static NearbyChallengeDto ToDto(NearbyQuizRow row, double latitude, double longitude)
@@ -155,7 +182,15 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         public int RequiredParticipants { get; init; }
         public TimeOnly WindowStart { get; init; }
         public TimeSpan WindowDuration { get; init; }
-        public bool IsInActiveRun { get; init; }
+        // Filled after loading, from the player's runs.
+        public bool IsInActiveRun { get; set; }
+        public int? EarnedXp { get; set; }
+    }
+
+    private sealed class SolvedRunRow
+    {
+        public Guid ChallengeId { get; init; }
+        public DateTime? SolvedAt { get; init; }
         public int? EarnedXp { get; init; }
     }
 }
