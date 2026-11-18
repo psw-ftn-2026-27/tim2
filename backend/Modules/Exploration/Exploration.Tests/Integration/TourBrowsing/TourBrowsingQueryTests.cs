@@ -448,6 +448,16 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Draft_tour_is_not_available_even_with_a_key_point_visible_before_purchase()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.DraftDorcolWithVisibleKeyPointInBelgrade.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_open_a_tour()
     {
         var client = Factory.CreateClient();
