@@ -50,7 +50,8 @@ frontend/src/
       map/                   presentational component showing locations and a
                              walking path on a map, see Conventions            [platform]
       analytics/             Analytics service, event catalog, consent banner
-                             rendered by the app shell, see Conventions        [platform]
+                             rendered by the app shell; the service records page
+                             views by itself, see Conventions                  [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -401,7 +402,9 @@ assigned to the platform team, and misalignment is an accepted learning experien
   is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
   content identifiers or closed-set values as params, never a user id, name, email or
   free text. The service adds the role and checks sign-in, consent and the measurement
-  ID itself; a module never calls `gtag` or checks consent. `shared/analytics/README.md`
+  ID itself; a module never calls `gtag` or checks consent. Page views are recorded by the
+  service itself after every navigation, with the route template instead of the real
+  address; a module never logs them. `shared/analytics/README.md`
   shows how to add an event and how to check it in the browser:
 
   ```ts
