@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, min, validate } from '@angular/forms/signals';
 import { PageResult } from '../../../../shared/api/page-result';
 import { MapLocation, MapView } from '../../../../shared/map/map';
@@ -9,6 +9,7 @@ import {
   TourLocationSearchDto,
   TransportMode,
 } from '../../api/exploration-api-types';
+import { TourBrowsing } from '../tour-browsing';
 
 const pageSize = 10;
 
@@ -44,6 +45,8 @@ const positiveRadiusError = {
   templateUrl: './map-search.html',
 })
 export class MapSearch {
+  private readonly tourBrowsing = inject(TourBrowsing);
+
   private readonly criteria = signal({ ...emptyCriteria });
 
   protected readonly form = form(this.criteria, (path) => {
@@ -132,6 +135,29 @@ export class MapSearch {
     }));
   });
 
+  // True from a click on "Search" until its results arrive; paging and clearing never set it.
+  private readonly recordPending = signal(false);
+
+  // An effect, because the confirmed search must drive something outside the component
+  // tree: a write on the server. The results load in the resource, so only the effect
+  // sees the moment they arrive, together with the total count the record needs.
+  private readonly recordSearch = effect(() => {
+    if (!this.recordPending()) {
+      return;
+    }
+    const status = this.tours.status();
+    if (status === 'resolved') {
+      this.recordPending.set(false);
+      const search = this.submitted();
+      const result = this.tours.value();
+      if (search !== null && result !== undefined) {
+        void this.saveLocationSearch(search, result.totalCount);
+      }
+    } else if (status === 'error') {
+      this.recordPending.set(false);
+    }
+  });
+
   protected readonly isFirstPage = computed(() => this.page() === 1);
 
   protected readonly isLastPage = computed(
@@ -190,10 +216,12 @@ export class MapSearch {
       maxLengthKm: this.form.maxLengthKm().valid() ? criteria.maxLengthKm : null,
     });
     this.page.set(1);
+    this.recordPending.set(true);
   }
 
   // Clearing also clears the results, so the list and the pins never show tours for criteria that are gone.
   protected clearFilters(): void {
+    this.recordPending.set(false);
     this.form().reset({ ...emptyCriteria });
     this.submitted.set(null);
     this.page.set(1);
@@ -205,5 +233,14 @@ export class MapSearch {
 
   protected nextPage(): void {
     this.page.update((page) => page + 1);
+  }
+
+  private async saveLocationSearch(search: TourLocationSearchDto, resultCount: number): Promise<void> {
+    try {
+      await this.tourBrowsing.saveLocationSearch({ ...search, resultCount });
+    } catch {
+      // The record serves later analytics, so a failed save shows nothing and keeps the
+      // results on screen; the server's middleware logs the error.
+    }
   }
 }

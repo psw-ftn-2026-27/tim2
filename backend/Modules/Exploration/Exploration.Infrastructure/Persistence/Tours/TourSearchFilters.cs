@@ -1,4 +1,5 @@
 using Exploration.Application.TourBrowsing;
+using Exploration.Domain.TourLocationSearchRecords;
 using Exploration.Domain.Tours;
 
 namespace Exploration.Infrastructure.Persistence.Tours;

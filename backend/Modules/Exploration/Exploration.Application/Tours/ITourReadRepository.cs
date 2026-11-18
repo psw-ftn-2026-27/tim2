@@ -1,6 +1,7 @@
 using Exploration.Application.KeyPointAuthoring;
 using Exploration.Contracts;
 using Exploration.Application.TourBrowsing;
+using Exploration.Domain.TourLocationSearchRecords;
 using Exploration.Domain.Tours;
 using Shared.Domain;
 

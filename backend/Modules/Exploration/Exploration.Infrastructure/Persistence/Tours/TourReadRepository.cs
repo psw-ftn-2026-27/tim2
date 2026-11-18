@@ -3,6 +3,7 @@ using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Contracts;
+using Exploration.Domain.TourLocationSearchRecords;
 using Exploration.Domain.Tours;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
