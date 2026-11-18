@@ -49,7 +49,7 @@
         <p class="meta">No transport times yet.</p>
       }
 
-      @if (!current.isPurchased) {
+      @if (!current.isPurchased && !current.isOwnTour) {
         <p><a [routerLink]="['/payment/cart/add', current.id]">Add to cart</a></p>
       }
     </section>
@@ -83,7 +83,7 @@
       </tbody>
     </table>
 
-    @if (!current.isPurchased) {
+    @if (!current.isPurchased && !current.isOwnTour) {
       <p class="meta">Buy the tour to see all key points</p>
     }
   }

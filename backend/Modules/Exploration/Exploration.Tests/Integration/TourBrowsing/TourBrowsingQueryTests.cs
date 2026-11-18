@@ -409,6 +409,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
 
         details!.Id.Should().Be(tourId);
         details.IsPurchased.Should().BeFalse();
+        details.IsOwnTour.Should().BeFalse();
         details.KeyPoints.Select(keyPoint => keyPoint.Name).Should().Equal(expectedNames);
     }
 
@@ -455,6 +456,66 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
         var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.DraftDorcolWithVisibleKeyPointInBelgrade.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [MemberData(nameof(PublishedToursWithHiddenKeyPoints))]
+    public async Task Buyer_who_has_purchased_the_tour_sees_all_its_key_points_in_order(Guid tourId)
+    {
+        var client = Factory.CreateClientFor(TourPurchaseSeed.Buyer, "explorer");
+        var expectedNames = TourSeed.All
+            .Single(tour => tour.Id == tourId)
+            .KeyPoints
+            .OrderBy(keyPoint => keyPoint.Order)
+            .Select(keyPoint => keyPoint.Name);
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tourId}", JsonOptions);
+
+        details!.IsPurchased.Should().BeTrue();
+        details.KeyPoints.Select(keyPoint => keyPoint.Name).Should().Equal(expectedNames);
+    }
+
+    [Fact]
+    public async Task Archived_tour_stays_available_with_all_its_key_points_to_the_buyer_who_purchased_it()
+    {
+        var client = Factory.CreateClientFor(TourPurchaseSeed.Buyer, "explorer");
+        var tour = TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade;
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.Id.Should().Be(tour.Id);
+        details.IsPurchased.Should().BeTrue();
+        details.KeyPoints.Should().HaveCount(tour.KeyPoints.Count);
+    }
+
+    [Fact]
+    public async Task Buyer_who_has_purchased_the_tour_still_never_gets_a_secret()
+    {
+        var client = Factory.CreateClientFor(TourPurchaseSeed.Buyer, "explorer");
+        var tour = TourSeed.PublishedSynagogueWithSecretOnVisibleKeyPoint;
+        var secrets = tour.KeyPoints
+            .Where(keyPoint => keyPoint.Secret != null)
+            .Select(keyPoint => keyPoint.Secret!)
+            .ToList();
+
+        var body = await client.GetStringAsync($"/api/exploration/tours/{tour.Id}");
+
+        secrets.Should().HaveCount(tour.KeyPoints.Count);
+        using var json = JsonDocument.Parse(body);
+        json.RootElement.GetProperty("keyPoints").EnumerateArray().Should().HaveCount(tour.KeyPoints.Count).And.AllSatisfy(keyPoint =>
+            keyPoint.EnumerateObject().Select(field => field.Name).Should().NotContain("secret"));
+        secrets.Should().AllSatisfy(secret => body.Should().NotContain(secret));
+    }
+
+    [Fact]
+    public async Task Author_opening_their_own_tour_sees_it_marked_as_their_own()
+    {
+        var tour = TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade;
+        var client = Factory.CreateClientFor(tour.AuthorId, "explorer");
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
+
+        details!.IsOwnTour.Should().BeTrue();
     }
 
     [Fact]

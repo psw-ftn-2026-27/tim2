@@ -166,4 +166,5 @@ export interface TourDetailsDto {
   transportTimes: TransportTimeDto[];
   keyPoints: TourDetailsKeyPointDto[];
   isPurchased: boolean;
+  isOwnTour: boolean;
 }

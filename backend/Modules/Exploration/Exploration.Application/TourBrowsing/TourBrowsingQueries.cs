@@ -44,11 +44,11 @@ public sealed class TourBrowsingQueries
         return _tourReadRepository.GetFeaturedAsync(FeaturedTourCount);
     }
 
-    public async Task<TourDetailsDto> GetTourDetailsAsync(Guid tourId, Guid buyerId)
+    public async Task<TourDetailsDto> GetTourDetailsAsync(Guid tourId, Guid userId)
     {
-        var isPurchased = await _paymentApi.HasPurchasedAsync(buyerId, tourId);
+        var isPurchased = await _paymentApi.HasPurchasedAsync(userId, tourId);
 
-        var details = await _tourReadRepository.GetDetailsAsync(tourId, isPurchased);
+        var details = await _tourReadRepository.GetDetailsAsync(tourId, userId, isPurchased);
         if (details is null)
         {
             throw new NotFoundException($"Tour {tourId} does not exist.");

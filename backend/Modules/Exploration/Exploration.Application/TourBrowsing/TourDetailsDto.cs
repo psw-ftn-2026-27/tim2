@@ -14,4 +14,5 @@ public sealed record TourDetailsDto(
     RecommendedGroupSizeDto? RecommendedGroupSize,
     List<TransportTimeDto> TransportTimes,
     List<TourDetailsKeyPointDto> KeyPoints,
-    bool IsPurchased);
+    bool IsPurchased,
+    bool IsOwnTour);

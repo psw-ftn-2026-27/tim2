@@ -16,5 +16,5 @@ public interface ITourReadRepository
     Task<List<PublishedTourSummary>> GetPublishedSummariesByAuthorAsync(Guid authorId);
     Task<List<FeaturedTourDto>> GetFeaturedAsync(int count);
     Task<TourKeyPointsDto?> GetKeyPointsAsync(Guid tourId, Guid authorId);
-    Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool isPurchased);
+    Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, Guid userId, bool isPurchased);
 }
