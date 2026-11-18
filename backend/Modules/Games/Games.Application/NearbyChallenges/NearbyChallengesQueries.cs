@@ -22,6 +22,6 @@ public sealed class NearbyChallengesQueries
             return [];
         }
 
-        return await _nearbyChallengeReadRepository.GetNearbyAsync(playerId, position.Latitude, position.Longitude);
+        return await _nearbyChallengeReadRepository.GetNearbyAsync(playerId, position.Latitude, position.Longitude, DateTime.UtcNow);
     }
 }

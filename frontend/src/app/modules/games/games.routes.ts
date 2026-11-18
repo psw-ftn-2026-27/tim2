@@ -9,6 +9,7 @@ import { LocationChallengeDetails } from './location-challenge-management/locati
 import { NearbyChallengeList } from './nearby-challenges/nearby-challenge-list/nearby-challenge-list';
 import { SolveQuiz } from './quiz-solving/solve-quiz/solve-quiz';
 import { SolveLocationChallenge } from './location-challenge-solving/solve-location-challenge/solve-location-challenge';
+import { SolveSocialChallenge } from './social-challenge-solving/solve-social-challenge/solve-social-challenge';
 
 export const gamesRoutes: Routes = [
   { path: '', component: GamesHome },
@@ -21,4 +22,5 @@ export const gamesRoutes: Routes = [
   { path: 'play', component: NearbyChallengeList },
   { path: 'play/quiz/:id', component: SolveQuiz },
   { path: 'play/location/:id', component: SolveLocationChallenge },
+  { path: 'play/social/:id', component: SolveSocialChallenge },
 ];

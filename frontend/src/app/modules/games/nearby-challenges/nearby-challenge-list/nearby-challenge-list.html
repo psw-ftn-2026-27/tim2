@@ -40,6 +40,7 @@
           <th scope="col">Type</th>
           <th scope="col">Distance (m)</th>
           <th scope="col">XP</th>
+          <th scope="col">Players needed</th>
           <th scope="col">Status</th>
           <th scope="col">Actions</th>
         </tr>
@@ -63,6 +64,7 @@
             </td>
             <td>{{ challenge.distanceInMeters.toFixed(0) }}</td>
             <td><span class="amount">{{ challenge.xp }} XP</span></td>
+            <td>{{ challenge.social?.requiredParticipants }}</td>
             <td>
               @if (challenge.isSolved) {
                 <div class="row">
@@ -71,6 +73,8 @@
                     <span>Earned <span class="amount">{{ challenge.earnedXp }} XP</span></span>
                   }
                 </div>
+              } @else if (challenge.type === 'SocialChallenge' && challenge.isStarted) {
+                <span class="badge">In run</span>
               }
             </td>
             <td>
@@ -106,11 +110,31 @@
                   </button>
                 }
               }
+              @if (challenge.social; as social) {
+                @if (challenge.isSolved) {
+                  <span class="meta">Earned <span class="amount">{{ social.earnedXp }} XP</span></span>
+                } @else if (challenge.isStarted) {
+                  <a class="button" [routerLink]="['/games/play/social', challenge.id]">Open</a>
+                } @else if (challenge.metersToRange > 0) {
+                  <span class="meta">Get {{ challenge.metersToRange }} m closer</span>
+                } @else if (!social.isWindowOpen) {
+                  <span class="meta">Starts at {{ windowStartTime(social.windowStart) }}</span>
+                } @else {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="activateSocialChallenge(challenge.id)"
+                  >
+                    Activate
+                  </button>
+                }
+              }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">There are no challenges near you.</td>
+            <td colspan="7">There are no challenges near you.</td>
           </tr>
         }
       </tbody>

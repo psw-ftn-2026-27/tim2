@@ -111,4 +111,27 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         courtyard.IsSolved.Should().BeFalse();
         courtyard.EarnedXp.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Social_challenges_show_their_window_run_and_solved_states_and_drafts_and_challenges_without_a_location_are_not_listed()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+
+        var nearby = await client.GetFromJsonAsync<List<NearbyChallengeDto>>("/api/games/nearby-challenges", JsonOptions);
+
+        var closed = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.PublishedEveningConcertClosedNow.Id);
+        closed.Social!.IsWindowOpen.Should().BeFalse();
+        closed.Social.WindowStart.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.Window.Start);
+        closed.Social.RequiredParticipants.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.RequiredParticipants);
+        var inRun = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.PublishedPromenadeWalkOpenNow.Id);
+        inRun.Social!.IsWindowOpen.Should().BeTrue();
+        inRun.IsStarted.Should().BeTrue();
+        inRun.IsSolved.Should().BeFalse();
+        var solved = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.RepublishedRiverbankWithMoreXp.Id);
+        solved.IsSolved.Should().BeTrue();
+        solved.Social!.EarnedXp.Should().Be(SocialChallengeRunSeed.RiverbankSolvedWithFortyXp.EarnedXp);
+        nearby!.Select(challenge => challenge.Id).Should()
+            .NotContain(SocialChallengeSeed.DraftMorningRun.Id)
+            .And.NotContain(SocialChallengeSeed.DraftSquareMeetup.Id);
+    }
 }
