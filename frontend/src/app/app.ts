@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Auth } from './core/auth/auth';
 import { Analytics } from './shared/analytics/analytics';
 import { ConsentBanner } from './shared/analytics/consent-banner/consent-banner';
@@ -13,6 +13,7 @@ import { ConsentBanner } from './shared/analytics/consent-banner/consent-banner'
 export class App {
   protected readonly auth = inject(Auth);
   protected readonly analytics = inject(Analytics);
+  private readonly router = inject(Router);
 
   protected readonly isExplorer = computed(
     () => this.auth.user()?.roles.includes('explorer') ?? false,
@@ -30,9 +31,10 @@ export class App {
     this.settingsOpen.set(true);
   }
 
-  protected logout(): void {
+  protected async logout(): Promise<void> {
     this.settingsOpen.set(false);
     this.auth.logout();
+    await this.router.navigate(['/login']);
   }
 
   protected accept(): void {
