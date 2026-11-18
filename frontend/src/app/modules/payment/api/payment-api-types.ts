@@ -74,3 +74,23 @@ export interface GiftCardOverviewDto {
   received: GiftCardDto[];
   sent: GiftCardDto[];
 }
+
+export interface CreateCouponDto {
+  productId: string | null;
+  percent: number;
+  expiresOn: string;
+}
+
+export interface CouponDto {
+  id: string;
+  code: string;
+  percent: number;
+  expiresOn: string;
+  productId: string | null;
+  productName: string | null;
+}
+
+export interface CouponProductDto {
+  id: string;
+  name: string;
+}
