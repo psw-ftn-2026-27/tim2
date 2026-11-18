@@ -45,8 +45,11 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                 RangeInMeters = quiz.Location.RangeInMeters,
                 IsStarted = _dbContext.QuizAttempts
                     .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId),
-                IsSolved = _dbContext.QuizAttempts
-                    .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId && attempt.SolvedAt != null)
+                // A player has at most one attempt per quiz, and its EarnedXp is set when the last question is answered.
+                EarnedXp = _dbContext.QuizAttempts
+                    .Where(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId)
+                    .Select(attempt => attempt.EarnedXp)
+                    .FirstOrDefault()
             })
             .ToListAsync();
     }
@@ -122,7 +125,8 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             distance,
             MetersToRange(distance, row.RangeInMeters),
             row.IsStarted,
-            row.IsSolved,
+            row.EarnedXp is not null,
+            row.EarnedXp,
             null);
     }
 
@@ -141,11 +145,11 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             MetersToRange(distance, row.RangeInMeters),
             row.IsInActiveRun,
             row.EarnedXp is not null,
+            row.EarnedXp,
             new NearbySocialChallengeDto(
                 row.RequiredParticipants,
                 row.WindowStart,
-                new TimeWindow(row.WindowStart, row.WindowDuration).Contains(now),
-                row.EarnedXp));
+                new TimeWindow(row.WindowStart, row.WindowDuration).Contains(now)));
     }
 
     private static double DistanceInMeters(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
@@ -168,7 +172,7 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         public double Longitude { get; init; }
         public int RangeInMeters { get; init; }
         public bool IsStarted { get; init; }
-        public bool IsSolved { get; init; }
+        public int? EarnedXp { get; init; }
     }
 
     private sealed class NearbySocialChallengeRow

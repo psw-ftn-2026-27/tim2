@@ -128,6 +128,7 @@ export interface NearbyChallengeDto {
   metersToRange: number;
   isStarted: boolean;
   isSolved: boolean;
+  earnedXp: number | null;
   social: NearbySocialChallengeDto | null;
 }
 
@@ -135,7 +136,6 @@ export interface NearbySocialChallengeDto {
   requiredParticipants: number;
   windowStart: string;
   isWindowOpen: boolean;
-  earnedXp: number | null;
 }
 
 export interface AnswerQuizDto {

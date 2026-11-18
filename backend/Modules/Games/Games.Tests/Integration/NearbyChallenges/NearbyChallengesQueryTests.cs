@@ -37,7 +37,7 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Quiz_the_player_solved_is_listed_as_solved()
+    public async Task Quiz_the_player_solved_is_listed_as_solved_with_the_earned_xp()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
 
@@ -46,7 +46,10 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         var danubePark = nearby!.Single(challenge => challenge.Id == QuizSeed.PublishedDanubePark.Id);
         danubePark.IsStarted.Should().BeTrue();
         danubePark.IsSolved.Should().BeTrue();
-        nearby!.Single(challenge => challenge.Id == QuizSeed.PublishedSynagogue.Id).IsSolved.Should().BeFalse();
+        danubePark.EarnedXp.Should().Be(QuizAttemptSeed.ThirdExplorersDanubeParkSolvedWithTwoOfThree.EarnedXp);
+        var synagogue = nearby!.Single(challenge => challenge.Id == QuizSeed.PublishedSynagogue.Id);
+        synagogue.IsSolved.Should().BeFalse();
+        synagogue.EarnedXp.Should().BeNull();
     }
 
     [Fact]
@@ -89,7 +92,7 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         inRun.IsSolved.Should().BeFalse();
         var solved = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.RepublishedRiverbankWithMoreXp.Id);
         solved.IsSolved.Should().BeTrue();
-        solved.Social!.EarnedXp.Should().Be(SocialChallengeRunSeed.RiverbankSolvedWithFortyXp.EarnedXp);
+        solved.EarnedXp.Should().Be(SocialChallengeRunSeed.RiverbankSolvedWithFortyXp.EarnedXp);
         nearby!.Select(challenge => challenge.Id).Should()
             .NotContain(SocialChallengeSeed.DraftMorningRun.Id)
             .And.NotContain(SocialChallengeSeed.DraftSquareMeetup.Id);
