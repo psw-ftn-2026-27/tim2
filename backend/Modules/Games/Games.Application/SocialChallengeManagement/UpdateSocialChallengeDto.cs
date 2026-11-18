@@ -1,4 +1,4 @@
-using Games.Application.LocationChallenges;
+using Games.Application.Locations;
 
 namespace Games.Application.SocialChallengeManagement;
 

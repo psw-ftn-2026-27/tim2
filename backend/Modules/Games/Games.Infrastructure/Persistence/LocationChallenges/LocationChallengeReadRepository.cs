@@ -1,5 +1,6 @@
 using Games.Application.LocationChallengeManagement;
 using Games.Application.LocationChallenges;
+using Games.Application.Locations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Games.Infrastructure.Persistence.LocationChallenges;

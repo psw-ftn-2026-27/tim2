@@ -43,6 +43,6 @@ public class QuizManagementQueryTests : BaseIntegrationTest
 
         var quiz = await client.GetFromJsonAsync<QuizDto>($"/api/games/quizzes/{seeded.Id}", JsonOptions);
 
-        quiz!.Location.Should().Be(new QuizLocationDto(seeded.Location!.Latitude, seeded.Location.Longitude, seeded.Location.RangeInMeters));
+        quiz!.Location.Should().Be(new QuizLocationDto(seeded.Location!.Location.Latitude, seeded.Location.Location.Longitude, seeded.Location.RangeInMeters));
     }
 }

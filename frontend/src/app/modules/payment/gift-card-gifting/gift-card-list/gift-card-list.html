@@ -1,0 +1,28 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Amount</th>
+      <th scope="col">Message</th>
+      <th scope="col">{{ otherPartyLabel() }}</th>
+      <th scope="col">Valid until</th>
+      <th scope="col">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (card of cards(); track card.id) {
+      <tr>
+        <td><span class="amount">{{ card.amount }} EC</span></td>
+        <td>{{ card.message }}</td>
+        <td>{{ card.otherPartyEmail }}</td>
+        <td>{{ formatDate(card.expiresAt) }}</td>
+        <td>
+          <span class="badge" [class.badge--muted]="card.status !== 'Valid'">{{ card.status }}</span>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="5" class="meta">{{ emptyMessage() }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

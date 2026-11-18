@@ -52,3 +52,25 @@ export interface PurchasedTourDto {
   price: number;
   purchasedAt: string;
 }
+
+export interface PurchaseGiftCardDto {
+  recipientEmail: string;
+  amount: number;
+  message: string | null;
+}
+
+export type GiftCardStatus = 'Valid' | 'Used' | 'Expired';
+
+export interface GiftCardDto {
+  id: string;
+  amount: number;
+  message: string;
+  otherPartyEmail: string;
+  expiresAt: string;
+  status: GiftCardStatus;
+}
+
+export interface GiftCardOverviewDto {
+  received: GiftCardDto[];
+  sent: GiftCardDto[];
+}

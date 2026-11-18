@@ -1,4 +1,4 @@
-using Games.Domain.LocationChallenges;
+using Games.Domain.Locations;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -82,6 +82,17 @@ public sealed class SocialChallenge : AggregateRoot
         Xp = xp;
         CompletionMessage = completionMessage.Trim();
         Location = location;
+    }
+
+    public bool IsWithinRange(Location position)
+    {
+        return Location is not null
+            && Location.DistanceInMetersTo(position) <= RangeInMeters;
+    }
+
+    public bool IsOpenAt(DateTime utcNow)
+    {
+        return Window.Contains(utcNow);
     }
 
     public void EnsureCanBeDeleted()

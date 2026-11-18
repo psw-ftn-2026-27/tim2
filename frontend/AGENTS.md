@@ -141,6 +141,13 @@ construct means adding a lesson, so treat it as a platform decision.
   drive something outside the component tree, and it needs a reason (the example is
   `shared/analytics`, where consent switches Google's opt-out flag on the window). Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
+- Timers: a page that repeats a command on a fixed interval uses a plain `setInterval`,
+  never RxJS `interval` and never `effect()`. It stops the timer through `DestroyRef`,
+  taken with `inject()` like any dependency, and registers `onDestroy` in a constructor
+  without parameters, right after starting the timer, so the start and the stop sit
+  together. That is not constructor injection. `inject()` works only while Angular
+  creates the page, so never call it inside a method. No lifecycle hooks (`ngOnInit`,
+  `ngOnDestroy`). See the periodic check in Conventions.
 - HTTP: `httpResource()` in the page for reads (it carries loading and error state as
   signals, and a fresh one is created on every visit); `HttpClient` with
   `firstValueFrom` in the group's service for writes. Functional interceptors
@@ -326,6 +333,58 @@ assigned to the platform team, and misalignment is an accepted learning experien
   that module's own endpoint without coordinates, and the module's backend reads the
   position through `IPositionsApi` in `Positions.Contracts`. A page never sends the
   explorer's coordinates to its own module.
+- A page that repeats a check while an execution runs (the participants of a social
+  challenge, the running tour of E22) keeps the check in one method, the same one a
+  `Check` button would call: it sends the command through the group's service and then
+  reloads the page's resource, like any command. The timer starts with the page and calls
+  that method every 10 seconds. The method returns at once while the previous check is
+  still running and while the execution is not active (not loaded, not started, or
+  finished), so a finished execution sends nothing more and the first check goes out on
+  the first tick after the execution becomes active. A failed check shows a message and
+  the timer keeps going; the next successful check clears the message. The timer stops
+  when the user leaves the page. The page sends no coordinates; the module's backend
+  reads the position itself, as described above. While the browser tab is in the
+  background, the browser may slow the timer down, and that is accepted. The names below
+  are an example:
+
+  ```ts
+  private readonly solving = inject(SocialChallengeSolving);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly id = input.required<string>();
+
+  protected readonly execution = httpResource<SocialChallengeExecutionDto>(
+    () => `/api/games/social-challenges/${this.id()}/execution`,
+  );
+  protected readonly active = computed(
+    () => this.execution.hasValue() && this.execution.value().status === 'Active',
+  );
+
+  protected readonly checking = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  constructor() {
+    const timerId = setInterval(() => this.check(), 10_000);
+    // Without this the timer keeps sending checks after the user has left the page.
+    this.destroyRef.onDestroy(() => clearInterval(timerId));
+  }
+
+  protected async check(): Promise<void> {
+    if (this.checking() || !this.active()) {
+      return;
+    }
+    this.checking.set(true);
+    try {
+      await this.solving.check(this.id());
+      this.error.set(null);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not check the challenge.'));
+    } finally {
+      this.execution.reload();
+      this.checking.set(false);
+    }
+  }
+  ```
 - A page that records a GA4 event injects `Analytics` from `shared/analytics` and calls
   `logEvent` on the line after the awaited command, never in `catch`, so a failed command
   is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
