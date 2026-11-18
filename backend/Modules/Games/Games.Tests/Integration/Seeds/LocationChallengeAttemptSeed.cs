@@ -12,6 +12,8 @@ internal static class LocationChallengeAttemptSeed
     public static readonly LocationChallengeAttempt PlayerWithoutPositionsLimanParkInCurrentRound;
     public static readonly LocationChallengeAttempt SecondExplorersSynagogueSquareSolvedInCurrentRound;
     public static readonly LocationChallengeAttempt SecondExplorersSynagogueCourtyardSolvedInFirstRound;
+    public static readonly LocationChallengeAttempt ExplorersDanubeParkUnfinishedInFirstRound;
+    public static readonly LocationChallengeAttempt ThirdExplorersCathedralSolvedInFirstRound;
 
     static LocationChallengeAttemptSeed()
     {
@@ -87,7 +89,27 @@ internal static class LocationChallengeAttemptSeed
             LocationChallengeSeed.RepublishedSynagogueCourtyardInSecondRound.HiddenPoints.Count,
             LocationChallengeSeed.RepublishedSynagogueCourtyardInSecondRound.Xp,
             new DateTime(2026, 11, 14, 9, 30, 0, DateTimeKind.Utc));
+
+        ExplorersDanubeParkUnfinishedInFirstRound = new(
+            LocationChallengeSeed.ArchivedDanubeParkWithAnUnfinishedAttempt.Id,
+            WellKnownUsers.Explorer,
+            1,
+            LocationChallengeSeed.ArchivedDanubeParkWithAnUnfinishedAttempt.SearchRadiusInMeters(40),
+            new DateTime(2026, 11, 13, 10, 0, 0, DateTimeKind.Utc));
+
+        // Solved in the first round; the challenge was repeated, published again, and archived in its second round.
+        ThirdExplorersCathedralSolvedInFirstRound = new(
+            LocationChallengeSeed.ArchivedCathedralInSecondRoundSolvedInFirstRound.Id,
+            WellKnownUsers.ThirdExplorer,
+            1,
+            LocationChallengeSeed.ArchivedCathedralInSecondRoundSolvedInFirstRound.SearchRadiusInMeters(25),
+            new DateTime(2026, 11, 12, 14, 0, 0, DateTimeKind.Utc));
+        ThirdExplorersCathedralSolvedInFirstRound.RecordDiscovery(
+            [1, 2],
+            LocationChallengeSeed.ArchivedCathedralInSecondRoundSolvedInFirstRound.HiddenPoints.Count,
+            LocationChallengeSeed.ArchivedCathedralInSecondRoundSolvedInFirstRound.Xp,
+            new DateTime(2026, 11, 12, 14, 40, 0, DateTimeKind.Utc));
     }
 
-    public static LocationChallengeAttempt[] All => [ThirdExplorersStrandBeachInCurrentRound, ThirdExplorersSynagogueCourtyardFromFirstRound, ExplorersFishermansIslandBeforeItWasRetired, ExplorersLimanParkWithoutTheFirstPoint, PlayerWithoutPositionsLimanParkInCurrentRound, SecondExplorersSynagogueSquareSolvedInCurrentRound, SecondExplorersSynagogueCourtyardSolvedInFirstRound];
+    public static LocationChallengeAttempt[] All => [ThirdExplorersStrandBeachInCurrentRound, ThirdExplorersSynagogueCourtyardFromFirstRound, ExplorersFishermansIslandBeforeItWasRetired, ExplorersLimanParkWithoutTheFirstPoint, PlayerWithoutPositionsLimanParkInCurrentRound, SecondExplorersSynagogueSquareSolvedInCurrentRound, SecondExplorersSynagogueCourtyardSolvedInFirstRound, ExplorersDanubeParkUnfinishedInFirstRound, ThirdExplorersCathedralSolvedInFirstRound];
 }
