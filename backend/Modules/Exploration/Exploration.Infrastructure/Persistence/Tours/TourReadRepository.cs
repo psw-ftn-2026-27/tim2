@@ -110,13 +110,20 @@ internal sealed class TourReadRepository : ITourReadRepository
             .FirstOrDefaultAsync();
     }
 
-    // A published tour is open to everyone and an archived one only to its buyer; a draft never is.
-    // The secret is left out of the projection, so it is never read for this view.
-    public Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, Guid userId, bool isPurchased)
+    public Task<TourAccessDto?> GetAccessAsync(Guid tourId)
     {
         return _dbContext.Tours
             .Where(tour => tour.Id == tourId)
-            .Where(tour => tour.Status == TourStatus.Published || (tour.Status == TourStatus.Archived && isPurchased))
+            .Select(tour => new TourAccessDto(tour.AuthorId, tour.Status))
+            .FirstOrDefaultAsync();
+    }
+
+    // The query has already decided that the user may open the tour. Hidden key points are read only for
+    // its buyer or author, and the secret is left out of the projection, so it is never read for this view.
+    public Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool isPurchased, bool isOwnTour)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId)
             .Select(tour => new TourDetailsDto(
                 tour.Id,
                 tour.Name,
@@ -132,7 +139,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                     .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
                     .ToList(),
                 tour.KeyPoints
-                    .Where(keyPoint => isPurchased || keyPoint.IsVisibleBeforePurchase)
+                    .Where(keyPoint => isPurchased || isOwnTour || keyPoint.IsVisibleBeforePurchase)
                     .OrderBy(keyPoint => keyPoint.Order)
                     .Select(keyPoint => new TourDetailsKeyPointDto(
                         keyPoint.Order,
@@ -143,7 +150,7 @@ internal sealed class TourReadRepository : ITourReadRepository
                         keyPoint.Location.Longitude))
                     .ToList(),
                 isPurchased,
-                tour.AuthorId == userId))
+                isOwnTour))
             .FirstOrDefaultAsync();
     }
 

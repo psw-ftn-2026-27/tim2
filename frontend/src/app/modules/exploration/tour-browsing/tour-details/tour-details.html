@@ -1,8 +1,12 @@
 <div class="stack">
+  <p><a routerLink="/exploration">Back to tours</a></p>
+
   @if (tour.isLoading()) {
     <p>Loading the tour...</p>
+  } @else if (notFound()) {
+    <p class="error">Tour not found.</p>
   } @else if (tour.error()) {
-    <p class="error">This tour is not available.</p>
+    <p class="error">This tour is temporarily unavailable.</p>
   } @else if (tour.value(); as current) {
     <header class="page-header">
       <h1>{{ current.name }}</h1>
@@ -56,35 +60,41 @@
 
     <h2>Key points</h2>
 
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Name</th>
-          <th scope="col">Description</th>
-          <th scope="col">Image</th>
-          <th scope="col">Location</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (keyPoint of current.keyPoints; track keyPoint.order) {
-          <tr>
-            <td>{{ keyPoint.order }}</td>
-            <td>{{ keyPoint.name }}</td>
-            <td>{{ keyPoint.description }}</td>
-            <td><img class="thumbnail" [src]="keyPoint.imageUrl" [alt]="keyPoint.name" /></td>
-            <td>{{ keyPoint.latitude.toFixed(5) }}, {{ keyPoint.longitude.toFixed(5) }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="meta">No key points to show.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    @if (!fullView() && current.keyPoints.length === 0) {
+      <p class="meta">No key points are visible before purchase.</p>
+    } @else {
+      <app-map [locations]="keyPointLocations()" [showPath]="fullView()" />
 
-    @if (!current.isPurchased && !current.isOwnTour) {
-      <p class="meta">Buy the tour to see all key points</p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Image</th>
+            <th scope="col">Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (keyPoint of current.keyPoints; track keyPoint.order) {
+            <tr>
+              <td>{{ keyPoint.order }}</td>
+              <td>{{ keyPoint.name }}</td>
+              <td>{{ keyPoint.description }}</td>
+              <td><img class="thumbnail" [src]="keyPoint.imageUrl" [alt]="keyPoint.name" /></td>
+              <td>{{ keyPoint.latitude.toFixed(5) }}, {{ keyPoint.longitude.toFixed(5) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="meta">No key points to show.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (!current.isPurchased && !current.isOwnTour) {
+        <p class="meta">Buy the tour to see all key points</p>
+      }
     }
   }
 </div>
