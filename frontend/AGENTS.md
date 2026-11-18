@@ -276,6 +276,17 @@ assigned to the platform team, and misalignment is an accepted learning experien
   ```
 
   The map shows the `name` of `selectedLocation` on its pin.
+
+  To show an area, such as where a hidden location must be searched for, pass `circle`
+  (`MapCircle | null`: `latitude`, `longitude` and `radiusMeters`, the radius in metres).
+  The map draws it as one see-through circle and fits the view so that every pin and the
+  whole circle are on screen together. A click inside the circle still reaches the map,
+  so `pickLocation` works there too. Without `circle` the map looks as before. Pass it
+  from a field or a `computed()`, like `locations`. `/map-demo` shows this too:
+
+  ```html
+  <app-map [locations]="locations" [circle]="searchArea" />
+  ```
 - The explorer's position is simulated: until there is a mobile app, the explorer clicks
   on a map to say where they are. The server keeps exactly one position per explorer, so
   it does not matter on which page it was set. `/my-position` is the temporary place to

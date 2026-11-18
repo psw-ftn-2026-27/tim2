@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { MapLocation, MapView } from '../../shared/map/map';
+import { MapCircle, MapLocation, MapView } from '../../shared/map/map';
 
 @Component({
   imports: [MapView],
@@ -14,6 +14,9 @@ export class MapDemo {
     { latitude: 45.2559, longitude: 19.851, name: 'Dunavski park', label: '2' },
     { latitude: 45.244, longitude: 19.8462, name: 'Štrand', label: '3' },
   ];
+
+  // Reaches south past Štrand, so the view must take in the pins and the circle together.
+  protected readonly searchArea: MapCircle = { latitude: 45.244, longitude: 19.8462, radiusMeters: 800 };
 
   protected readonly showPath = signal(false);
   protected readonly pathLength = signal<number | null>(null);
