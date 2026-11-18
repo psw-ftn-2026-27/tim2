@@ -37,10 +37,6 @@ public sealed class LocationChallengeSolver
     public void Check(LocationChallenge challenge, LocationChallengeAttempt attempt, Location position, DateTime now)
     {
         challenge.EnsureCanBePlayed();
-        if (attempt.Round != challenge.CurrentRound)
-        {
-            throw new DomainException("This attempt belongs to an earlier round of the location challenge, so it cannot be checked.");
-        }
 
         var numbersInRange = challenge.PointNumbersWithinDiscoveryRange(position);
         attempt.RecordDiscovery(numbersInRange, challenge.HiddenPoints.Count, challenge.Xp, now);
