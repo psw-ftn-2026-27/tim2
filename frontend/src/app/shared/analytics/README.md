@@ -12,6 +12,16 @@ Pravila:
 - Svaki događaj postoji u katalogu `analytics-events.ts`, sa imenom i tačno onim
   parametrima koje sme da nosi.
 - Ulogu korisnika (`user_role`) dodaje servis. Modul je ne prosleđuje.
+- Preglede stranica (`page_view`) beleži sam servis, posle svake promene rute i posle
+  prvog "Accept". Modul ih nikada ne beleži.
+
+## Pregledi stranica
+
+Servis posle svake uspešne navigacije šalje jedan `page_view`, pod istim uslovom kao
+`logEvent`. Šalje šablon rute iz tabele ruta, a ne stvarnu adresu: za
+`/payment/wallets/3f2a...` u GA stiže `/payment/wallets/:userId`, pa nijedan ID ne stiže u
+GA. Zato GA ne razlikuje pojedinačne ture ni blogove po adresi; kome to treba, dodaje
+događaj iz kataloga sa ID-jem sadržaja.
 
 ## Kako se dodaje događaj u katalog
 
@@ -83,6 +93,8 @@ Nazivi su dati na srpskom i engleskom, jer Chrome prati jezik sistema.
    mejla ni ID-ja korisnika.
 5. Posle "Decline" (u podnožju, "Cookie settings") ili bez prijave lista mora ostati
    prazna.
+6. Za preglede stranica pređite na drugu stranicu: pojavi se red sa `en=page_view`, a
+   `dl` i `ep.page_path` sadrže šablon (`:userId`), nikad stvarni ID.
 
 ### Ako ne vidite događaj
 

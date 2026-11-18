@@ -1,4 +1,5 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Router } from '@angular/router';
 import { Auth } from '../../core/auth/auth';
 import { environment } from '../../../environments/environment';
 import { AnalyticsEvent } from './analytics-events';
@@ -33,10 +34,14 @@ function gtag(..._args: unknown[]): void {
 @Injectable({ providedIn: 'root' })
 export class Analytics {
   private readonly auth = inject(Auth);
+  private readonly router = inject(Router);
 
   // Choices made in this session, by user id, so a click is seen immediately.
   private readonly choices = signal<Record<string, Choice>>({});
   private scriptLoaded = false;
+  // The page sent before this one, as a template, so GA sees the order of pages. Before
+  // the first one it is only the site the user came from, without its path.
+  private previousLocation = document.referrer === '' ? '' : new URL(document.referrer).origin;
 
   readonly consent = computed<Consent>(() => {
     const user = this.auth.user();
@@ -66,8 +71,22 @@ export class Analytics {
     }
   });
 
+  // An effect, because each finished navigation must drive something outside Angular:
+  // a page view sent to GA. Only the navigation is read here; logPageView runs untracked,
+  // so a change of consent or user does not run the effect again and log a second view.
+  private readonly pageViews = effect(() => {
+    if (this.router.lastSuccessfulNavigation() !== null) {
+      untracked(() => this.logPageView());
+    }
+  });
+
   accept(): void {
+    const before = this.consent();
     this.choose('accepted');
+    // The first Accept logs the page the user is on, so the path in GA has its start.
+    if (before !== 'accepted') {
+      this.logPageView();
+    }
   }
 
   decline(): void {
@@ -83,6 +102,39 @@ export class Analytics {
     }
     this.loadScript();
     gtag('event', event.name, { ...event.params, user_role: user.roles.join(',') });
+  }
+
+  // Called only by this service: after each navigation and after the first Accept.
+  private logPageView(): void {
+    const user = this.auth.user();
+    if (user === null || !this.sendingAllowed()) {
+      return;
+    }
+    this.loadScript();
+
+    // The template, never the real address, so no id reaches GA. gtag would otherwise
+    // fill page_location and page_referrer from the browser, which shows the ids. `set`
+    // keeps the template for every later event too, logEvent's included.
+    const template = this.routeTemplate();
+    const location = window.location.origin + template;
+    gtag('set', { page_location: location, page_referrer: this.previousLocation });
+    gtag('event', 'page_view', { page_path: template, user_role: user.roles.join(',') });
+    this.previousLocation = location;
+  }
+
+  // Joins the paths of the routes table down the active route, for example
+  // /payment/wallets/:userId. Routes with an empty path add nothing.
+  private routeTemplate(): string {
+    const parts: string[] = [];
+    let route = this.router.routerState.snapshot.root.firstChild;
+    while (route !== null) {
+      const path = route.routeConfig?.path;
+      if (path) {
+        parts.push(path);
+      }
+      route = route.firstChild;
+    }
+    return '/' + parts.join('/');
   }
 
   private choose(choice: Choice): void {
