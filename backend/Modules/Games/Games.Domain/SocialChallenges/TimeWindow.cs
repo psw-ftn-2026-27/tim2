@@ -67,6 +67,28 @@ public sealed record TimeWindow
         }
 
         var localStart = startDate.ToDateTime(Start, DateTimeKind.Unspecified);
+        return LocalStartToUtc(localStart);
+    }
+
+    // On the two days the clock changes, a local start may not exist or may happen twice.
+    // In spring the hour from 02:00 to 03:00 is skipped, so a start inside it moves to the end of the gap.
+    // In autumn the hour from 02:00 to 03:00 repeats, so a start inside it takes the first occurrence (summer time).
+    private static DateTime LocalStartToUtc(DateTime localStart)
+    {
+        if (Zone.IsInvalidTime(localStart))
+        {
+            var firstValid = new DateTime(localStart.Year, localStart.Month, localStart.Day, localStart.Hour, localStart.Minute, 0);
+            while (Zone.IsInvalidTime(firstValid))
+            {
+                firstValid = firstValid.AddMinutes(1);
+            }
+            return TimeZoneInfo.ConvertTimeToUtc(firstValid, Zone);
+        }
+        if (Zone.IsAmbiguousTime(localStart))
+        {
+            var summerOffset = Zone.GetAmbiguousTimeOffsets(localStart).Max();
+            return new DateTimeOffset(localStart, summerOffset).UtcDateTime;
+        }
         return TimeZoneInfo.ConvertTimeToUtc(localStart, Zone);
     }
 }
