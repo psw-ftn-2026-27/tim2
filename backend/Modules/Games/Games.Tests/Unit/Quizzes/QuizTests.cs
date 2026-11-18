@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
 using Xunit;
@@ -10,7 +11,7 @@ public class QuizTests
     private const string ValidName = "Petrovaradinska tvrđava";
     private const string ValidInstructions = "Obiđite tvrđavu i odgovorite na pitanja.";
     private const int ValidXp = 50;
-    private static readonly QuizLocation ValidLocation = new(45.2517, 19.8659, 50);
+    private static readonly QuizLocation ValidLocation = new(new Location(45.2517, 19.8659), 50);
 
     private static List<Question> CreateQuestions(int count)
     {

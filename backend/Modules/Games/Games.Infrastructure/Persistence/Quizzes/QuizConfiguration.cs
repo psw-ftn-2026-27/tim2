@@ -23,6 +23,10 @@ internal static class QuizConfiguration
             questions.OwnsMany(question => question.Options);
         });
 
-        builder.OwnsOne(quiz => quiz.Location);
+        builder.OwnsOne(quiz => quiz.Location, location =>
+        {
+            location.OwnsOne(quizLocation => quizLocation.Location);
+            location.Navigation(quizLocation => quizLocation.Location).IsRequired();
+        });
     }
 }

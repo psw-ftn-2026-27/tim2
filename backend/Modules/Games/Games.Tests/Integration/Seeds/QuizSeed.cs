@@ -1,3 +1,4 @@
+using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 
 namespace Games.Tests.Integration.Seeds;
@@ -21,7 +22,7 @@ internal static class QuizSeed
         [
             new Question("Na kom trgu je Gradska kuća?", [new AnswerOption("Trg slobode", true), new AnswerOption("Trg mladenaca", false)])
         ],
-        new QuizLocation(45.2551, 19.8451, 50));
+        new QuizLocation(new Location(45.2551, 19.8451), 50));
 
     public static readonly Quiz DraftMuseum = new(
         "Muzej Vojvodine",
@@ -50,7 +51,7 @@ internal static class QuizSeed
             [
                 new Question("Koje godine je završena Sinagoga?", [new AnswerOption("1909", true), new AnswerOption("1850", false)])
             ],
-            new QuizLocation(45.2559, 19.8413, 40));
+            new QuizLocation(new Location(45.2559, 19.8413), 40));
         PublishedSynagogue.Publish();
 
         RetiredBishopsPalace = new(
@@ -60,7 +61,7 @@ internal static class QuizSeed
             [
                 new Question("Kojim materijalom je ukrašena fasada?", [new AnswerOption("Opekom", true), new AnswerOption("Mermerom", false)])
             ],
-            new QuizLocation(45.2556, 19.8449, 30));
+            new QuizLocation(new Location(45.2556, 19.8449), 30));
         RetiredBishopsPalace.Publish();
         RetiredBishopsPalace.Retire();
 
@@ -71,7 +72,7 @@ internal static class QuizSeed
             [
                 new Question("Čiji spomenik stoji na početku ulice?", [new AnswerOption("Jovana Jovanovića Zmaja", true), new AnswerOption("Svetozara Miletića", false)])
             ],
-            new QuizLocation(45.2554, 19.8466, 100));
+            new QuizLocation(new Location(45.2554, 19.8466), 100));
         ArchivedZmajJovinaStreet.Publish();
         ArchivedZmajJovinaStreet.Retire();
         ArchivedZmajJovinaStreet.Archive();
@@ -85,7 +86,7 @@ internal static class QuizSeed
                 new Question("Koje godine je park uređen?", [new AnswerOption("1895", true), new AnswerOption("1950", false), new AnswerOption("1820", false)]),
                 new Question("Čija bista stoji u parku?", [new AnswerOption("Đure Jakšića", true), new AnswerOption("Laze Kostića", false)])
             ],
-            new QuizLocation(45.2546, 19.8510, 80));
+            new QuizLocation(new Location(45.2546, 19.8510), 80));
         PublishedDanubePark.Publish();
 
         RepeatedFishermansIslandWithMoreXp = new(
@@ -96,7 +97,7 @@ internal static class QuizSeed
                 new Question("Na kojoj reci je ostrvo?", [new AnswerOption("Dunav", true), new AnswerOption("Tisa", false)]),
                 new Question("Čime je ostrvo poznato?", [new AnswerOption("Ribljom čorbom", true), new AnswerOption("Vinogradima", false)])
             ],
-            new QuizLocation(45.2440, 19.8770, 200));
+            new QuizLocation(new Location(45.2440, 19.8770), 200));
         RepeatedFishermansIslandWithMoreXp.Publish();
         RepeatedFishermansIslandWithMoreXp.Retire();
         RepeatedFishermansIslandWithMoreXp.Repeat();
@@ -115,7 +116,7 @@ internal static class QuizSeed
             [
                 new Question("Šta raste uz ogradu vrta?", [new AnswerOption("Lipe", true), new AnswerOption("Borovi", false)])
             ],
-            new QuizLocation(45.2559, 19.8413, 40));
+            new QuizLocation(new Location(45.2559, 19.8413), 40));
         RetiredSynagogueGarden.Publish();
         RetiredSynagogueGarden.Retire();
     }

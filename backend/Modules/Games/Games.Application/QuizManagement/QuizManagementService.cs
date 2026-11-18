@@ -1,4 +1,5 @@
 using Games.Application.Quizzes;
+using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 using Shared.Domain.Exceptions;
 
@@ -67,6 +68,6 @@ public sealed class QuizManagementService
     {
         return location is null
             ? null
-            : new QuizLocation(location.Latitude, location.Longitude, location.RangeInMeters);
+            : new QuizLocation(new Location(location.Latitude, location.Longitude), location.RangeInMeters);
     }
 }

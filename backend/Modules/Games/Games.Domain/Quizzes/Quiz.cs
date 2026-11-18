@@ -1,3 +1,4 @@
+using Games.Domain.Locations;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -97,7 +98,8 @@ public sealed class Quiz : AggregateRoot
 
     public bool IsWithinRange(double latitude, double longitude)
     {
-        return Location is not null && Location.DistanceInMetersTo(latitude, longitude) <= Location.RangeInMeters;
+        return Location is not null
+            && Location.Location.DistanceInMetersTo(new Location(latitude, longitude)) <= Location.RangeInMeters;
     }
 
     public bool IsCorrect(int questionIndex, int optionIndex)
