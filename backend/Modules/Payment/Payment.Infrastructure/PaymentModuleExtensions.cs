@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Application;
 using Payment.Application.CartPurchasing;
+using Payment.Application.CouponManagement;
+using Payment.Application.Coupons;
 using Payment.Application.GiftCardGifting;
 using Payment.Application.GiftCards;
 using Payment.Application.Products;
@@ -15,6 +17,7 @@ using Payment.Application.WalletViewing;
 using Payment.Contracts;
 using Payment.Domain.ShoppingCarts;
 using Payment.Infrastructure.Persistence;
+using Payment.Infrastructure.Persistence.Coupons;
 using Payment.Infrastructure.Persistence.GiftCards;
 using Payment.Infrastructure.Persistence.Products;
 using Payment.Infrastructure.Persistence.ShoppingCarts;
@@ -41,6 +44,8 @@ public static class PaymentModuleExtensions
         services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenRepository>();
         services.AddScoped<ITourPurchaseTokenReadRepository, TourPurchaseTokenReadRepository>();
         services.AddScoped<IGiftCardRepository, GiftCardRepository>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
+        services.AddScoped<ICouponReadRepository, CouponReadRepository>();
 
         services.AddScoped<CartCheckout>();
 
@@ -53,6 +58,8 @@ public static class PaymentModuleExtensions
         services.AddScoped<PurchaseViewingQueries>();
         services.AddScoped<GiftCardGiftingService>();
         services.AddScoped<GiftCardGiftingQueries>();
+        services.AddScoped<CouponManagementService>();
+        services.AddScoped<CouponManagementQueries>();
 
         services.AddScoped<IPaymentApi, PaymentApi>();
 
