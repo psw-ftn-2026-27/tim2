@@ -83,4 +83,23 @@ export class NearbyChallengeList {
       this.pending.set(false);
     }
   }
+
+  protected async activateSocialChallenge(challengeId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.nearby.activateSocialChallenge(challengeId);
+      await this.router.navigate(['/games/play/social', challengeId]);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not activate the social challenge.'));
+      this.challenges.reload();
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
+  // The server sends the window start as "HH:mm:ss" local time at the challenge's place; the row shows hours and minutes.
+  protected windowStartTime(windowStart: string): string {
+    return windowStart.slice(0, 5);
+  }
 }
