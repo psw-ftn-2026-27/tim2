@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { BuyGiftCard } from './gift-card-gifting/buy-gift-card/buy-gift-card';
+import { GiftCards } from './gift-card-gifting/gift-cards/gift-cards';
 import { PaymentHome } from './payment-home/payment-home';
 import { PurchasedTours } from './purchase-viewing/purchased-tours/purchased-tours';
 import { AddToCart } from './shopping/add-to-cart/add-to-cart';
@@ -15,4 +17,6 @@ export const paymentRoutes: Routes = [
   { path: 'cart', component: Cart },
   { path: 'cart/add/:tourId', component: AddToCart },
   { path: 'purchases', component: PurchasedTours },
+  { path: 'gift-cards', component: GiftCards },
+  { path: 'gift-cards/buy', component: BuyGiftCard },
 ];

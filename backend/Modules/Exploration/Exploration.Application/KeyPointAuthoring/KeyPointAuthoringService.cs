@@ -1,4 +1,5 @@
 using Exploration.Application.Tours;
+using Exploration.Domain.Locations;
 using Exploration.Domain.Tours;
 using Shared.Domain.Exceptions;
 

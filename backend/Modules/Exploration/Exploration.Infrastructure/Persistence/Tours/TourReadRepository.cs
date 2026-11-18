@@ -3,6 +3,7 @@ using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Exploration.Contracts;
+using Exploration.Domain.TourLocationSearchRecords;
 using Exploration.Domain.Tours;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
@@ -62,6 +63,15 @@ internal sealed class TourReadRepository : ITourReadRepository
             .Where(tour => tour.Id == id && tour.Status == TourStatus.Published)
             .Select(tour => new PublishedTourSummary(tour.Id, tour.Name, tour.AuthorId, tour.Price))
             .FirstOrDefaultAsync();
+    }
+
+    public Task<List<PublishedTourSummary>> GetPublishedSummariesByAuthorAsync(Guid authorId)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.AuthorId == authorId && tour.Status == TourStatus.Published)
+            .OrderBy(tour => tour.Name)
+            .Select(tour => new PublishedTourSummary(tour.Id, tour.Name, tour.AuthorId, tour.Price))
+            .ToListAsync();
     }
 
     // For now the newest tours are featured; reactivating an archived tour keeps its first publishing time.

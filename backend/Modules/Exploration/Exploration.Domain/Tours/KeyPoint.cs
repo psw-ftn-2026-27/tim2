@@ -1,3 +1,4 @@
+using Exploration.Domain.Locations;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 

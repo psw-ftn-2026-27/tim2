@@ -1,6 +1,6 @@
-using Games.Application.LocationChallenges;
+using Games.Application.Locations;
 using Games.Application.SocialChallenges;
-using Games.Domain.LocationChallenges;
+using Games.Domain.Locations;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 

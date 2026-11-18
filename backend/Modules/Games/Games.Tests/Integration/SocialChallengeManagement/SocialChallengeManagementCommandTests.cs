@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Games.Application.LocationChallenges;
+using Games.Application.Locations;
 using Games.Application.SocialChallengeManagement;
-using Games.Domain.LocationChallenges;
+using Games.Domain.Locations;
 using Games.Domain.SocialChallenges;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;

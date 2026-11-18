@@ -59,6 +59,21 @@ export interface TourLocationSearchDto {
   maxLengthKm: number | null;
 }
 
+export interface LocationSearchRecordDto {
+  latitude: number;
+  longitude: number;
+  radiusKm: number;
+  name: string | null;
+  difficulties: TourDifficulty[] | null;
+  tags: string[] | null;
+  transportModes: TransportMode[] | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minLengthKm: number | null;
+  maxLengthKm: number | null;
+  resultCount: number;
+}
+
 export interface LocatedTourDto {
   id: string;
   name: string;

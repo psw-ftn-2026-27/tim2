@@ -1,5 +1,6 @@
 using Games.Application.Challenges;
 using Games.Application.NearbyChallenges;
+using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
     }
 
     // Only quizzes have a location a player can walk to, so for now the nearby list holds quizzes only.
-    // The distance is computed in memory by QuizLocation, so the list is sorted after it is loaded.
+    // The distance is computed in memory by Location, so the list is sorted after it is loaded.
     public async Task<List<NearbyChallengeDto>> GetNearbyAsync(Guid playerId, double latitude, double longitude)
     {
         var rows = await _dbContext.Quizzes
@@ -25,8 +26,8 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                 Id = quiz.Id,
                 Name = quiz.Name,
                 Xp = quiz.Xp,
-                Latitude = quiz.Location!.Latitude,
-                Longitude = quiz.Location.Longitude,
+                Latitude = quiz.Location!.Location.Latitude,
+                Longitude = quiz.Location.Location.Longitude,
                 RangeInMeters = quiz.Location.RangeInMeters,
                 IsStarted = _dbContext.QuizAttempts
                     .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId),
@@ -44,7 +45,7 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
 
     private static NearbyChallengeDto ToDto(NearbyQuizRow row, double latitude, double longitude)
     {
-        var distance = new QuizLocation(row.Latitude, row.Longitude, row.RangeInMeters).DistanceInMetersTo(latitude, longitude);
+        var distance = new Location(row.Latitude, row.Longitude).DistanceInMetersTo(new Location(latitude, longitude));
         return new NearbyChallengeDto(
             row.Id,
             ChallengeType.Quiz,

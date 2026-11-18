@@ -1,3 +1,4 @@
+using Exploration.Domain.Locations;
 using Exploration.Domain.Tours;
 using Shared.Tests;
 

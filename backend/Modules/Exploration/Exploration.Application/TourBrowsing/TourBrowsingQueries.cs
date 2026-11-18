@@ -1,5 +1,6 @@
 using Exploration.Application.Tours;
-using Exploration.Domain.Tours;
+using Exploration.Domain.Locations;
+using Exploration.Domain.TourLocationSearchRecords;
 using Shared.Domain;
 
 namespace Exploration.Application.TourBrowsing;

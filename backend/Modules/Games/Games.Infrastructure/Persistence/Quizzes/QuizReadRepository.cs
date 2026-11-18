@@ -32,7 +32,7 @@ internal sealed class QuizReadRepository : IQuizReadRepository
                     .ToList(),
                 quiz.Location == null
                     ? null
-                    : new QuizLocationDto(quiz.Location.Latitude, quiz.Location.Longitude, quiz.Location.RangeInMeters)))
+                    : new QuizLocationDto(quiz.Location.Location.Latitude, quiz.Location.Location.Longitude, quiz.Location.RangeInMeters)))
             .FirstOrDefaultAsync();
     }
 }
