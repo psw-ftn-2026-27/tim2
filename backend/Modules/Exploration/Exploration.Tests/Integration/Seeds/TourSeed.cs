@@ -26,6 +26,7 @@ internal static class TourSeed
     public static readonly Tour PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade;
     public static readonly Tour DraftDorcolWithVisibleKeyPointInBelgrade;
     public static readonly Tour ArchivedTasmajdanWithVisibleKeyPointInBelgrade;
+    public static readonly Tour PublishedSynagogueWithSecretOnVisibleKeyPoint;
 
     static TourSeed()
     {
@@ -164,7 +165,16 @@ internal static class TourSeed
         ArchivedTasmajdanWithVisibleKeyPointInBelgrade.SetCalculatedLength(1.1);
         ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Publish();
         ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Archive();
+
+        PublishedSynagogueWithSecretOnVisibleKeyPoint = new(WellKnownUsers.SecondExplorer, "Sinagoga i Jevrejska ulica", "Obilazak počinje ispred Novosadske sinagoge, nastavlja se Jevrejskom ulicom pored starih trgovačkih kuća i završava se na Trgu mladenaca.", TourDifficulty.Easy, ["grad"]);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.ChangeRecommendedGroupSize(1, 12);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.AddTransportTime(TransportMode.Walking, 50);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.ChangePrice(700);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.AddKeyPoint("Novosadska sinagoga", "Sinagoga sa velikom kupolom u Jevrejskoj ulici.", "/images/sinagoga.jpg", new Location(45.2532, 19.8414), "Orgulje u sinagogi se i danas koriste za koncerte.", true);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.AddKeyPoint("Trg mladenaca", "Mali trg na kraju Jevrejske ulice.", "/images/trg-mladenaca.jpg", new Location(45.2514, 19.8385), "Na trgu je nekada bila gradska vaga.", false);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.SetCalculatedLength(0.5);
+        PublishedSynagogueWithSecretOnVisibleKeyPoint.Publish();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints, PublishedKalemegdanWithVisibleKeyPointInBelgrade, PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade, PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade, DraftDorcolWithVisibleKeyPointInBelgrade, ArchivedTasmajdanWithVisibleKeyPointInBelgrade];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints, PublishedKalemegdanWithVisibleKeyPointInBelgrade, PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade, PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade, DraftDorcolWithVisibleKeyPointInBelgrade, ArchivedTasmajdanWithVisibleKeyPointInBelgrade, PublishedSynagogueWithSecretOnVisibleKeyPoint];
 }

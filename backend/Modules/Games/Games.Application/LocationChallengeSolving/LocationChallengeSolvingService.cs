@@ -40,13 +40,13 @@ public sealed class LocationChallengeSolvingService
             throw new NotFoundException("Your position is not set. Click on the map to set it.");
         }
         var challenge = await GetChallengeAsync(challengeId);
-        var currentAttempt = await _attemptRepository.GetByChallengePlayerAndRoundAsync(challengeId, playerId, challenge.CurrentRound);
+        var attemptInCurrentRound = await _attemptRepository.GetByChallengePlayerAndRoundAsync(challengeId, playerId, challenge.CurrentRound);
         // Both bounds are included, so the upper bound passed to Next is one more than the maximum.
         var extraRadiusInMeters = Random.Shared.Next(0, MaximumExtraRadiusInMeters + 1);
 
         var attempt = _challengeSolver.Activate(
             challenge,
-            currentAttempt,
+            attemptInCurrentRound,
             new Location(position.Latitude, position.Longitude),
             playerId,
             extraRadiusInMeters,

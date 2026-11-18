@@ -1,0 +1,90 @@
+<div class="stack">
+  @if (tour.isLoading()) {
+    <p>Loading the tour...</p>
+  } @else if (tour.error()) {
+    <p class="error">This tour is not available.</p>
+  } @else if (tour.value(); as current) {
+    <header class="page-header">
+      <h1>{{ current.name }}</h1>
+    </header>
+
+    <section class="card stack">
+      <p>{{ current.description }}</p>
+
+      <p class="meta">Difficulty: {{ current.difficulty }}</p>
+
+      @if (current.price === 0) {
+        <p class="meta">Price: FREE</p>
+      } @else {
+        <p class="meta">Price: <span class="amount">{{ current.price }} EC</span></p>
+      }
+
+      @if (current.lengthKm !== null) {
+        <p class="meta">Length: {{ current.lengthKm.toFixed(1) }} km</p>
+      } @else {
+        <p class="meta">Length: Not calculated</p>
+      }
+
+      @if (current.recommendedGroupSize; as groupSize) {
+        <p class="meta">Group size: {{ groupSize.min }}–{{ groupSize.max }} people</p>
+      } @else {
+        <p class="meta">Group size: Not specified</p>
+      }
+
+      @if (current.tags.length > 0) {
+        <ul class="tags">
+          @for (tag of current.tags; track tag) {
+            <li>{{ tag }}</li>
+          }
+        </ul>
+      }
+
+      @if (current.transportTimes.length > 0) {
+        <ul class="times">
+          @for (time of current.transportTimes; track time.transport) {
+            <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
+          }
+        </ul>
+      } @else {
+        <p class="meta">No transport times yet.</p>
+      }
+
+      @if (!current.isPurchased && !current.isOwnTour) {
+        <p><a [routerLink]="['/payment/cart/add', current.id]">Add to cart</a></p>
+      }
+    </section>
+
+    <h2>Key points</h2>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Description</th>
+          <th scope="col">Image</th>
+          <th scope="col">Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (keyPoint of current.keyPoints; track keyPoint.order) {
+          <tr>
+            <td>{{ keyPoint.order }}</td>
+            <td>{{ keyPoint.name }}</td>
+            <td>{{ keyPoint.description }}</td>
+            <td><img class="thumbnail" [src]="keyPoint.imageUrl" [alt]="keyPoint.name" /></td>
+            <td>{{ keyPoint.latitude.toFixed(5) }}, {{ keyPoint.longitude.toFixed(5) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="meta">No key points to show.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (!current.isPurchased && !current.isOwnTour) {
+      <p class="meta">Buy the tour to see all key points</p>
+    }
+  }
+</div>

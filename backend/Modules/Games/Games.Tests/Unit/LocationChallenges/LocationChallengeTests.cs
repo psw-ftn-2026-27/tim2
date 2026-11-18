@@ -294,10 +294,11 @@ public class LocationChallengeTests
     }
 
     // One meter of latitude is about 0.0000089932 degrees, so 0.0000899322 is 10 m, the range boundary.
+    // The two cases around it sit about 10 cm on either side, so rounding in the distance cannot flip them.
     [Theory]
     [InlineData(0, true)]
     [InlineData(0.000045, true)]
-    [InlineData(0.00008993216, true)]
+    [InlineData(0.0000890, true)]
     [InlineData(0.0000908, false)]
     public void Position_is_within_the_activation_range_only_up_to_ten_meters_from_the_start(double latitudeOffset, bool expected)
     {
