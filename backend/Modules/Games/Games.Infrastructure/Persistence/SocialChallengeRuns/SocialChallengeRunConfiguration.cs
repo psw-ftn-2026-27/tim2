@@ -16,6 +16,13 @@ internal static class SocialChallengeRunConfiguration
     {
         builder.Property(run => run.Status).HasConversion<string>().HasMaxLength(20);
 
+        // A challenge has at most one active run. Two players who activate at the same moment both find no active run;
+        // the database then refuses the second one, and that player joins the first run on the next activation.
+        // The status is stored as a string, so the filter compares it with the text 'Active'.
+        builder.HasIndex(run => run.ChallengeId)
+            .IsUnique()
+            .HasFilter("\"Status\" = 'Active'");
+
         // Each participant is a row of its own, so two players checking at the same time do not overwrite each other.
         builder.HasMany(run => run.Participants)
             .WithOne()

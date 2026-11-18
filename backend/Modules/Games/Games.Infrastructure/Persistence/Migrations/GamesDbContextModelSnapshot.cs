@@ -158,6 +158,10 @@ namespace Games.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChallengeId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Active'");
+
                     b.ToTable("SocialChallengeRuns", "games");
                 });
 
