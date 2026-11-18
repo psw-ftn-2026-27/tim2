@@ -20,6 +20,22 @@ export interface UpdateSocialChallengeDto {
   location: LocationDto | null;
 }
 
+export type SocialChallengeStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';
+
+export interface SocialChallengeDto {
+  id: string;
+  name: string;
+  start: string;
+  duration: string;
+  end: string;
+  requiredParticipants: number;
+  rangeInMeters: number;
+  xp: number;
+  completionMessage: string;
+  status: SocialChallengeStatus;
+  location: LocationDto | null;
+}
+
 export type ChallengeType = 'SocialChallenge' | 'Quiz' | 'LocationChallenge';
 
 export interface ChallengeDto {
@@ -28,14 +44,7 @@ export interface ChallengeDto {
   name: string;
   xp: number;
   status: string;
-  start: string | null;
-  duration: string | null;
-  end: string | null;
-  requiredParticipants: number | null;
-  rangeInMeters: number | null;
-  completionMessage: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  location: LocationDto | null;
 }
 
 export type QuizStatus = 'Draft' | 'Published' | 'Retired' | 'Archived';

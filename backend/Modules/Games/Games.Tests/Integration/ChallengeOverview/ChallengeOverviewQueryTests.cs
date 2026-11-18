@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
+using Games.Application.Locations;
 using Games.Tests.Integration.Seeds;
 using Shared.Domain;
 using Shared.Tests;
@@ -14,7 +15,7 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
     public ChallengeOverviewQueryTests(GamesApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Overview_filtered_to_social_challenges_lists_the_seeded_social_challenges_with_the_computed_end_of_their_window_and_their_location_or_none()
+    public async Task Overview_filtered_to_social_challenges_lists_the_seeded_social_challenges_with_their_location_or_none()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -27,18 +28,11 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Name,
             seeded.Xp,
             seeded.Status.ToString(),
-            seeded.Window.Start,
-            seeded.Window.Duration,
-            seeded.Window.End(),
-            seeded.RequiredParticipants,
-            seeded.RangeInMeters,
-            seeded.CompletionMessage,
-            seeded.Location?.Latitude,
-            seeded.Location?.Longitude)));
+            seeded.Location is null ? null : new LocationDto(seeded.Location.Latitude, seeded.Location.Longitude))));
     }
 
     [Fact]
-    public async Task Overview_filtered_to_quizzes_lists_only_the_seeded_quizzes_with_empty_social_challenge_columns()
+    public async Task Overview_filtered_to_quizzes_lists_only_the_seeded_quizzes_with_their_location_or_none()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -51,18 +45,11 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Name,
             seeded.Xp,
             seeded.Status.ToString(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null)));
+            seeded.Location is null ? null : new LocationDto(seeded.Location.Location.Latitude, seeded.Location.Location.Longitude))));
     }
 
     [Fact]
-    public async Task Overview_filtered_to_location_challenges_lists_only_the_seeded_location_challenges_with_empty_social_challenge_columns()
+    public async Task Overview_filtered_to_location_challenges_lists_only_the_seeded_location_challenges_with_their_start_as_the_location()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -75,14 +62,7 @@ public class ChallengeOverviewQueryTests : BaseIntegrationTest
             seeded.Name,
             seeded.Xp,
             seeded.Status.ToString(),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null)));
+            new LocationDto(seeded.StartLocation.Latitude, seeded.StartLocation.Longitude))));
     }
 
     [Fact]

@@ -1,20 +1,14 @@
 using Games.Application.Challenges;
+using Games.Application.Locations;
 
 namespace Games.Application.ChallengeOverview;
 
-// One row of the shared overview. The social challenge columns are null for a quiz and a location challenge,
-// and Latitude and Longitude are also null for a social challenge without a location.
+// One row of the shared overview, with only the fields all three challenge types have. Location is the quiz location,
+// the start of a location challenge, or the place of a social challenge, and is null for a quiz or a social challenge without one.
 public sealed record ChallengeDto(
     Guid Id,
     ChallengeType Type,
     string Name,
     int Xp,
     string Status,
-    TimeOnly? Start,
-    TimeSpan? Duration,
-    TimeOnly? End,
-    int? RequiredParticipants,
-    int? RangeInMeters,
-    string? CompletionMessage,
-    double? Latitude,
-    double? Longitude);
+    LocationDto? Location);
