@@ -6,6 +6,11 @@ namespace Games.Domain.LocationChallenges;
 
 public sealed class LocationChallenge : AggregateRoot
 {
+    // Fixed by the system for every location challenge; kept in one place so it can become an administrator field later.
+    public const int ActivationRangeInMeters = 10;
+    // Fixed by the system: a player discovers a hidden point by standing at most this far from it.
+    public const int DiscoveryRangeInMeters = 5;
+
     private const int MinimumNameLength = 3;
     private const int MaximumNameLength = 60;
     private const int MinimumXp = 1;
@@ -22,6 +27,8 @@ public sealed class LocationChallenge : AggregateRoot
     public int Xp { get; private set; }
     public Location StartLocation { get; private set; }
     public LocationChallengeStatus Status { get; private set; }
+    // Counts the publications; an attempt belongs to the current round when its round equals this one.
+    public int CurrentRound { get; private set; }
     public IReadOnlyList<HiddenPoint> HiddenPoints => _hiddenPoints;
 
     private LocationChallenge()
@@ -65,6 +72,7 @@ public sealed class LocationChallenge : AggregateRoot
         EnsureStatusIsOneOf(LocationChallengeStatus.Draft);
 
         Status = LocationChallengeStatus.Published;
+        CurrentRound++;
     }
 
     public void Retire()
@@ -86,6 +94,35 @@ public sealed class LocationChallenge : AggregateRoot
         EnsureStatusIsOneOf(LocationChallengeStatus.Retired, LocationChallengeStatus.Archived);
 
         Status = LocationChallengeStatus.Draft;
+    }
+
+    public void EnsureCanBePlayed()
+    {
+        if (Status != LocationChallengeStatus.Published)
+        {
+            throw new DomainException("This location challenge is not available, so it cannot be played.");
+        }
+    }
+
+    public bool IsWithinActivationRange(Location position)
+    {
+        return StartLocation.DistanceInMetersTo(position) <= ActivationRangeInMeters;
+    }
+
+    // Numbers count from 1, in the order of HiddenPoints. Every point in range is returned, whatever the player has discovered.
+    public List<int> PointNumbersWithinDiscoveryRange(Location position)
+    {
+        return Enumerable.Range(1, _hiddenPoints.Count)
+            .Where(number => _hiddenPoints[number - 1].Location.DistanceInMetersTo(position) <= DiscoveryRangeInMeters)
+            .ToList();
+    }
+
+    // The search area is centered on the start location, so it reaches the farthest hidden point plus the extra radius.
+    // Rounded up, so a point on the edge stays inside the area.
+    public int SearchRadiusInMeters(int extraRadiusInMeters)
+    {
+        var farthestDistance = _hiddenPoints.Max(point => point.Location.DistanceInMetersTo(StartLocation));
+        return (int)Math.Ceiling(farthestDistance) + extraRadiusInMeters;
     }
 
     private void EnsureStatusIsOneOf(params LocationChallengeStatus[] allowedStatuses)

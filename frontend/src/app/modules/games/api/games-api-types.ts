@@ -128,6 +128,7 @@ export interface NearbyChallengeDto {
   metersToRange: number;
   isStarted: boolean;
   isSolved: boolean;
+  earnedXp: number | null;
   social: NearbySocialChallengeDto | null;
 }
 
@@ -158,6 +159,25 @@ export interface QuizProgressDto {
   percentage: number | null;
   earnedXp: number | null;
   solvedAt: string | null;
+}
+
+export type LocationChallengeProgressState = 'Unavailable' | 'NotActivated' | 'Active' | 'Solved';
+
+export interface HiddenPointProgressDto {
+  number: number;
+  imageUrl: string;
+  location: LocationDto | null;
+}
+
+export interface LocationChallengeProgressDto {
+  challengeId: string;
+  state: LocationChallengeProgressState;
+  name: string | null;
+  center: LocationDto | null;
+  searchRadiusInMeters: number | null;
+  hiddenPoints: HiddenPointProgressDto[] | null;
+  solvedAt: string | null;
+  earnedXp: number | null;
 }
 
 export type SocialChallengeProgressState = 'InRun' | 'NotInRun' | 'Expired' | 'Solved';

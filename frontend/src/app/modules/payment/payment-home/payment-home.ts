@@ -16,6 +16,7 @@ import { Auth } from '../../../core/auth/auth';
         <p><a routerLink="/payment/cart">My cart</a></p>
         <p><a routerLink="/payment/purchases">My purchases</a></p>
         <p><a routerLink="/payment/gift-cards">Gift cards</a></p>
+        <p><a routerLink="/payment/coupons">Coupons</a></p>
       }
     </div>
   `,

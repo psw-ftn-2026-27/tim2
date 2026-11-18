@@ -1,0 +1,5 @@
+// A custom element is inline by default, and an inline element ignores the page's spacing
+// between its blocks; this keeps the table apart from the heading and button above it.
+:host {
+  display: block;
+}

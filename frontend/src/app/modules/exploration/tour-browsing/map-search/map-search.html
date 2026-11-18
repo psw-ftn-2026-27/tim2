@@ -131,6 +131,7 @@
             @if (tour.tags.length > 0) {
               <p class="meta">Tags: {{ tour.tags.join(', ') }}</p>
             }
+            <p><a [routerLink]="['/exploration/tours', tour.id]">Details</a></p>
           </article>
         }
 
