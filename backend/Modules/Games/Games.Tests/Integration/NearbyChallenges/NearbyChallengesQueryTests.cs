@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using FluentAssertions;
+using Games.Application.Challenges;
 using Games.Application.NearbyChallenges;
+using Games.Domain.LocationChallenges;
 using Games.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
@@ -70,6 +72,28 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
             .Contain(QuizSeed.PublishedSynagogue.Id)
             .And.NotContain(QuizSeed.DraftCityHall.Id)
             .And.NotContain(QuizSeed.DraftFortressArchitecture.Id);
+    }
+
+    [Fact]
+    public async Task Published_location_challenges_are_listed_with_the_meters_left_to_the_activation_range_and_started_only_in_the_current_round()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+
+        var nearby = await client.GetFromJsonAsync<List<NearbyChallengeDto>>("/api/games/nearby-challenges", JsonOptions);
+
+        var locationChallenges = nearby!.Where(challenge => challenge.Type == ChallengeType.LocationChallenge).ToList();
+        locationChallenges.Select(challenge => challenge.Id).Should().BeEquivalentTo(
+            LocationChallengeSeed.All
+                .Where(seeded => seeded.Status == LocationChallengeStatus.Published)
+                .Select(seeded => seeded.Id));
+        var square = locationChallenges.Single(challenge => challenge.Id == LocationChallengeSeed.PublishedSynagogueSquare.Id);
+        square.MetersToRange.Should().Be(0);
+        square.IsStarted.Should().BeFalse();
+        var strandBeach = locationChallenges.Single(challenge => challenge.Id == LocationChallengeSeed.PublishedStrandBeach.Id);
+        strandBeach.MetersToRange.Should().Be((int)Math.Ceiling(strandBeach.DistanceInMeters - LocationChallenge.ActivationRangeInMeters));
+        strandBeach.IsStarted.Should().BeTrue();
+        locationChallenges.Single(challenge => challenge.Id == LocationChallengeSeed.RepublishedSynagogueCourtyardInSecondRound.Id)
+            .IsStarted.Should().BeFalse();
     }
 
     [Fact]

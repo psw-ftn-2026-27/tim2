@@ -1,0 +1,64 @@
+<div class="stack">
+  <p><a routerLink="/games/play">Back to challenges</a></p>
+
+  <header class="page-header">
+    <h1>Location challenge</h1>
+  </header>
+
+  @if (progress.isLoading()) {
+    <p>Loading the location challenge...</p>
+  } @else if (progress.error()) {
+    <p class="error">Could not load the location challenge. Log in as an explorer and try again.</p>
+  } @else {
+    @if (progress.value(); as current) {
+      @if (current.state === 'Active') {
+        <h2>{{ current.name }}</h2>
+        <p>Discovered {{ discoveredCount() }} of {{ current.hiddenPoints?.length ?? 0 }}</p>
+
+        <app-map
+          [locations]="pins()"
+          [circle]="searchArea()"
+          [pickLocation]="true"
+          [selectedLocation]="youAreHere()"
+          (locationPicked)="save($event)"
+        />
+
+        @if (saving()) {
+          <p>Saving position...</p>
+        }
+        @if (saved()) {
+          <p>Position saved</p>
+        }
+        @if (failed()) {
+          <p class="error">Position could not be saved</p>
+        }
+
+        <p>The hidden points are within {{ current.searchRadiusInMeters }} m of the start (S).</p>
+
+        <section class="stack">
+          <h2>Points</h2>
+          <ol class="points">
+            @for (point of current.hiddenPoints ?? []; track point.number) {
+              <li class="card stack">
+                <!-- The list numbers the points in the order the server sends them, which is their number. -->
+                <p>
+                  @if (point.location !== null) {
+                    <span class="badge">Discovered</span>
+                  } @else {
+                    <span class="badge badge--muted">Not discovered</span>
+                  }
+                </p>
+                <img class="photo" alt="Photo of point {{ point.number }}" [src]="point.imageUrl" />
+              </li>
+            }
+          </ol>
+        </section>
+      } @else {
+        <section class="card stack">
+          <p>This location challenge is not available. It may have been retired, or you have not activated it.</p>
+          <p><a routerLink="/games/play">Back to challenges</a></p>
+        </section>
+      }
+    }
+  }
+</div>
