@@ -1,6 +1,6 @@
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
-using Games.Domain.SocialChallenges;
+using Games.Application.Locations;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain;
 
@@ -52,11 +52,6 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Name = challenge.Name,
             Xp = challenge.Xp,
             Status = challenge.Status.ToString(),
-            Start = challenge.Window.Start,
-            Duration = challenge.Window.Duration,
-            RequiredParticipants = challenge.RequiredParticipants,
-            RangeInMeters = challenge.RangeInMeters,
-            CompletionMessage = challenge.CompletionMessage,
             Latitude = challenge.Location == null ? null : challenge.Location.Latitude,
             Longitude = challenge.Location == null ? null : challenge.Location.Longitude
         });
@@ -71,13 +66,8 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Name = quiz.Name,
             Xp = quiz.Xp,
             Status = quiz.Status.ToString(),
-            Start = null,
-            Duration = null,
-            RequiredParticipants = null,
-            RangeInMeters = null,
-            CompletionMessage = null,
-            Latitude = null,
-            Longitude = null
+            Latitude = quiz.Location == null ? null : quiz.Location.Location.Latitude,
+            Longitude = quiz.Location == null ? null : quiz.Location.Location.Longitude
         });
     }
 
@@ -90,13 +80,8 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             Name = challenge.Name,
             Xp = challenge.Xp,
             Status = challenge.Status.ToString(),
-            Start = null,
-            Duration = null,
-            RequiredParticipants = null,
-            RangeInMeters = null,
-            CompletionMessage = null,
-            Latitude = null,
-            Longitude = null
+            Latitude = challenge.StartLocation.Latitude,
+            Longitude = challenge.StartLocation.Longitude
         });
     }
 
@@ -108,14 +93,7 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
             row.Name,
             row.Xp,
             row.Status,
-            row.Start,
-            row.Duration,
-            row.Start is null || row.Duration is null ? null : new TimeWindow(row.Start.Value, row.Duration.Value).End(),
-            row.RequiredParticipants,
-            row.RangeInMeters,
-            row.CompletionMessage,
-            row.Latitude,
-            row.Longitude);
+            row.Latitude is null || row.Longitude is null ? null : new LocationDto(row.Latitude.Value, row.Longitude.Value));
     }
 
     private sealed class ChallengeRow
@@ -125,11 +103,6 @@ internal sealed class ChallengeReadRepository : IChallengeReadRepository
         public string Name { get; init; } = null!;
         public int Xp { get; init; }
         public string Status { get; init; } = null!;
-        public TimeOnly? Start { get; init; }
-        public TimeSpan? Duration { get; init; }
-        public int? RequiredParticipants { get; init; }
-        public int? RangeInMeters { get; init; }
-        public string? CompletionMessage { get; init; }
         public double? Latitude { get; init; }
         public double? Longitude { get; init; }
     }

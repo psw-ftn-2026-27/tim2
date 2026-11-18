@@ -60,6 +60,7 @@ public static class GamesModuleExtensions
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
         services.AddScoped<IQuizReadRepository, QuizReadRepository>();
         services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
+        services.AddScoped<ISocialChallengeReadRepository, SocialChallengeReadRepository>();
         services.AddScoped<IChallengeReadRepository, ChallengeReadRepository>();
         services.AddScoped<INearbyChallengeReadRepository, NearbyChallengeReadRepository>();
         services.AddScoped<IQuizAttemptReadRepository, QuizAttemptReadRepository>();
@@ -87,6 +88,7 @@ public static class GamesModuleExtensions
     {
         services.AddScoped<QuizManagementQueries>();
         services.AddScoped<LocationChallengeManagementQueries>();
+        services.AddScoped<SocialChallengeManagementQueries>();
         services.AddScoped<ChallengeOverviewQueries>();
         services.AddScoped<NearbyChallengesQueries>();
         services.AddScoped<QuizSolvingQueries>();
