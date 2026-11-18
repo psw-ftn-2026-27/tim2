@@ -67,7 +67,12 @@
             <td>{{ challenge.social?.requiredParticipants }}</td>
             <td>
               @if (challenge.isSolved) {
-                <span class="badge">Solved</span>
+                <div class="row">
+                  <span class="badge">Solved</span>
+                  @if (challenge.type === 'LocationChallenge' && challenge.earnedXp !== null) {
+                    <span>Earned <span class="amount">{{ challenge.earnedXp }} XP</span></span>
+                  }
+                </div>
               } @else if (challenge.type === 'SocialChallenge' && challenge.isStarted) {
                 <span class="badge">In run</span>
               }

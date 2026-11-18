@@ -11,9 +11,43 @@
     <p class="error">Could not load the location challenge. Log in as an explorer and try again.</p>
   } @else {
     @if (progress.value(); as current) {
-      @if (current.state === 'Active') {
+      <!-- A solved challenge keeps the same map and photos, now with every point discovered. -->
+      @if (current.state === 'Active' || current.state === 'Solved') {
         <h2>{{ current.name }}</h2>
+
+        @if (current.state === 'Solved') {
+          <section class="card stack">
+            <!-- Shown when the check was rejected because the challenge was already solved, in another window for example. -->
+            @if (error()) {
+              <p class="error">{{ error() }}</p>
+            }
+            <h2>Challenge solved</h2>
+            @if (current.solvedAt !== null) {
+              <p>Solved at {{ formatTime(current.solvedAt) }}</p>
+            }
+            <p>Earned: <span class="amount">{{ current.earnedXp }} XP</span></p>
+          </section>
+        }
+
         <p>Discovered {{ discoveredCount() }} of {{ current.hiddenPoints?.length ?? 0 }}</p>
+
+        @if (current.state === 'Active') {
+          <div class="row">
+            <button class="button button--primary" type="button" [disabled]="checking()" (click)="check()">
+              @if (checking()) {
+                Checking...
+              } @else {
+                Check
+              }
+            </button>
+          </div>
+          @if (checkResult()) {
+            <p>{{ checkResult() }}</p>
+          }
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+        }
 
         <app-map
           [locations]="pins()"
@@ -55,6 +89,10 @@
         </section>
       } @else {
         <section class="card stack">
+          <!-- Shown when the check was rejected because the challenge was retired in the meantime. -->
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
           <p>This location challenge is not available. It may have been retired, or you have not activated it.</p>
           <p><a routerLink="/games/play">Back to challenges</a></p>
         </section>

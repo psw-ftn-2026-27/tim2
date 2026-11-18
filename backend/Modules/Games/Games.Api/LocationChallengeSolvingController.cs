@@ -26,6 +26,13 @@ public sealed class LocationChallengeSolvingController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/checks")]
+    public async Task<ActionResult> Check(Guid id)
+    {
+        await _solvingService.CheckAsync(id, User.GetUserId());
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}/progress")]
     public async Task<ActionResult<LocationChallengeProgressDto>> GetProgress(Guid id)
     {

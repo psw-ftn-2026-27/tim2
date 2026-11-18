@@ -56,6 +56,24 @@ public sealed class LocationChallengeSolvingService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task CheckAsync(Guid challengeId, Guid playerId)
+    {
+        var position = await _positionsApi.GetPositionAsync(playerId);
+        if (position is null)
+        {
+            throw new NotFoundException("Your position is not set. Click on the map to set it.");
+        }
+        var challenge = await GetChallengeAsync(challengeId);
+        var attempt = await _attemptRepository.GetByChallengePlayerAndRoundAsync(challengeId, playerId, challenge.CurrentRound);
+        if (attempt is null)
+        {
+            throw new NotFoundException($"You have not activated location challenge {challengeId} in this round.");
+        }
+
+        _challengeSolver.Check(challenge, attempt, new Location(position.Latitude, position.Longitude), DateTime.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     private async Task<LocationChallenge> GetChallengeAsync(Guid challengeId)
     {
         var challenge = await _challengeRepository.GetByIdAsync(challengeId);

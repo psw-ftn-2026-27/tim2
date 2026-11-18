@@ -29,6 +29,7 @@ internal static class LocationChallengeSeed
     public static readonly LocationChallenge ArchivedFortressTunnels;
     public static readonly LocationChallenge PublishedSynagogueSquare;
     public static readonly LocationChallenge RepublishedSynagogueCourtyardInSecondRound;
+    public static readonly LocationChallenge PublishedLimanPark;
 
     static LocationChallengeSeed()
     {
@@ -90,7 +91,19 @@ internal static class LocationChallengeSeed
         RepublishedSynagogueCourtyardInSecondRound.Retire();
         RepublishedSynagogueCourtyardInSecondRound.Repeat();
         RepublishedSynagogueCourtyardInSecondRound.Publish();
+
+        // The first hidden point is exactly at the seeded position of Explorer, so that player stands on it.
+        PublishedLimanPark = new(
+            "Kutci Limanskog parka",
+            75,
+            new Location(45.2661, 19.8335),
+            [
+                new HiddenPoint("/uploads/liman-fontana.jpg", new Location(45.2671, 19.8335)),
+                new HiddenPoint("/uploads/liman-paviljon.jpg", new Location(45.2681, 19.8335)),
+                new HiddenPoint("/uploads/liman-most.jpg", new Location(45.2671, 19.8355))
+            ]);
+        PublishedLimanPark.Publish();
     }
 
-    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels, PublishedSynagogueSquare, RepublishedSynagogueCourtyardInSecondRound];
+    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels, PublishedSynagogueSquare, RepublishedSynagogueCourtyardInSecondRound, PublishedLimanPark];
 }

@@ -29,22 +29,23 @@ internal sealed class LocationChallengeAttemptReadRepository : ILocationChalleng
             return EmptyProgress(challengeId, LocationChallengeProgressState.Unavailable);
         }
 
-        var searchRadiusInMeters = await FindSearchRadiusInCurrentRoundAsync(challengeId, playerId, challenge.CurrentRound);
-        if (searchRadiusInMeters is null)
+        var attempt = await FindAttemptInCurrentRoundAsync(challengeId, playerId, challenge.CurrentRound);
+        if (attempt is null)
         {
             return EmptyProgress(challengeId, LocationChallengeProgressState.NotActivated);
         }
 
         return new LocationChallengeProgressDto(
             challengeId,
-            LocationChallengeProgressState.Active,
+            attempt.SolvedAt is null ? LocationChallengeProgressState.Active : LocationChallengeProgressState.Solved,
             challenge.Name,
             new LocationDto(challenge.StartLatitude, challenge.StartLongitude),
-            searchRadiusInMeters,
-            ToHiddenPoints(challenge.ImageUrls));
+            attempt.SearchRadiusInMeters,
+            ToHiddenPoints(challenge.HiddenPoints, attempt.DiscoveredPointNumbers),
+            attempt.SolvedAt,
+            attempt.EarnedXp);
     }
 
-    // Only the photos of the hidden points are selected, never their locations, so a location cannot be sent by mistake.
     private async Task<ChallengeRow?> FindChallengeAsync(Guid challengeId)
     {
         return await _dbContext.LocationChallenges
@@ -57,31 +58,47 @@ internal sealed class LocationChallengeAttemptReadRepository : ILocationChalleng
                 CurrentRound = challenge.CurrentRound,
                 StartLatitude = challenge.StartLocation.Latitude,
                 StartLongitude = challenge.StartLocation.Longitude,
-                ImageUrls = challenge.HiddenPoints.Select(point => point.ImageUrl).ToList()
+                HiddenPoints = challenge.HiddenPoints
+                    .Select(point => new HiddenPointRow
+                    {
+                        ImageUrl = point.ImageUrl,
+                        Latitude = point.Location.Latitude,
+                        Longitude = point.Location.Longitude
+                    })
+                    .ToList()
             })
             .FirstOrDefaultAsync();
     }
 
-    private async Task<int?> FindSearchRadiusInCurrentRoundAsync(Guid challengeId, Guid playerId, int currentRound)
+    private async Task<AttemptRow?> FindAttemptInCurrentRoundAsync(Guid challengeId, Guid playerId, int currentRound)
     {
         return await _dbContext.LocationChallengeAttempts
             .AsNoTracking()
             .Where(attempt => attempt.ChallengeId == challengeId && attempt.PlayerId == playerId && attempt.Round == currentRound)
-            .Select(attempt => (int?)attempt.SearchRadiusInMeters)
+            .Select(attempt => new AttemptRow
+            {
+                SearchRadiusInMeters = attempt.SearchRadiusInMeters,
+                DiscoveredPointNumbers = attempt.DiscoveredPointNumbers,
+                SolvedAt = attempt.SolvedAt,
+                EarnedXp = attempt.EarnedXp
+            })
             .FirstOrDefaultAsync();
     }
 
-    // No point can be discovered yet, so every location stays empty; checking a hidden point will add the discovered ones.
-    private static List<HiddenPointProgressDto> ToHiddenPoints(List<string> imageUrls)
+    // Numbers count from 1. Only a discovered point gets its location, so an undiscovered location is never sent.
+    private static List<HiddenPointProgressDto> ToHiddenPoints(List<HiddenPointRow> hiddenPoints, List<int> discoveredPointNumbers)
     {
-        return imageUrls
-            .Select((imageUrl, index) => new HiddenPointProgressDto(index + 1, imageUrl, null))
+        return hiddenPoints
+            .Select((point, index) => new HiddenPointProgressDto(
+                index + 1,
+                point.ImageUrl,
+                discoveredPointNumbers.Contains(index + 1) ? new LocationDto(point.Latitude, point.Longitude) : null))
             .ToList();
     }
 
     private static LocationChallengeProgressDto EmptyProgress(Guid challengeId, LocationChallengeProgressState state)
     {
-        return new LocationChallengeProgressDto(challengeId, state, null, null, null, null);
+        return new LocationChallengeProgressDto(challengeId, state, null, null, null, null, null, null);
     }
 
     private sealed class ChallengeRow
@@ -91,6 +108,21 @@ internal sealed class LocationChallengeAttemptReadRepository : ILocationChalleng
         public int CurrentRound { get; init; }
         public double StartLatitude { get; init; }
         public double StartLongitude { get; init; }
-        public List<string> ImageUrls { get; init; } = null!;
+        public List<HiddenPointRow> HiddenPoints { get; init; } = null!;
+    }
+
+    private sealed class HiddenPointRow
+    {
+        public string ImageUrl { get; init; } = null!;
+        public double Latitude { get; init; }
+        public double Longitude { get; init; }
+    }
+
+    private sealed class AttemptRow
+    {
+        public int SearchRadiusInMeters { get; init; }
+        public List<int> DiscoveredPointNumbers { get; init; } = null!;
+        public DateTime? SolvedAt { get; init; }
+        public int? EarnedXp { get; init; }
     }
 }
