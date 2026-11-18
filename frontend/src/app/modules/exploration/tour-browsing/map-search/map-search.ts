@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, min, validate } from '@angular/forms/signals';
+import { RouterLink } from '@angular/router';
 import { PageResult } from '../../../../shared/api/page-result';
 import { MapLocation, MapView } from '../../../../shared/map/map';
 import {
@@ -39,7 +40,7 @@ const positiveRadiusError = {
 };
 
 @Component({
-  imports: [FormField, MapView],
+  imports: [FormField, MapView, RouterLink],
   selector: 'app-map-search',
   styleUrl: './map-search.scss',
   templateUrl: './map-search.html',

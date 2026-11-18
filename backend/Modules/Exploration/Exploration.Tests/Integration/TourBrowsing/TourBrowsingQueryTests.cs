@@ -512,10 +512,15 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     {
         var tour = TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade;
         var client = Factory.CreateClientFor(tour.AuthorId, "explorer");
+        var expectedNames = tour.KeyPoints
+            .OrderBy(keyPoint => keyPoint.Order)
+            .Select(keyPoint => keyPoint.Name);
 
         var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tour.Id}", JsonOptions);
 
+        tour.KeyPoints.Should().Contain(keyPoint => !keyPoint.IsVisibleBeforePurchase);
         details!.IsOwnTour.Should().BeTrue();
+        details.KeyPoints.Select(keyPoint => keyPoint.Name).Should().Equal(expectedNames);
     }
 
     [Fact]
