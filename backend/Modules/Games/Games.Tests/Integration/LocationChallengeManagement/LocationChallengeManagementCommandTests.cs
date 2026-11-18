@@ -235,6 +235,49 @@ public class LocationChallengeManagementCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Administrator_deletes_an_archived_location_challenge_with_an_unfinished_attempt_and_both_are_gone()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = LocationChallengeSeed.ArchivedDanubePark;
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.LocationChallenges.Count();
+        var attemptCountBefore = arrangeContext.LocationChallengeAttempts.Count();
+
+        var response = await client.DeleteAsync($"/api/games/location-challenges/{seeded.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.LocationChallenges.Count().Should().Be(challengeCountBefore - 1);
+        assertContext.LocationChallenges.Should().NotContain(challenge => challenge.Id == seeded.Id);
+        assertContext.LocationChallengeAttempts.Count().Should().Be(attemptCountBefore - 1);
+        assertContext.LocationChallengeAttempts.Should().NotContain(attempt => attempt.Id == LocationChallengeAttemptSeed.ExplorersDanubeParkUnfinishedInFirstRound.Id);
+    }
+
+    [Fact]
+    public async Task Deleting_an_archived_location_challenge_solved_in_an_earlier_round_is_rejected_and_it_stays_stored_with_its_attempts()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var seeded = LocationChallengeSeed.ArchivedCathedralInSecondRoundSolvedInFirstRound;
+        var solvedAttempt = LocationChallengeAttemptSeed.ThirdExplorersCathedralSolvedInFirstRound;
+        using var arrangeContext = Factory.CreateContext<GamesDbContext>();
+        var challengeCountBefore = arrangeContext.LocationChallenges.Count();
+        var attemptCountBefore = arrangeContext.LocationChallengeAttempts.Count();
+
+        var response = await client.DeleteAsync($"/api/games/location-challenges/{seeded.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        assertContext.LocationChallenges.Count().Should().Be(challengeCountBefore);
+        var storedChallenge = assertContext.LocationChallenges.Single(challenge => challenge.Id == seeded.Id);
+        storedChallenge.Status.Should().Be(seeded.Status);
+        storedChallenge.CurrentRound.Should().Be(seeded.CurrentRound);
+        assertContext.LocationChallengeAttempts.Count().Should().Be(attemptCountBefore);
+        var storedAttempt = assertContext.LocationChallengeAttempts.Single(attempt => attempt.Id == solvedAttempt.Id);
+        storedAttempt.SolvedAt.Should().Be(solvedAttempt.SolvedAt);
+        storedAttempt.EarnedXp.Should().Be(solvedAttempt.EarnedXp);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_delete_a_location_challenge()
     {
         var client = Factory.CreateClient();

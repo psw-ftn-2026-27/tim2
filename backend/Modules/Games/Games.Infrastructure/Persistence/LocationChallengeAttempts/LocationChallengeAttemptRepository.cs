@@ -19,8 +19,20 @@ internal sealed class LocationChallengeAttemptRepository : ILocationChallengeAtt
             attempt.ChallengeId == challengeId && attempt.PlayerId == playerId && attempt.Round == round);
     }
 
+    public Task<List<LocationChallengeAttempt>> GetAllByChallengeAsync(Guid challengeId)
+    {
+        return _dbContext.LocationChallengeAttempts
+            .Where(attempt => attempt.ChallengeId == challengeId)
+            .ToListAsync();
+    }
+
     public void Add(LocationChallengeAttempt attempt)
     {
         _dbContext.LocationChallengeAttempts.Add(attempt);
+    }
+
+    public void RemoveRange(List<LocationChallengeAttempt> attempts)
+    {
+        _dbContext.LocationChallengeAttempts.RemoveRange(attempts);
     }
 }
