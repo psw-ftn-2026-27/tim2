@@ -110,6 +110,42 @@ internal sealed class TourReadRepository : ITourReadRepository
             .FirstOrDefaultAsync();
     }
 
+    // A published tour is open to everyone and an archived one only to its buyer; a draft never is.
+    // The secret is left out of the projection, so it is never read for this view.
+    public Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool isPurchased)
+    {
+        return _dbContext.Tours
+            .Where(tour => tour.Id == tourId)
+            .Where(tour => tour.Status == TourStatus.Published || (tour.Status == TourStatus.Archived && isPurchased))
+            .Select(tour => new TourDetailsDto(
+                tour.Id,
+                tour.Name,
+                tour.Description,
+                tour.Difficulty,
+                tour.Tags,
+                tour.Price,
+                tour.LengthKm,
+                tour.RecommendedGroupSize == null
+                    ? null
+                    : new RecommendedGroupSizeDto(tour.RecommendedGroupSize.Min, tour.RecommendedGroupSize.Max),
+                tour.TransportTimes
+                    .Select(time => new TransportTimeDto(time.Transport, time.Minutes))
+                    .ToList(),
+                tour.KeyPoints
+                    .Where(keyPoint => isPurchased || keyPoint.IsVisibleBeforePurchase)
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => new TourDetailsKeyPointDto(
+                        keyPoint.Order,
+                        keyPoint.Name,
+                        keyPoint.Description,
+                        keyPoint.ImageUrl,
+                        keyPoint.Location.Latitude,
+                        keyPoint.Location.Longitude))
+                    .ToList(),
+                isPurchased))
+            .FirstOrDefaultAsync();
+    }
+
     // Difficulty comes first and price decides within the same difficulty; the newest tour wins every remaining tie.
     private static IQueryable<Tour> Sort(IQueryable<Tour> tours, TourSearchDto search)
     {

@@ -144,3 +144,26 @@ export interface MoveKeyPointDto {
 export interface TourLengthDto {
   lengthKm: number;
 }
+
+export interface TourDetailsKeyPointDto {
+  order: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface TourDetailsDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  price: number;
+  lengthKm: number | null;
+  recommendedGroupSize: RecommendedGroupSizeDto | null;
+  transportTimes: TransportTimeDto[];
+  keyPoints: TourDetailsKeyPointDto[];
+  isPurchased: boolean;
+}

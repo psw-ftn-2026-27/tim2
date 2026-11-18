@@ -41,5 +41,8 @@
     <p class="meta">No transport times yet.</p>
   }
 
-  <p><a [routerLink]="['/payment/cart/add', tour().id]">Add to cart</a></p>
+  <p class="row">
+    <a [routerLink]="['/exploration/tours', tour().id]">Details</a>
+    <a [routerLink]="['/payment/cart/add', tour().id]">Add to cart</a>
+  </p>
 </article>

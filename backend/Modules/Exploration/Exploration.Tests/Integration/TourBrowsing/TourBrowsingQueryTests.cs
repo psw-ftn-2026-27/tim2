@@ -392,4 +392,68 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
             tour.GetProperty("price").ValueKind.Should().Be(JsonValueKind.Number);
         });
     }
+
+    [Theory]
+    [MemberData(nameof(PublishedToursWithHiddenKeyPoints))]
+    public async Task Buyer_who_has_not_purchased_the_tour_sees_only_the_key_points_visible_before_purchase_in_order(Guid tourId)
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var expectedNames = TourSeed.All
+            .Single(tour => tour.Id == tourId)
+            .KeyPoints
+            .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
+            .OrderBy(keyPoint => keyPoint.Order)
+            .Select(keyPoint => keyPoint.Name);
+
+        var details = await client.GetFromJsonAsync<TourDetailsDto>($"/api/exploration/tours/{tourId}", JsonOptions);
+
+        details!.Id.Should().Be(tourId);
+        details.IsPurchased.Should().BeFalse();
+        details.KeyPoints.Select(keyPoint => keyPoint.Name).Should().Equal(expectedNames);
+    }
+
+    public static TheoryData<Guid> PublishedToursWithHiddenKeyPoints => new()
+    {
+        TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id,
+        TourSeed.PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade.Id
+    };
+
+    [Fact]
+    public async Task Tour_details_never_carry_the_secret_of_a_key_point()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var tour = TourSeed.PublishedSynagogueWithSecretOnVisibleKeyPoint;
+        var visibleSecrets = tour.KeyPoints
+            .Where(keyPoint => keyPoint.IsVisibleBeforePurchase && keyPoint.Secret != null)
+            .Select(keyPoint => keyPoint.Secret!)
+            .ToList();
+
+        var body = await client.GetStringAsync($"/api/exploration/tours/{tour.Id}");
+
+        visibleSecrets.Should().NotBeEmpty();
+        using var json = JsonDocument.Parse(body);
+        json.RootElement.GetProperty("keyPoints").EnumerateArray().Should().NotBeEmpty().And.AllSatisfy(keyPoint =>
+            keyPoint.EnumerateObject().Select(field => field.Name).Should().NotContain("secret"));
+        visibleSecrets.Should().AllSatisfy(secret => body.Should().NotContain(secret));
+    }
+
+    [Fact]
+    public async Task Archived_tour_is_not_available_to_a_buyer_who_has_not_purchased_it()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_open_a_tour()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.PublishedKalemegdanWithVisibleKeyPointInBelgrade.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }
