@@ -29,5 +29,9 @@ internal static class SocialChallengeRunConfiguration
     {
         builder.ToTable("SocialChallengeParticipants");
         builder.Property(participant => participant.Id).ValueGeneratedNever();
+
+        // Join rejects a player who is already in the run, but two activations at the same moment both pass that
+        // check; the database then refuses the second row. The run's key is a shadow property, so it is named here.
+        builder.HasIndex("SocialChallengeRunId", nameof(SocialChallengeParticipant.PlayerId)).IsUnique();
     }
 }

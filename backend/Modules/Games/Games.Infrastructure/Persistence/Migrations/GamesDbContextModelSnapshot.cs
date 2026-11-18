@@ -124,7 +124,8 @@ namespace Games.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SocialChallengeRunId");
+                    b.HasIndex("SocialChallengeRunId", "PlayerId")
+                        .IsUnique();
 
                     b.ToTable("SocialChallengeParticipants", "games");
                 });
