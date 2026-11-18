@@ -8,6 +8,8 @@ public sealed class LocationChallenge : AggregateRoot
 {
     // Fixed by the system for every location challenge; kept in one place so it can become an administrator field later.
     public const int ActivationRangeInMeters = 10;
+    // Fixed by the system: a player discovers a hidden point by standing at most this far from it.
+    public const int DiscoveryRangeInMeters = 5;
 
     private const int MinimumNameLength = 3;
     private const int MaximumNameLength = 60;
@@ -105,6 +107,14 @@ public sealed class LocationChallenge : AggregateRoot
     public bool IsWithinActivationRange(Location position)
     {
         return StartLocation.DistanceInMetersTo(position) <= ActivationRangeInMeters;
+    }
+
+    // Numbers count from 1, in the order of HiddenPoints. Every point in range is returned, whatever the player has discovered.
+    public List<int> PointNumbersWithinDiscoveryRange(Location position)
+    {
+        return Enumerable.Range(1, _hiddenPoints.Count)
+            .Where(number => _hiddenPoints[number - 1].Location.DistanceInMetersTo(position) <= DiscoveryRangeInMeters)
+            .ToList();
     }
 
     // The search area is centered on the start location, so it reaches the farthest hidden point plus the extra radius.

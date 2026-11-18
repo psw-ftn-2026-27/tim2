@@ -53,4 +53,27 @@ public class LocationChallengeSolvingQueryTests : BaseIntegrationTest
         progress!.State.Should().Be(LocationChallengeProgressState.NotActivated);
         progress.HiddenPoints.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Progress_of_a_solved_attempt_shows_that_the_challenge_is_solved_with_its_time_and_xp_and_only_discovered_locations()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+        var challenge = LocationChallengeSeed.PublishedSynagogueSquare;
+        var attempt = LocationChallengeAttemptSeed.SecondExplorersSynagogueSquareSolvedInCurrentRound;
+
+        var progress = await client.GetFromJsonAsync<LocationChallengeProgressDto>(
+            $"/api/games/location-challenges/{challenge.Id}/progress", JsonOptions);
+
+        progress!.State.Should().Be(LocationChallengeProgressState.Solved);
+        progress.SolvedAt.Should().Be(attempt.SolvedAt);
+        progress.EarnedXp.Should().Be(attempt.EarnedXp);
+        progress.HiddenPoints.Should().BeEquivalentTo(
+            challenge.HiddenPoints.Select((point, index) => new HiddenPointProgressDto(
+                index + 1,
+                point.ImageUrl,
+                attempt.DiscoveredPointNumbers.Contains(index + 1)
+                    ? new LocationDto(point.Location.Latitude, point.Location.Longitude)
+                    : null)),
+            options => options.ComparingRecordsByMembers().WithStrictOrdering());
+    }
 }

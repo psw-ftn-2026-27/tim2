@@ -4,5 +4,6 @@ public enum LocationChallengeProgressState
 {
     Unavailable,
     NotActivated,
-    Active
+    Active,
+    Solved
 }
