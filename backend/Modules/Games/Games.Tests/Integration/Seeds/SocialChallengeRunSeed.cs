@@ -8,6 +8,7 @@ internal static class SocialChallengeRunSeed
     public static readonly SocialChallengeRun CathedralMeetupEndedYesterdayButStillActive;
     public static readonly SocialChallengeRun PromenadeWalkWithEnoughPlayersAwaitingCheck;
     public static readonly SocialChallengeRun RiverbankSolvedWithFortyXp;
+    public static readonly SocialChallengeRun RiverbankActiveRunOfAnotherPlayer;
 
     static SocialChallengeRunSeed()
     {
@@ -34,7 +35,14 @@ internal static class SocialChallengeRunSeed
             new DateTime(2026, 11, 10, 11, 0, 0, DateTimeKind.Utc));
         RiverbankSolvedWithFortyXp.Join(WellKnownUsers.ThirdExplorer, new DateTime(2026, 11, 10, 9, 1, 0, DateTimeKind.Utc));
         RiverbankSolvedWithFortyXp.Solve(40, 2, new DateTime(2026, 11, 10, 9, 2, 0, DateTimeKind.Utc));
+
+        // Started by a player who was not in the solved run, after Explorer and ThirdExplorer had solved the challenge.
+        RiverbankActiveRunOfAnotherPlayer = new(
+            SocialChallengeSeed.RepublishedRiverbankWithMoreXp.Id,
+            WellKnownUsers.SecondExplorer,
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddHours(3));
     }
 
-    public static SocialChallengeRun[] All => [CathedralMeetupEndedYesterdayButStillActive, PromenadeWalkWithEnoughPlayersAwaitingCheck, RiverbankSolvedWithFortyXp];
+    public static SocialChallengeRun[] All => [CathedralMeetupEndedYesterdayButStillActive, PromenadeWalkWithEnoughPlayersAwaitingCheck, RiverbankSolvedWithFortyXp, RiverbankActiveRunOfAnotherPlayer];
 }

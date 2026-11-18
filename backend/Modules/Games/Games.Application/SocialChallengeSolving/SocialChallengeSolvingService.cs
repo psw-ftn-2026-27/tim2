@@ -50,12 +50,13 @@ public sealed class SocialChallengeSolvingService
     }
 
     // A missing position does not reject the check: the solver removes the player as if out of range.
+    // The player's solved run comes first, so a later run started by other players does not reject the check.
     public async Task CheckAsync(Guid challengeId, Guid playerId)
     {
         var position = await _positionsApi.GetPositionAsync(playerId);
         var challenge = await GetChallengeAsync(challengeId);
-        var run = await _runRepository.GetActiveByChallengeAsync(challengeId)
-            ?? await _runRepository.GetSolvedByChallengeAndPlayerAsync(challengeId, playerId);
+        var run = await _runRepository.GetSolvedByChallengeAndPlayerAsync(challengeId, playerId)
+            ?? await _runRepository.GetActiveByChallengeAsync(challengeId);
         if (run is null)
         {
             throw new NotFoundException($"Social challenge {challengeId} has no run you can check.");

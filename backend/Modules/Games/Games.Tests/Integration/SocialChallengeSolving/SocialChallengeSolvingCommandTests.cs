@@ -119,6 +119,21 @@ public class SocialChallengeSolvingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Check_by_a_player_who_solved_the_challenge_leaves_a_later_run_of_other_players_untouched()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+        var laterRun = SocialChallengeRunSeed.RiverbankActiveRunOfAnotherPlayer;
+
+        var response = await client.PostAsync($"/api/games/challenges/{laterRun.ChallengeId}/checks", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.SocialChallengeRuns.Single(run => run.Id == laterRun.Id);
+        stored.Status.Should().Be(SocialChallengeRunStatus.Active);
+        stored.Participants.Select(participant => participant.PlayerId).Should().Equal(WellKnownUsers.SecondExplorer);
+    }
+
+    [Fact]
     public async Task Check_by_a_player_who_is_not_in_the_run_is_rejected_and_nothing_is_written()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
