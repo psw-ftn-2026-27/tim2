@@ -271,4 +271,77 @@ public class LocationChallengeTests
 
         update.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void First_publication_starts_the_first_round()
+    {
+        var challenge = CreateChallenge();
+
+        challenge.Publish();
+
+        challenge.CurrentRound.Should().Be(1);
+    }
+
+    [Fact]
+    public void Publication_after_a_repeat_starts_the_next_round()
+    {
+        var challenge = CreateChallengeIn(LocationChallengeStatus.Retired);
+        challenge.Repeat();
+
+        challenge.Publish();
+
+        challenge.CurrentRound.Should().Be(2);
+    }
+
+    // One meter of latitude is about 0.0000089932 degrees, so 0.0000899322 is 10 m, the range boundary.
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(0.000045, true)]
+    [InlineData(0.00008993216, true)]
+    [InlineData(0.0000908, false)]
+    public void Position_is_within_the_activation_range_only_up_to_ten_meters_from_the_start(double latitudeOffset, bool expected)
+    {
+        var challenge = CreateChallenge();
+
+        var isWithinRange = challenge.IsWithinActivationRange(LocationNorthOfStart(latitudeOffset));
+
+        isWithinRange.Should().Be(expected);
+    }
+
+    // The farthest of the two hidden points is about 111.2 m north of the start, which rounds up to 112 m.
+    [Theory]
+    [InlineData(0, 112)]
+    [InlineData(37, 149)]
+    [InlineData(100, 212)]
+    public void Search_radius_is_the_distance_to_the_farthest_hidden_point_rounded_up_plus_the_extra_radius(int extraRadiusInMeters, int expected)
+    {
+        var challenge = CreateChallenge();
+
+        var searchRadius = challenge.SearchRadiusInMeters(extraRadiusInMeters);
+
+        searchRadius.Should().Be(expected);
+    }
+
+    [Fact]
+    public void Published_location_challenge_can_be_played()
+    {
+        var challenge = CreateChallengeIn(LocationChallengeStatus.Published);
+
+        var playing = () => challenge.EnsureCanBePlayed();
+
+        playing.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData(LocationChallengeStatus.Draft)]
+    [InlineData(LocationChallengeStatus.Retired)]
+    [InlineData(LocationChallengeStatus.Archived)]
+    public void Location_challenge_that_is_not_published_cannot_be_played(LocationChallengeStatus status)
+    {
+        var challenge = CreateChallengeIn(status);
+
+        var playing = () => challenge.EnsureCanBePlayed();
+
+        playing.Should().Throw<DomainException>();
+    }
 }

@@ -1,5 +1,6 @@
 using Games.Application.Challenges;
 using Games.Application.NearbyChallenges;
+using Games.Domain.LocationChallenges;
 using Games.Domain.Locations;
 using Games.Domain.Quizzes;
 using Microsoft.EntityFrameworkCore;
@@ -15,15 +16,29 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         _dbContext = dbContext;
     }
 
-    // Only quizzes have a location a player can walk to, so for now the nearby list holds quizzes only.
+    // Quizzes and location challenges have a location a player can walk to, so the nearby list holds both.
     // The distance is computed in memory by Location, so the list is sorted after it is loaded.
     public async Task<List<NearbyChallengeDto>> GetNearbyAsync(Guid playerId, double latitude, double longitude)
     {
-        var rows = await _dbContext.Quizzes
+        var quizRows = await FindQuizRowsAsync(playerId);
+        var locationChallengeRows = await FindLocationChallengeRowsAsync(playerId);
+
+        return quizRows
+            .Concat(locationChallengeRows)
+            .Select(row => ToDto(row, latitude, longitude))
+            .OrderBy(challenge => challenge.DistanceInMeters)
+            .ThenBy(challenge => challenge.Id)
+            .ToList();
+    }
+
+    private async Task<List<NearbyRow>> FindQuizRowsAsync(Guid playerId)
+    {
+        return await _dbContext.Quizzes
             .Where(quiz => quiz.Status == QuizStatus.Published && quiz.Location != null)
-            .Select(quiz => new NearbyQuizRow
+            .Select(quiz => new NearbyRow
             {
                 Id = quiz.Id,
+                Type = ChallengeType.Quiz,
                 Name = quiz.Name,
                 Xp = quiz.Xp,
                 Latitude = quiz.Location!.Location.Latitude,
@@ -35,20 +50,38 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                     .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId && attempt.SolvedAt != null)
             })
             .ToListAsync();
-
-        return rows
-            .Select(row => ToDto(row, latitude, longitude))
-            .OrderBy(challenge => challenge.DistanceInMeters)
-            .ThenBy(challenge => challenge.Id)
-            .ToList();
     }
 
-    private static NearbyChallengeDto ToDto(NearbyQuizRow row, double latitude, double longitude)
+    // Only an attempt from the current round counts as started. A location challenge cannot be solved yet,
+    // so IsSolved stays false until checking a hidden point adds the solved attempt.
+    private async Task<List<NearbyRow>> FindLocationChallengeRowsAsync(Guid playerId)
+    {
+        return await _dbContext.LocationChallenges
+            .Where(challenge => challenge.Status == LocationChallengeStatus.Published)
+            .Select(challenge => new NearbyRow
+            {
+                Id = challenge.Id,
+                Type = ChallengeType.LocationChallenge,
+                Name = challenge.Name,
+                Xp = challenge.Xp,
+                Latitude = challenge.StartLocation.Latitude,
+                Longitude = challenge.StartLocation.Longitude,
+                RangeInMeters = LocationChallenge.ActivationRangeInMeters,
+                IsStarted = _dbContext.LocationChallengeAttempts
+                    .Any(attempt => attempt.ChallengeId == challenge.Id
+                        && attempt.PlayerId == playerId
+                        && attempt.Round == challenge.CurrentRound),
+                IsSolved = false
+            })
+            .ToListAsync();
+    }
+
+    private static NearbyChallengeDto ToDto(NearbyRow row, double latitude, double longitude)
     {
         var distance = new Location(row.Latitude, row.Longitude).DistanceInMetersTo(new Location(latitude, longitude));
         return new NearbyChallengeDto(
             row.Id,
-            ChallengeType.Quiz,
+            row.Type,
             row.Name,
             row.Xp,
             row.Latitude,
@@ -65,9 +98,10 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         return (int)Math.Ceiling(Math.Max(0, distanceInMeters - rangeInMeters));
     }
 
-    private sealed class NearbyQuizRow
+    private sealed class NearbyRow
     {
         public Guid Id { get; init; }
+        public ChallengeType Type { get; init; }
         public string Name { get; init; } = null!;
         public int Xp { get; init; }
         public double Latitude { get; init; }

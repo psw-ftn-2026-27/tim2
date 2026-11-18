@@ -85,6 +85,22 @@
                   </button>
                 }
               }
+              @if (challenge.type === 'LocationChallenge' && !challenge.isSolved) {
+                @if (challenge.isStarted) {
+                  <a class="button" [routerLink]="['/games/play/location', challenge.id]">Continue</a>
+                } @else if (challenge.metersToRange > 0) {
+                  <span class="meta">Get {{ challenge.metersToRange }} m closer</span>
+                } @else {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="activateLocationChallenge(challenge.id)"
+                  >
+                    Activate
+                  </button>
+                }
+              }
             </td>
           </tr>
         } @empty {

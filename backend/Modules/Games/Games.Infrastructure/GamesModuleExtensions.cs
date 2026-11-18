@@ -1,9 +1,11 @@
 ﻿using Games.Application;
 using Games.Application.ChallengeOverview;
 using Games.Application.Challenges;
+using Games.Application.LocationChallengeAttempts;
 using Games.Application.LocationChallengeLifecycle;
 using Games.Application.LocationChallengeManagement;
 using Games.Application.LocationChallenges;
+using Games.Application.LocationChallengeSolving;
 using Games.Application.NearbyChallenges;
 using Games.Application.QuizAttempts;
 using Games.Application.QuizLifecycle;
@@ -13,9 +15,11 @@ using Games.Application.QuizSolving;
 using Games.Application.SocialChallengeLifecycle;
 using Games.Application.SocialChallengeManagement;
 using Games.Application.SocialChallenges;
+using Games.Domain.LocationChallengeAttempts;
 using Games.Domain.QuizAttempts;
 using Games.Infrastructure.Persistence;
 using Games.Infrastructure.Persistence.Challenges;
+using Games.Infrastructure.Persistence.LocationChallengeAttempts;
 using Games.Infrastructure.Persistence.LocationChallenges;
 using Games.Infrastructure.Persistence.QuizAttempts;
 using Games.Infrastructure.Persistence.Quizzes;
@@ -47,17 +51,20 @@ public static class GamesModuleExtensions
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<ILocationChallengeRepository, LocationChallengeRepository>();
         services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
+        services.AddScoped<ILocationChallengeAttemptRepository, LocationChallengeAttemptRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<GamesDbContext>());
         services.AddScoped<IQuizReadRepository, QuizReadRepository>();
         services.AddScoped<ILocationChallengeReadRepository, LocationChallengeReadRepository>();
         services.AddScoped<IChallengeReadRepository, ChallengeReadRepository>();
         services.AddScoped<INearbyChallengeReadRepository, NearbyChallengeReadRepository>();
         services.AddScoped<IQuizAttemptReadRepository, QuizAttemptReadRepository>();
+        services.AddScoped<ILocationChallengeAttemptReadRepository, LocationChallengeAttemptReadRepository>();
     }
 
     private static void AddServices(IServiceCollection services)
     {
         services.AddScoped<QuizSolver>();
+        services.AddScoped<LocationChallengeSolver>();
         services.AddScoped<SocialChallengeManagementService>();
         services.AddScoped<SocialChallengeLifecycleService>();
         services.AddScoped<QuizManagementService>();
@@ -65,6 +72,7 @@ public static class GamesModuleExtensions
         services.AddScoped<LocationChallengeManagementService>();
         services.AddScoped<LocationChallengeLifecycleService>();
         services.AddScoped<QuizSolvingService>();
+        services.AddScoped<LocationChallengeSolvingService>();
     }
 
     private static void AddQueries(IServiceCollection services)
@@ -74,5 +82,6 @@ public static class GamesModuleExtensions
         services.AddScoped<ChallengeOverviewQueries>();
         services.AddScoped<NearbyChallengesQueries>();
         services.AddScoped<QuizSolvingQueries>();
+        services.AddScoped<LocationChallengeSolvingQueries>();
     }
 }
