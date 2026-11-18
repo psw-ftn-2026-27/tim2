@@ -72,6 +72,7 @@ public static class GamesModuleExtensions
     {
         services.AddScoped<QuizSolver>();
         services.AddScoped<LocationChallengeSolver>();
+        services.AddScoped<LocationChallengeRemover>();
         services.AddScoped<SocialChallengeSolver>();
         services.AddScoped<SocialChallengeManagementService>();
         services.AddScoped<SocialChallengeLifecycleService>();
