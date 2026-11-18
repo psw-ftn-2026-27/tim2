@@ -27,6 +27,8 @@ internal static class LocationChallengeSeed
     public static readonly LocationChallenge PublishedStrandBeach;
     public static readonly LocationChallenge RetiredFishermansIsland;
     public static readonly LocationChallenge ArchivedFortressTunnels;
+    public static readonly LocationChallenge PublishedSynagogueSquare;
+    public static readonly LocationChallenge RepublishedSynagogueCourtyardInSecondRound;
 
     static LocationChallengeSeed()
     {
@@ -63,7 +65,32 @@ internal static class LocationChallengeSeed
         ArchivedFortressTunnels.Publish();
         ArchivedFortressTunnels.Retire();
         ArchivedFortressTunnels.Archive();
+
+        // Starts at the seeded position of ThirdExplorer, so that player is within the activation range.
+        PublishedSynagogueSquare = new(
+            "Trg kod Sinagoge",
+            80,
+            new Location(45.2559, 19.8413),
+            [
+                new HiddenPoint("/uploads/sinagoga-kapija.jpg", new Location(45.2565, 19.8413)),
+                new HiddenPoint("/uploads/sinagoga-cesma.jpg", new Location(45.2559, 19.8425))
+            ]);
+        PublishedSynagogueSquare.Publish();
+
+        // Also starts at the seeded position of ThirdExplorer; published again after a repeat, so it is in its second round.
+        RepublishedSynagogueCourtyardInSecondRound = new(
+            "Dvorište Sinagoge",
+            110,
+            new Location(45.2559, 19.8413),
+            [
+                new HiddenPoint("/uploads/dvoriste-klupa.jpg", new Location(45.2553, 19.8413)),
+                new HiddenPoint("/uploads/dvoriste-drvo.jpg", new Location(45.2559, 19.8400))
+            ]);
+        RepublishedSynagogueCourtyardInSecondRound.Publish();
+        RepublishedSynagogueCourtyardInSecondRound.Retire();
+        RepublishedSynagogueCourtyardInSecondRound.Repeat();
+        RepublishedSynagogueCourtyardInSecondRound.Publish();
     }
 
-    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels];
+    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels, PublishedSynagogueSquare, RepublishedSynagogueCourtyardInSecondRound];
 }
