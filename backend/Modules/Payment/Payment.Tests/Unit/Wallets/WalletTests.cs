@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Payment.Domain.ShoppingCarts;
 using Payment.Domain.Wallets;
 using Shared.Domain.Exceptions;
 using Shared.Tests;
@@ -76,6 +77,33 @@ public class WalletTests
         var cancel = () => wallet.CancelDeposit(deposit.Id, WellKnownUsers.Administrator, deposit.CreatedAt.AddHours(2));
 
         cancel.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Purchase_without_enough_balance_is_rejected_and_the_balance_stays_the_same()
+    {
+        var wallet = CreateWalletWithDeposits();
+        var balanceBefore = wallet.Balance();
+        List<OrderItem> items = [new OrderItem(Guid.NewGuid(), "Tura", 100), new OrderItem(Guid.NewGuid(), "Druga tura", 51)];
+
+        var purchase = () => wallet.Purchase(items);
+
+        purchase.Should().Throw<DomainException>();
+        wallet.Balance().Should().Be(balanceBefore);
+    }
+
+    [Fact]
+    public void Purchase_adds_a_negative_transaction_for_each_item_and_lowers_the_balance_by_the_total()
+    {
+        var wallet = CreateWalletWithDeposits();
+        var balanceBefore = wallet.Balance();
+        List<OrderItem> items = [new OrderItem(Guid.NewGuid(), "Tura", 100), new OrderItem(Guid.NewGuid(), "Druga tura", 50)];
+
+        wallet.Purchase(items);
+
+        wallet.Transactions.Select(transaction => (transaction.EntityId, transaction.Name, transaction.Amount)).Should()
+            .Contain(items.Select(item => ((Guid?)item.EntityId, (string?)item.Name, -item.Price)));
+        wallet.Balance().Should().Be(balanceBefore - 150);
     }
 
     private static Wallet CreateWalletWithDeposits()

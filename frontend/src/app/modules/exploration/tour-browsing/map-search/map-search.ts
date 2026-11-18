@@ -26,6 +26,8 @@ const emptyCriteria = {
   car: false,
   minPrice: null as number | null,
   maxPrice: null as number | null,
+  minLengthKm: null as number | null,
+  maxLengthKm: null as number | null,
 };
 
 const wholePriceError = { kind: 'wholeNumber', message: 'Price must be a whole number.' };
@@ -57,6 +59,8 @@ export class MapSearch {
     validate(path.maxPrice, ({ value }) =>
       value() === null || Number.isInteger(value()) ? undefined : wholePriceError,
     );
+    min(path.minLengthKm, 0, { message: 'Shortest length cannot be negative.' });
+    min(path.maxLengthKm, 0, { message: 'Longest length cannot be negative.' });
   });
 
   protected readonly selectedLocation = computed<MapLocation | null>(() => {
@@ -105,6 +109,12 @@ export class MapSearch {
     }
     if (search.maxPrice !== null) {
       params.append('maxPrice', String(search.maxPrice));
+    }
+    if (search.minLengthKm !== null) {
+      params.append('minLengthKm', String(search.minLengthKm));
+    }
+    if (search.maxLengthKm !== null) {
+      params.append('maxLengthKm', String(search.maxLengthKm));
     }
 
     return `/api/exploration/tours/published/by-location?${params.toString()}`;
@@ -176,6 +186,8 @@ export class MapSearch {
       transportModes,
       minPrice: this.form.minPrice().valid() ? criteria.minPrice : null,
       maxPrice: this.form.maxPrice().valid() ? criteria.maxPrice : null,
+      minLengthKm: this.form.minLengthKm().valid() ? criteria.minLengthKm : null,
+      maxLengthKm: this.form.maxLengthKm().valid() ? criteria.maxLengthKm : null,
     });
     this.page.set(1);
   }

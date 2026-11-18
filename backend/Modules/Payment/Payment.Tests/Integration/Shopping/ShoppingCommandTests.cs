@@ -126,6 +126,25 @@ public class ShoppingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Adding_a_tour_the_buyer_has_already_purchased_is_rejected_and_the_cart_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WalletSeed.WealthyBuyer, "explorer");
+        var tourId = TourPurchaseTokenSeed.WealthyBuyersKalemegdan.TourId;
+        int itemCount;
+        using (var arrangeContext = Factory.CreateContext<PaymentDbContext>())
+        {
+            itemCount = arrangeContext.ShoppingCarts.Single(cart => cart.BuyerId == WalletSeed.WealthyBuyer).Items.Count;
+        }
+
+        var response = await client.PostAsync($"/api/payment/shopping/cart/items/{tourId}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<PaymentDbContext>();
+        assertContext.ShoppingCarts.Single(cart => cart.BuyerId == WalletSeed.WealthyBuyer)
+            .Items.Should().HaveCount(itemCount);
+    }
+
+    [Fact]
     public async Task Anonymous_user_cannot_add_to_a_cart()
     {
         var client = Factory.CreateClient();

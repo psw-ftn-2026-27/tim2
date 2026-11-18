@@ -26,6 +26,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th scope="col">Item</th>
           <th scope="col">Amount</th>
           <th scope="col">Time</th>
           <th scope="col">Administrator</th>
@@ -35,11 +36,17 @@
       <tbody>
         @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
           <tr>
+            <td>{{ transaction.name ?? 'Deposit' }}</td>
             <td><span class="amount">{{ transaction.amount }} EC</span></td>
             <td>{{ formatTime(transaction.createdAt) }}</td>
-            <td>{{ isOwnDeposit(transaction) ? 'You' : 'Another administrator' }}</td>
             <td>
-              @if (transaction.isCancelled) {
+              @if (transaction.adminId !== null) {
+                {{ isOwnDeposit(transaction) ? 'You' : 'Another administrator' }}
+              }
+            </td>
+            <td>
+              @if (transaction.adminId === null) {
+              } @else if (transaction.isCancelled) {
                 <span class="badge badge--muted">Cancelled</span>
               } @else if (!isOwnDeposit(transaction)) {
                 <span class="meta">Only the administrator who made the deposit can cancel it.</span>
@@ -59,7 +66,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="meta">No transactions yet.</td>
+            <td colspan="5" class="meta">No transactions yet.</td>
           </tr>
         }
       </tbody>

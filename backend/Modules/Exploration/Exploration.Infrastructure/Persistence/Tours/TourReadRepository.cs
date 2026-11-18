@@ -147,7 +147,8 @@ internal sealed class TourReadRepository : ITourReadRepository
                     .Where(keyPoint => keyPoint.IsVisibleBeforePurchase)
                     .OrderBy(keyPoint => keyPoint.Order)
                     .Select(keyPoint => keyPoint.Location.Longitude)
-                    .First()));
+                    .First(),
+                tour.LengthKm));
     }
 
     private static IQueryable<TourDto> ProjectToDtos(IQueryable<Tour> tours)

@@ -42,7 +42,7 @@ Metoda `AddIdentityModule` registruje sve delove modula i jedino je mesto koje `
 
 ## Projekat Identity.Contracts
 
-Projekat je javna površina modula za druge module, po istom obrascu kao `Contracts` projekti funkcionalnih modula, i ne referencira nijedan drugi projekat. Sadrži interfejs `IIdentityApi` sa dva upita. Metoda `GetExplorersAsync` vraća stranicu korisnika sa ulogom `explorer`, poređanih po adresi elektronske pošte, zajedno sa ukupnim brojem takvih korisnika. Metoda `GetExplorerAsync` vraća jednog takvog korisnika po identifikatoru, ili `null` kada korisnik ne postoji ili nema tu ulogu. Oba upita vraćaju samo identifikator i adresu elektronske pošte, kroz zapise `ExplorerSummary` i `ExplorerPage`. Lozinke, uloge i ostali podaci naloga ostaju u modulu. Kontrakt se proširuje samo na zahtev platformskom timu.
+Projekat je javna površina modula za druge module, po istom obrascu kao `Contracts` projekti funkcionalnih modula, i ne referencira nijedan drugi projekat. Sadrži interfejs `IIdentityApi` sa tri upita. Metoda `GetExplorersAsync` vraća stranicu korisnika sa ulogom `explorer`, poređanih po adresi elektronske pošte, zajedno sa ukupnim brojem takvih korisnika. Metoda `GetExplorerAsync` vraća jednog takvog korisnika po identifikatoru, ili `null` kada korisnik ne postoji ili nema tu ulogu. Metoda `GetExplorerByEmailAsync` vraća jednog takvog korisnika po adresi elektronske pošte, bez obzira na velika i mala slova, ili `null` pod istim uslovima. Svi upiti vraćaju samo identifikator i adresu elektronske pošte, kroz zapise `ExplorerSummary` i `ExplorerPage`. Lozinke, uloge i ostali podaci naloga ostaju u modulu. Kontrakt se proširuje samo na zahtev platformskom timu.
 
 ## Projekat Identity.Tests
 

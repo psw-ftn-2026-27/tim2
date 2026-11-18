@@ -10,4 +10,5 @@ public sealed record LocatedTourDto(
     List<string> Tags,
     int Price,
     double MarkerLatitude,
-    double MarkerLongitude);
+    double MarkerLongitude,
+    double? LengthKm);

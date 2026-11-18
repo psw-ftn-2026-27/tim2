@@ -1,3 +1,4 @@
+using Games.Domain.LocationChallenges;
 using Shared.Domain;
 using Shared.Domain.Exceptions;
 
@@ -23,6 +24,7 @@ public sealed class SocialChallenge : AggregateRoot
     public int Xp { get; private set; }
     public string CompletionMessage { get; private set; }
     public SocialChallengeStatus Status { get; private set; }
+    public Location? Location { get; private set; }
 
     private SocialChallenge()
     {
@@ -38,7 +40,8 @@ public sealed class SocialChallenge : AggregateRoot
         int requiredParticipants,
         int rangeInMeters,
         int xp,
-        string completionMessage)
+        string completionMessage,
+        Location? location)
         : base(Guid.NewGuid())
     {
         var window = new TimeWindow(start, duration);
@@ -50,6 +53,7 @@ public sealed class SocialChallenge : AggregateRoot
         RangeInMeters = rangeInMeters;
         Xp = xp;
         CompletionMessage = completionMessage.Trim();
+        Location = location;
         Status = SocialChallengeStatus.Draft;
     }
 
@@ -60,7 +64,8 @@ public sealed class SocialChallenge : AggregateRoot
         int requiredParticipants,
         int rangeInMeters,
         int xp,
-        string completionMessage)
+        string completionMessage,
+        Location? location)
     {
         if (Status != SocialChallengeStatus.Draft)
         {
@@ -76,6 +81,7 @@ public sealed class SocialChallenge : AggregateRoot
         RangeInMeters = rangeInMeters;
         Xp = xp;
         CompletionMessage = completionMessage.Trim();
+        Location = location;
     }
 
     public void EnsureCanBeDeleted()
@@ -89,6 +95,10 @@ public sealed class SocialChallenge : AggregateRoot
     public void Publish()
     {
         EnsureStatusIsOneOf(SocialChallengeStatus.Draft);
+        if (Location is null)
+        {
+            throw new DomainException("A social challenge needs a location before it can be published.");
+        }
 
         Status = SocialChallengeStatus.Published;
     }

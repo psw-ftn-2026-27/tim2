@@ -14,6 +14,7 @@ import { Auth } from '../../../core/auth/auth';
       @if (isExplorer()) {
         <p><a routerLink="/payment/wallet">My wallet</a></p>
         <p><a routerLink="/payment/cart">My cart</a></p>
+        <p><a routerLink="/payment/purchases">My purchases</a></p>
       }
     </div>
   `,

@@ -13,7 +13,8 @@ internal static class TourSearchFilters
     {
         tours = ByNameAndDifficulty(tours, search);
         tours = ByTagsAndTransport(tours, search);
-        return ByPrice(tours, search);
+        tours = ByPrice(tours, search);
+        return ByLength(tours, search);
     }
 
     // Great-circle distance by the haversine formula, written with Math calls so that it runs in the database.
@@ -76,6 +77,22 @@ internal static class TourSearchFilters
         {
             var maxPrice = search.MaxPrice.Value;
             tours = tours.Where(tour => tour.Price <= maxPrice);
+        }
+        return tours;
+    }
+
+    // A tour with an unknown length drops out of any range, because a comparison with NULL is never true in the database.
+    private static IQueryable<Tour> ByLength(IQueryable<Tour> tours, TourSearchDto search)
+    {
+        if (search.MinLengthKm is not null)
+        {
+            var minLengthKm = search.MinLengthKm.Value;
+            tours = tours.Where(tour => tour.LengthKm >= minLengthKm);
+        }
+        if (search.MaxLengthKm is not null)
+        {
+            var maxLengthKm = search.MaxLengthKm.Value;
+            tours = tours.Where(tour => tour.LengthKm <= maxLengthKm);
         }
         return tours;
     }

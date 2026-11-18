@@ -68,12 +68,43 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.ToTable("ShoppingCarts", "payment");
                 });
 
+            modelBuilder.Entity("Payment.Domain.TourPurchaseTokens.TourPurchaseToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId", "TourId")
+                        .IsUnique();
+
+                    b.ToTable("TourPurchaseTokens", "payment");
+                });
+
             modelBuilder.Entity("Payment.Domain.Wallets.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AdminId")
+                    b.Property<Guid?>("AdminId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Amount")
@@ -82,8 +113,15 @@ namespace Payment.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsCancelled")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<Guid>("WalletId")
                         .HasColumnType("uuid");

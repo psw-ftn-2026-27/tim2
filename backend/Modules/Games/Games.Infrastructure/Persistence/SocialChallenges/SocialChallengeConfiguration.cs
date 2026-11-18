@@ -19,5 +19,7 @@ internal static class SocialChallengeConfiguration
 
         builder.OwnsOne(challenge => challenge.Window);
         builder.Navigation(challenge => challenge.Window).IsRequired();
+
+        builder.OwnsOne(challenge => challenge.Location);
     }
 }

@@ -29,7 +29,7 @@ public sealed class TourBrowsingQueries
         pageSize = Math.Clamp(pageSize, 1, 100);
 
         var area = new SearchArea(new Location(search.Latitude, search.Longitude), search.RadiusKm);
-        var criteria = new TourSearchDto(search.Name, search.Difficulties, search.Tags, search.TransportModes, search.MinPrice, search.MaxPrice);
+        var criteria = new TourSearchDto(search.Name, search.Difficulties, search.Tags, search.TransportModes, search.MinPrice, search.MaxPrice, search.MinLengthKm, search.MaxLengthKm);
 
         return _tourReadRepository.GetPublishedByLocationAsync(area, criteria, page, pageSize);
     }

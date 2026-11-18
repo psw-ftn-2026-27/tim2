@@ -37,6 +37,19 @@ public class WalletViewingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Explorer_sees_their_purchases_among_transactions_with_the_item_name()
+    {
+        var client = Factory.CreateClientFor(WalletSeed.WealthyBuyer, "explorer");
+        var seededPurchases = WalletSeed.WealthyBuyersWalletWithKalemegdanAndSkadarlijaPurchases.Transactions
+            .Where(transaction => transaction.EntityId is not null);
+
+        var transactions = await client.GetFromJsonAsync<PageResult<TransactionDto>>("/api/payment/wallet/transactions", JsonOptions);
+
+        transactions!.Items.Select(transaction => (transaction.Id, transaction.Amount, transaction.Name)).Should()
+            .Contain(seededPurchases.Select(transaction => (transaction.Id, transaction.Amount, transaction.Name)));
+    }
+
+    [Fact]
     public async Task Explorer_without_a_wallet_has_a_zero_balance()
     {
         var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");

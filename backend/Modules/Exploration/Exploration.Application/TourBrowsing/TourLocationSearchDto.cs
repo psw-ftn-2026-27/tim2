@@ -11,4 +11,6 @@ public sealed record TourLocationSearchDto(
     List<string>? Tags,
     List<TransportMode>? TransportModes,
     int? MinPrice,
-    int? MaxPrice);
+    int? MaxPrice,
+    double? MinLengthKm,
+    double? MaxLengthKm);

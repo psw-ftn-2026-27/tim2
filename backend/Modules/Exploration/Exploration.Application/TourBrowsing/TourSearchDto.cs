@@ -9,5 +9,7 @@ public sealed record TourSearchDto(
     List<TransportMode>? TransportModes,
     int? MinPrice,
     int? MaxPrice,
+    double? MinLengthKm,
+    double? MaxLengthKm,
     SortDirection DifficultySort = SortDirection.None,
     SortDirection PriceSort = SortDirection.None);
