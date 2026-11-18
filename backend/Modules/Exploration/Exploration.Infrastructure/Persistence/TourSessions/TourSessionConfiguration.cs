@@ -17,5 +17,12 @@ internal static class TourSessionConfiguration
 
         builder.OwnsOne(session => session.StartPosition);
         builder.Navigation(session => session.StartPosition).IsRequired();
+
+        // A tourist has at most one active session (P3). Two starts at the same moment both find no active session;
+        // the database then refuses the second one, so the tourist never ends up with two active tours.
+        // The status is stored as a string, so the filter compares it with the text 'Active'.
+        builder.HasIndex(session => session.TouristId)
+            .IsUnique()
+            .HasFilter("\"Status\" = 'Active'");
     }
 }

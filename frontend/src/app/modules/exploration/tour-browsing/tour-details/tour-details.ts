@@ -1,6 +1,7 @@
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { UserPositionDto } from '../../../../shared/api/user-position';
 import { MapLocation, MapView } from '../../../../shared/map/map';
 import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDetailsDto } from '../../api/exploration-api-types';
@@ -43,6 +44,14 @@ export class TourDetails {
       name: keyPoint.name,
     }));
   });
+
+  // The server answers 204 while the user has no position, which arrives here as null.
+  protected readonly position = httpResource<UserPositionDto | null>(() => '/api/positions/mine');
+
+  // The link to set the position helps only when the position is what is missing.
+  protected readonly positionMissing = computed(
+    () => this.position.hasValue() && this.position.value() === null,
+  );
 
   protected readonly startError = signal<string | null>(null);
 

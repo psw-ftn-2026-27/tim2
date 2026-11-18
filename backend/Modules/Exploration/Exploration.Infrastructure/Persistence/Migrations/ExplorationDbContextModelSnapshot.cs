@@ -113,6 +113,10 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TouristId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Active'");
+
                     b.ToTable("TourSessions", "exploration");
                 });
 

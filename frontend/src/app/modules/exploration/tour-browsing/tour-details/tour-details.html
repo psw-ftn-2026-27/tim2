@@ -63,7 +63,9 @@
         </p>
         @if (startError()) {
           <p class="error">{{ startError() }}</p>
-          <p><a routerLink="/my-position">Set your position</a></p>
+          @if (positionMissing()) {
+            <p><a routerLink="/my-position">Set your position</a></p>
+          }
         }
       }
     </section>
