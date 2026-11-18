@@ -11,6 +11,12 @@
     <p class="meta">Price: <span class="amount">{{ tour().price }} EC</span></p>
   }
 
+  @if (tour().lengthKm !== null) {
+    <p class="meta">Length: {{ tour().lengthKm?.toFixed(1) }} km</p>
+  } @else {
+    <p class="meta">Length: Not calculated</p>
+  }
+
   @if (tour().recommendedGroupSize; as groupSize) {
     <p class="meta">Group size: {{ groupSize.min }}–{{ groupSize.max }} people</p>
   } @else {

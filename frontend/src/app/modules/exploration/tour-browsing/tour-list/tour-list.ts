@@ -20,6 +20,8 @@ const emptyCriteria = {
   car: false,
   minPrice: null as number | null,
   maxPrice: null as number | null,
+  minLengthKm: null as number | null,
+  maxLengthKm: null as number | null,
   difficultySort: 'None' as SortDirection,
   priceSort: 'None' as SortDirection,
 };
@@ -46,6 +48,8 @@ export class TourList {
     validate(path.maxPrice, ({ value }) =>
       value() === null || Number.isInteger(value()) ? undefined : wholePriceError,
     );
+    min(path.minLengthKm, 0, { message: 'Shortest length cannot be negative.' });
+    min(path.maxLengthKm, 0, { message: 'Longest length cannot be negative.' });
   });
 
   protected readonly page = signal(1);
@@ -89,6 +93,12 @@ export class TourList {
     }
     if (criteria.maxPrice !== null && this.form.maxPrice().valid()) {
       params.append('maxPrice', String(criteria.maxPrice));
+    }
+    if (criteria.minLengthKm !== null && this.form.minLengthKm().valid()) {
+      params.append('minLengthKm', String(criteria.minLengthKm));
+    }
+    if (criteria.maxLengthKm !== null && this.form.maxLengthKm().valid()) {
+      params.append('maxLengthKm', String(criteria.maxLengthKm));
     }
     if (criteria.difficultySort !== 'None') {
       params.append('difficultySort', criteria.difficultySort);
