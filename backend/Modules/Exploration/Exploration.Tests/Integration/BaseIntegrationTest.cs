@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Tests.Integration.Seeds;
 using Payment.Infrastructure.Persistence;
+using Positions.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
 
@@ -28,5 +29,6 @@ public abstract class BaseIntegrationTest
         Factory = factory;
         Factory.Reseed<ExplorationDbContext>(ExplorationSeed.All);
         Factory.Reseed<PaymentDbContext>(TourPurchaseSeed.All);
+        PositionsReseed.Apply(Factory);
     }
 }

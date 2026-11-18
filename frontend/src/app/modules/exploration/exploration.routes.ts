@@ -5,6 +5,7 @@ import { MyTours } from './tour-authoring/my-tours/my-tours';
 import { MapSearch } from './tour-browsing/map-search/map-search';
 import { TourDetails } from './tour-browsing/tour-details/tour-details';
 import { TourList } from './tour-browsing/tour-list/tour-list';
+import { ActiveTour } from './tour-execution/active-tour/active-tour';
 import { Preferences } from './tour-preference-setting/preferences/preferences';
 
 export const explorationRoutes: Routes = [
@@ -15,4 +16,5 @@ export const explorationRoutes: Routes = [
   { path: 'preferences', component: Preferences },
   { path: 'map-search', component: MapSearch },
   { path: 'tours/:id', component: TourDetails },
+  { path: 'tours/:id/run', component: ActiveTour },
 ];

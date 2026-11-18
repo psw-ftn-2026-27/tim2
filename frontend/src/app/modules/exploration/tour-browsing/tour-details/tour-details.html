@@ -52,6 +52,16 @@
       @if (!current.isPurchased && !current.isOwnTour) {
         <p><a [routerLink]="['/payment/cart/add', current.id]">Add to cart</a></p>
       }
+
+      @if (current.isPurchased) {
+        <p>
+          <button class="button button--primary" type="button" (click)="start()">Start tour</button>
+        </p>
+        @if (startError()) {
+          <p class="error">{{ startError() }}</p>
+          <p><a routerLink="/my-position">Set your position</a></p>
+        }
+      }
     </section>
 
     <h2>Key points</h2>

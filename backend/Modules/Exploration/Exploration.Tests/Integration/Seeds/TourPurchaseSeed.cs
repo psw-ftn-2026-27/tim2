@@ -19,5 +19,8 @@ internal static class TourPurchaseSeed
     public static readonly TourPurchaseToken BuyersArchivedTasmajdan = new(Buyer, TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Id, TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Name, TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Price);
     public static readonly TourPurchaseToken BuyersSynagogue = new(Buyer, TourSeed.PublishedSynagogueWithSecretOnVisibleKeyPoint.Id, TourSeed.PublishedSynagogueWithSecretOnVisibleKeyPoint.Name, TourSeed.PublishedSynagogueWithSecretOnVisibleKeyPoint.Price);
 
-    public static TourPurchaseToken[] All => [BuyersKalemegdan, BuyersSkadarlija, BuyersArchivedTasmajdan, BuyersSynagogue];
+    public static readonly TourPurchaseToken ExplorersFortressUnderground = new(WellKnownUsers.Explorer, TourSeed.PublishedModeratelyPricedFortress.Id, TourSeed.PublishedModeratelyPricedFortress.Name, TourSeed.PublishedModeratelyPricedFortress.Price);
+    public static readonly TourPurchaseToken ExplorersGalleries = new(WellKnownUsers.Explorer, TourSeed.PublishedCheapGallery.Id, TourSeed.PublishedCheapGallery.Name, TourSeed.PublishedCheapGallery.Price);
+
+    public static TourPurchaseToken[] All => [BuyersKalemegdan, BuyersSkadarlija, BuyersArchivedTasmajdan, BuyersSynagogue, ExplorersFortressUnderground, ExplorersGalleries];
 }

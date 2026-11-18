@@ -2,16 +2,20 @@ using Exploration.Application;
 using Exploration.Application.KeyPointAuthoring;
 using Exploration.Application.TourAuthoring;
 using Exploration.Application.TourBrowsing;
+using Exploration.Application.TourExecution;
 using Exploration.Application.TourLocationSearchRecording;
 using Exploration.Application.TourLocationSearchRecords;
 using Exploration.Application.TourPreferenceSetting;
 using Exploration.Application.TourPreferences;
 using Exploration.Application.TourPublishing;
+using Exploration.Application.TourSessions;
 using Exploration.Application.Tours;
 using Exploration.Contracts;
+using Exploration.Domain.TourSessions;
 using Exploration.Infrastructure.Persistence;
 using Exploration.Infrastructure.Persistence.TourLocationSearchRecords;
 using Exploration.Infrastructure.Persistence.TourPreferences;
+using Exploration.Infrastructure.Persistence.TourSessions;
 using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +37,10 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourPreferenceRepository, TourPreferenceRepository>();
         services.AddScoped<ITourPreferenceReadRepository, TourPreferenceReadRepository>();
         services.AddScoped<ITourLocationSearchRecordRepository, TourLocationSearchRecordRepository>();
+        services.AddScoped<ITourSessionRepository, TourSessionRepository>();
+        services.AddScoped<ITourSessionReadRepository, TourSessionReadRepository>();
+
+        services.AddScoped<TourStarting>();
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
@@ -43,6 +51,8 @@ public static class ExplorationModuleExtensions
         services.AddScoped<TourPreferenceSettingService>();
         services.AddScoped<TourPreferenceSettingQueries>();
         services.AddScoped<TourLocationSearchRecordingService>();
+        services.AddScoped<TourExecutionService>();
+        services.AddScoped<TourExecutionQueries>();
 
         services.AddScoped<IExplorationApi, ExplorationApi>();
 
