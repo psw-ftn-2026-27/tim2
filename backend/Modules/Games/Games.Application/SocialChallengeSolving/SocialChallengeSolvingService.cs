@@ -1,5 +1,6 @@
 using Games.Application.SocialChallengeRuns;
 using Games.Application.SocialChallenges;
+using Games.Domain.Locations;
 using Games.Domain.SocialChallengeRuns;
 using Games.Domain.SocialChallenges;
 using Positions.Contracts;
@@ -40,7 +41,7 @@ public sealed class SocialChallengeSolvingService
         var activeRun = await _runRepository.GetActiveByChallengeAsync(challengeId);
         var solvedRun = await _runRepository.GetSolvedByChallengeAndPlayerAsync(challengeId, playerId);
 
-        var newRun = _challengeSolver.Activate(challenge, activeRun, solvedRun, playerId, position.Latitude, position.Longitude, DateTime.UtcNow);
+        var newRun = _challengeSolver.Activate(challenge, activeRun, solvedRun, playerId, new Location(position.Latitude, position.Longitude), DateTime.UtcNow);
 
         if (newRun is not null)
         {
@@ -62,7 +63,8 @@ public sealed class SocialChallengeSolvingService
             throw new NotFoundException($"Social challenge {challengeId} has no run you can check.");
         }
 
-        _challengeSolver.Check(challenge, run, playerId, position?.Latitude, position?.Longitude, DateTime.UtcNow);
+        var playerPosition = position is null ? null : new Location(position.Latitude, position.Longitude);
+        _challengeSolver.Check(challenge, run, playerId, playerPosition, DateTime.UtcNow);
         await _unitOfWork.SaveChangesAsync();
     }
 

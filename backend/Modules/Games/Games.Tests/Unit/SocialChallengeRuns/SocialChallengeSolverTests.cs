@@ -14,6 +14,7 @@ public class SocialChallengeSolverTests
     private const int ChallengeRangeInMeters = 100;
     private const int ChallengeXp = 50;
     private const double FarLatitude = 46;
+    private static readonly Location ChallengePosition = new(ChallengeLatitude, ChallengeLongitude);
 
     // 11:00 in Belgrade (winter time, UTC+1), inside the default window from 10:00 to 14:00 local time.
     private static readonly DateTime Now = new(2026, 1, 15, 10, 0, 0, DateTimeKind.Utc);
@@ -53,19 +54,19 @@ public class SocialChallengeSolverTests
 
     private SocialChallengeRun StartRun(SocialChallenge challenge, Guid playerId, DateTime now)
     {
-        return _solver.Activate(challenge, null, null, playerId, ChallengeLatitude, ChallengeLongitude, now)!;
+        return _solver.Activate(challenge, null, null, playerId, ChallengePosition, now)!;
     }
 
     private void Join(SocialChallenge challenge, SocialChallengeRun run, Guid playerId, DateTime now)
     {
-        _solver.Activate(challenge, run, null, playerId, ChallengeLatitude, ChallengeLongitude, now);
+        _solver.Activate(challenge, run, null, playerId, ChallengePosition, now);
     }
 
     private SocialChallengeRun CreateSolvedRun(SocialChallenge challenge)
     {
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(5));
-        _solver.Check(challenge, run, _secondPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddSeconds(10));
+        _solver.Check(challenge, run, _secondPlayer, ChallengePosition, Now.AddSeconds(10));
         return run;
     }
 
@@ -76,7 +77,7 @@ public class SocialChallengeSolverTests
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(10));
 
-        _solver.Check(challenge, run, _secondPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddSeconds(21));
+        _solver.Check(challenge, run, _secondPlayer, ChallengePosition, Now.AddSeconds(21));
 
         run.Status.Should().Be(SocialChallengeRunStatus.Active);
         run.Participants.Select(participant => participant.PlayerId).Should().Equal(_secondPlayer);
@@ -89,7 +90,7 @@ public class SocialChallengeSolverTests
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(5));
 
-        _solver.Check(challenge, run, _secondPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddSeconds(10));
+        _solver.Check(challenge, run, _secondPlayer, ChallengePosition, Now.AddSeconds(10));
 
         run.Status.Should().Be(SocialChallengeRunStatus.Solved);
         run.SolvedAt.Should().Be(Now.AddSeconds(10));
@@ -105,8 +106,9 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(5));
+        var position = latitude is null ? null : new Location(latitude.Value, longitude!.Value);
 
-        _solver.Check(challenge, run, _firstPlayer, latitude, longitude, Now.AddSeconds(10));
+        _solver.Check(challenge, run, _firstPlayer, position, Now.AddSeconds(10));
 
         run.HasParticipant(_firstPlayer).Should().BeFalse();
         run.HasParticipant(_secondPlayer).Should().BeTrue();
@@ -119,7 +121,7 @@ public class SocialChallengeSolverTests
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(5));
 
-        _solver.Check(challenge, run, _secondPlayer, ChallengeLatitude, ChallengeLongitude, run.EndsAt);
+        _solver.Check(challenge, run, _secondPlayer, ChallengePosition, run.EndsAt);
 
         run.Status.Should().Be(SocialChallengeRunStatus.Expired);
         run.SolvedAt.Should().BeNull();
@@ -132,7 +134,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
         var run = StartRun(challenge, _firstPlayer, Now);
 
-        var newRun = _solver.Activate(challenge, run, null, _secondPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddSeconds(5));
+        var newRun = _solver.Activate(challenge, run, null, _secondPlayer, ChallengePosition, Now.AddSeconds(5));
 
         newRun.Should().BeNull();
         run.Participants.Select(participant => participant.PlayerId).Should().Equal(_firstPlayer, _secondPlayer);
@@ -144,7 +146,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(2);
         var solvedRun = CreateSolvedRun(challenge);
 
-        var activation = () => _solver.Activate(challenge, null, solvedRun, _firstPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddMinutes(1));
+        var activation = () => _solver.Activate(challenge, null, solvedRun, _firstPlayer, ChallengePosition, Now.AddMinutes(1));
 
         activation.Should().Throw<DomainException>();
     }
@@ -155,9 +157,9 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
         var run = StartRun(challenge, _firstPlayer, Now);
         Join(challenge, run, _secondPlayer, Now.AddSeconds(5));
-        _solver.Check(challenge, run, _firstPlayer, null, null, Now.AddSeconds(10));
+        _solver.Check(challenge, run, _firstPlayer, null, Now.AddSeconds(10));
 
-        var newRun = _solver.Activate(challenge, run, null, _firstPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddSeconds(15));
+        var newRun = _solver.Activate(challenge, run, null, _firstPlayer, ChallengePosition, Now.AddSeconds(15));
 
         newRun.Should().BeNull();
         run.HasParticipant(_firstPlayer).Should().BeTrue();
@@ -169,7 +171,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
 
         // About 100 m north of the challenge location, which is exactly the range.
-        var run = _solver.Activate(challenge, null, null, _firstPlayer, 45.0008993216, ChallengeLongitude, Now);
+        var run = _solver.Activate(challenge, null, null, _firstPlayer, new Location(45.0008993216, ChallengeLongitude), Now);
 
         run.Should().NotBeNull();
         run!.HasParticipant(_firstPlayer).Should().BeTrue();
@@ -181,7 +183,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
 
         // About 101 m north of the challenge location.
-        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, 45.0009083148, ChallengeLongitude, Now);
+        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, new Location(45.0009083148, ChallengeLongitude), Now);
 
         activation.Should().Throw<DomainException>();
     }
@@ -193,7 +195,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(new TimeOnly(16, 0), TimeSpan.FromHours(2), 3);
         var windowStart = new DateTime(2026, 7, 15, 14, 0, 0, DateTimeKind.Utc);
 
-        var run = _solver.Activate(challenge, null, null, _firstPlayer, ChallengeLatitude, ChallengeLongitude, windowStart);
+        var run = _solver.Activate(challenge, null, null, _firstPlayer, ChallengePosition, windowStart);
 
         run!.StartedAt.Should().Be(windowStart);
         run.EndsAt.Should().Be(new DateTime(2026, 7, 15, 16, 0, 0, DateTimeKind.Utc));
@@ -205,7 +207,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(new TimeOnly(16, 0), TimeSpan.FromHours(2), 3);
         var windowEnd = new DateTime(2026, 7, 15, 16, 0, 0, DateTimeKind.Utc);
 
-        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, ChallengeLatitude, ChallengeLongitude, windowEnd);
+        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, ChallengePosition, windowEnd);
 
         activation.Should().Throw<DomainException>();
     }
@@ -220,7 +222,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(new TimeOnly(23, 30), TimeSpan.FromHours(1), 3);
         var activatedAt = new DateTime(2026, 1, 15, hour, minute, 0, DateTimeKind.Utc);
 
-        var run = _solver.Activate(challenge, null, null, _firstPlayer, ChallengeLatitude, ChallengeLongitude, activatedAt);
+        var run = _solver.Activate(challenge, null, null, _firstPlayer, ChallengePosition, activatedAt);
 
         run!.EndsAt.Should().Be(new DateTime(2026, 1, 15, 23, 30, 0, DateTimeKind.Utc));
     }
@@ -231,7 +233,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(2);
         var solvedRun = CreateSolvedRun(challenge);
 
-        var newRun = _solver.Activate(challenge, solvedRun, null, _thirdPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddMinutes(1));
+        var newRun = _solver.Activate(challenge, solvedRun, null, _thirdPlayer, ChallengePosition, Now.AddMinutes(1));
 
         newRun.Should().NotBeNull();
         newRun!.Participants.Select(participant => participant.PlayerId).Should().Equal(_thirdPlayer);
@@ -244,7 +246,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(3);
         var endedRun = StartRun(challenge, _firstPlayer, Now);
 
-        var newRun = _solver.Activate(challenge, endedRun, null, _secondPlayer, ChallengeLatitude, ChallengeLongitude, Now.AddDays(1));
+        var newRun = _solver.Activate(challenge, endedRun, null, _secondPlayer, ChallengePosition, Now.AddDays(1));
 
         endedRun.Status.Should().Be(SocialChallengeRunStatus.Expired);
         newRun.Should().NotBeNull();
@@ -257,7 +259,7 @@ public class SocialChallengeSolverTests
         var challenge = CreatePublishedChallenge(2);
         var solvedRun = CreateSolvedRun(challenge);
 
-        _solver.Check(challenge, solvedRun, _firstPlayer, null, null, Now.AddMinutes(1));
+        _solver.Check(challenge, solvedRun, _firstPlayer, null, Now.AddMinutes(1));
 
         solvedRun.Status.Should().Be(SocialChallengeRunStatus.Solved);
         solvedRun.SolvedAt.Should().Be(Now.AddSeconds(10));
@@ -269,7 +271,7 @@ public class SocialChallengeSolverTests
     {
         var challenge = CreateDraftChallenge(DefaultStart, DefaultDuration, 3);
 
-        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, ChallengeLatitude, ChallengeLongitude, Now);
+        var activation = () => _solver.Activate(challenge, null, null, _firstPlayer, ChallengePosition, Now);
 
         activation.Should().Throw<DomainException>();
     }

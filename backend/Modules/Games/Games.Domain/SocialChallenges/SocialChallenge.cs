@@ -84,10 +84,10 @@ public sealed class SocialChallenge : AggregateRoot
         Location = location;
     }
 
-    public bool IsWithinRange(double latitude, double longitude)
+    public bool IsWithinRange(Location position)
     {
         return Location is not null
-            && Location.DistanceInMetersTo(new Location(latitude, longitude)) <= RangeInMeters;
+            && Location.DistanceInMetersTo(position) <= RangeInMeters;
     }
 
     public bool IsOpenAt(DateTime utcNow)

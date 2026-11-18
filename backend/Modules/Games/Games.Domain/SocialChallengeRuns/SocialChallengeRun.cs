@@ -77,14 +77,13 @@ public sealed class SocialChallengeRun : AggregateRoot
         EarnedXp = xp;
     }
 
-    public void Expire(DateTime now)
+    // Writes the Expired status once the end of an active run has passed; any other run stays as it is.
+    public void ExpireIfEnded(DateTime now)
     {
-        if (Status != SocialChallengeRunStatus.Active || now < EndsAt)
+        if (Status == SocialChallengeRunStatus.Active && now >= EndsAt)
         {
-            throw new DomainException("Only an active run whose time window has ended can expire.");
+            Status = SocialChallengeRunStatus.Expired;
         }
-
-        Status = SocialChallengeRunStatus.Expired;
     }
 
     // A run is expired as soon as its end passes, even before a check or an activation writes the Expired status.

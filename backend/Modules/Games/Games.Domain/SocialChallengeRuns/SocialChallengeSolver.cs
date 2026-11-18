@@ -1,3 +1,4 @@
+using Games.Domain.Locations;
 using Games.Domain.SocialChallenges;
 using Shared.Domain.Exceptions;
 
@@ -11,8 +12,7 @@ public sealed class SocialChallengeSolver
         SocialChallengeRun? activeRun,
         SocialChallengeRun? solvedRun,
         Guid playerId,
-        double latitude,
-        double longitude,
+        Location position,
         DateTime now)
     {
         if (challenge.Status != SocialChallengeStatus.Published)
@@ -23,7 +23,7 @@ public sealed class SocialChallengeSolver
         {
             throw new DomainException("You have already solved this social challenge.");
         }
-        if (!challenge.IsWithinRange(latitude, longitude))
+        if (!challenge.IsWithinRange(position))
         {
             throw new DomainException("You are outside the social challenge range. Come closer to activate it.");
         }
@@ -32,10 +32,7 @@ public sealed class SocialChallengeSolver
             throw new DomainException("The social challenge time window is not open now.");
         }
 
-        if (activeRun is not null && activeRun.Status == SocialChallengeRunStatus.Active && activeRun.IsExpiredAt(now))
-        {
-            activeRun.Expire(now);
-        }
+        activeRun?.ExpireIfEnded(now);
         if (activeRun is not null && activeRun.Status == SocialChallengeRunStatus.Active)
         {
             activeRun.Join(playerId, now);
@@ -46,7 +43,7 @@ public sealed class SocialChallengeSolver
     }
 
     // The challenge state is not checked here: a run started while the challenge was published lasts until it ends or is solved.
-    public void Check(SocialChallenge challenge, SocialChallengeRun run, Guid playerId, double? latitude, double? longitude, DateTime now)
+    public void Check(SocialChallenge challenge, SocialChallengeRun run, Guid playerId, Location? position, DateTime now)
     {
         if (run.Status == SocialChallengeRunStatus.Solved && run.HasParticipant(playerId))
         {
@@ -58,14 +55,11 @@ public sealed class SocialChallengeSolver
         }
         if (run.IsExpiredAt(now))
         {
-            if (run.Status == SocialChallengeRunStatus.Active)
-            {
-                run.Expire(now);
-            }
+            run.ExpireIfEnded(now);
             return;
         }
 
-        if (latitude is null || longitude is null || !challenge.IsWithinRange(latitude.Value, longitude.Value))
+        if (position is null || !challenge.IsWithinRange(position))
         {
             run.Remove(playerId);
         }
