@@ -62,4 +62,14 @@ public sealed class Wallet : AggregateRoot
             _transactions.Add(new Transaction(item.EntityId, item.Name, -item.Price));
         }
     }
+
+    public void PayGiftCard(Guid giftCardId, int amount)
+    {
+        if (Balance() < amount)
+        {
+            throw new DomainException("There is not enough EC in the wallet for this gift card.");
+        }
+
+        _transactions.Add(new Transaction(giftCardId, "Gift card", -amount));
+    }
 }

@@ -106,6 +106,31 @@ public class WalletTests
         wallet.Balance().Should().Be(balanceBefore - 150);
     }
 
+    [Fact]
+    public void Paying_a_gift_card_without_enough_balance_is_rejected_and_the_balance_stays_the_same()
+    {
+        var wallet = CreateWalletWithDeposits();
+        var balanceBefore = wallet.Balance();
+
+        var pay = () => wallet.PayGiftCard(Guid.NewGuid(), 151);
+
+        pay.Should().Throw<DomainException>();
+        wallet.Balance().Should().Be(balanceBefore);
+    }
+
+    [Fact]
+    public void Paying_a_gift_card_adds_a_negative_transaction_and_lowers_the_balance_by_its_amount()
+    {
+        var wallet = CreateWalletWithDeposits();
+        var balanceBefore = wallet.Balance();
+        var giftCardId = Guid.NewGuid();
+
+        wallet.PayGiftCard(giftCardId, 80);
+
+        wallet.Transactions.Should().Contain(transaction => transaction.EntityId == giftCardId && transaction.Amount == -80);
+        wallet.Balance().Should().Be(balanceBefore - 80);
+    }
+
     private static Wallet CreateWalletWithDeposits()
     {
         var wallet = new Wallet(WellKnownUsers.Explorer);
