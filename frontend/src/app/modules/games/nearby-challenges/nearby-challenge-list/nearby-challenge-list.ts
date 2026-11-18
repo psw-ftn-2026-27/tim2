@@ -84,6 +84,20 @@ export class NearbyChallengeList {
     }
   }
 
+  protected async activateLocationChallenge(challengeId: string): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      await this.nearby.activateLocationChallenge(challengeId);
+      await this.router.navigate(['/games/play/location', challengeId]);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not activate the location challenge.'));
+      this.challenges.reload();
+    } finally {
+      this.pending.set(false);
+    }
+  }
+
   protected async activateSocialChallenge(challengeId: string): Promise<void> {
     this.pending.set(true);
     this.error.set(null);

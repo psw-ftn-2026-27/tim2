@@ -10,6 +10,13 @@ export interface MapLocation {
   label?: string;
 }
 
+// An area drawn on the map, such as the place where a hidden location must be searched for.
+export interface MapCircle {
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
+
 const NOVI_SAD: L.LatLngTuple = [45.2551, 19.8451];
 const TILES_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILES_ATTRIBUTION =
@@ -49,6 +56,7 @@ export class MapView {
   readonly showPath = input(false);
   readonly pickLocation = input(false);
   readonly selectedLocation = input<MapLocation | null>(null);
+  readonly circle = input<MapCircle | null>(null);
 
   readonly pathLength = output<number | null>();
   readonly locationPicked = output<MapLocation>();
@@ -84,6 +92,7 @@ export class MapView {
         return;
       }
 
+      const circle = this.circle();
       const pins = this.locations().map((location) => {
         const icon = location.label ? labeledPin(location.label) : PIN;
         const pin = L.marker([location.latitude, location.longitude], { icon });
@@ -93,16 +102,46 @@ export class MapView {
         return pin.addTo(map);
       });
 
-      if (pins.length === 0) {
+      // The view takes in every pin and the whole circle, so neither starts off screen.
+      const view = L.latLngBounds(pins.map((pin) => pin.getLatLng()));
+      if (circle !== null) {
+        // toBounds takes the width of the square around the circle, which is twice the radius.
+        view.extend(L.latLng(circle.latitude, circle.longitude).toBounds(circle.radiusMeters * 2));
+      }
+
+      if (!view.isValid()) {
         map.setView(NOVI_SAD, 13);
       } else {
-        map.fitBounds(L.latLngBounds(pins.map((pin) => pin.getLatLng())), {
+        map.fitBounds(view, {
           maxZoom: 16,
           padding: [32, 32],
         });
       }
 
       onCleanup(() => pins.forEach((pin) => pin.remove()));
+    });
+
+    effect((onCleanup) => {
+      const map = this.map();
+      const circle = this.circle();
+      if (map === null || circle === null) {
+        return;
+      }
+
+      const accent = getComputedStyle(this.mapElement().nativeElement)
+        .getPropertyValue('--color-accent')
+        .trim();
+      const area = L.circle([circle.latitude, circle.longitude], {
+        className: 'map-circle',
+        color: accent,
+        fillColor: accent,
+        fillOpacity: 0.15,
+        radius: circle.radiusMeters,
+        // A click inside the circle goes through to the map, so picking a place still works there.
+        interactive: false,
+      }).addTo(map);
+
+      onCleanup(() => area.remove());
     });
 
     // A click only reports the place; the page keeps it and passes it back as selectedLocation.

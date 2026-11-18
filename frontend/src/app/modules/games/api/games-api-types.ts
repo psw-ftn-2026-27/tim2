@@ -160,6 +160,25 @@ export interface QuizProgressDto {
   solvedAt: string | null;
 }
 
+export type LocationChallengeProgressState = 'Unavailable' | 'NotActivated' | 'Active' | 'Solved';
+
+export interface HiddenPointProgressDto {
+  number: number;
+  imageUrl: string;
+  location: LocationDto | null;
+}
+
+export interface LocationChallengeProgressDto {
+  challengeId: string;
+  state: LocationChallengeProgressState;
+  name: string | null;
+  center: LocationDto | null;
+  searchRadiusInMeters: number | null;
+  hiddenPoints: HiddenPointProgressDto[] | null;
+  solvedAt: string | null;
+  earnedXp: number | null;
+}
+
 export type SocialChallengeProgressState = 'InRun' | 'NotInRun' | 'Expired' | 'Solved';
 
 export interface SocialChallengeProgressDto {

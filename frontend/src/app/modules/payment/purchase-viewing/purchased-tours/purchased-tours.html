@@ -17,6 +17,7 @@
           <th scope="col">Tour</th>
           <th scope="col">Price</th>
           <th scope="col">Purchased</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -25,10 +26,11 @@
             <td>{{ tour.name }}</td>
             <td><span class="amount">{{ tour.price }} EC</span></td>
             <td>{{ formatTime(tour.purchasedAt) }}</td>
+            <td><a class="button" [routerLink]="['/exploration/tours', tour.tourId]">Open</a></td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="meta">You have not purchased any tours yet.</td>
+            <td colspan="4" class="meta">You have not purchased any tours yet.</td>
           </tr>
         }
       </tbody>

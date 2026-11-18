@@ -6,4 +6,5 @@ namespace Payment.Application.TourPurchaseTokens;
 public interface ITourPurchaseTokenReadRepository
 {
     Task<PageResult<PurchasedTourDto>> GetByBuyerIdAsync(Guid buyerId, int page, int pageSize);
+    Task<bool> ExistsAsync(Guid buyerId, Guid tourId);
 }
