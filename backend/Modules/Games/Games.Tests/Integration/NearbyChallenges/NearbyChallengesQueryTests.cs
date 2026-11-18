@@ -48,6 +48,7 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         var danubePark = nearby!.Single(challenge => challenge.Id == QuizSeed.PublishedDanubePark.Id);
         danubePark.IsStarted.Should().BeTrue();
         danubePark.IsSolved.Should().BeTrue();
+        danubePark.EarnedXp.Should().Be(QuizAttemptSeed.ThirdExplorersDanubeParkSolvedWithTwoOfThree.EarnedXp);
         nearby!.Single(challenge => challenge.Id == QuizSeed.PublishedSynagogue.Id).IsSolved.Should().BeFalse();
     }
 
@@ -94,5 +95,20 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         strandBeach.IsStarted.Should().BeTrue();
         locationChallenges.Single(challenge => challenge.Id == LocationChallengeSeed.RepublishedSynagogueCourtyardInSecondRound.Id)
             .IsStarted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Location_challenge_solved_in_the_current_round_is_listed_as_solved_with_the_earned_xp_and_one_solved_in_an_earlier_round_is_not()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.SecondExplorer, "explorer");
+
+        var nearby = await client.GetFromJsonAsync<List<NearbyChallengeDto>>("/api/games/nearby-challenges", JsonOptions);
+
+        var square = nearby!.Single(challenge => challenge.Id == LocationChallengeSeed.PublishedSynagogueSquare.Id);
+        square.IsSolved.Should().BeTrue();
+        square.EarnedXp.Should().Be(LocationChallengeAttemptSeed.SecondExplorersSynagogueSquareSolvedInCurrentRound.EarnedXp);
+        var courtyard = nearby!.Single(challenge => challenge.Id == LocationChallengeSeed.RepublishedSynagogueCourtyardInSecondRound.Id);
+        courtyard.IsSolved.Should().BeFalse();
+        courtyard.EarnedXp.Should().BeNull();
     }
 }

@@ -2,11 +2,14 @@ using Games.Application.Locations;
 
 namespace Games.Application.LocationChallengeSolving;
 
-// Only the Active state fills the fields after State; Unavailable and NotActivated leave them null.
+// Active and Solved fill the fields from Name to HiddenPoints; Unavailable and NotActivated leave them null.
+// Only Solved fills SolvedAt and EarnedXp.
 public sealed record LocationChallengeProgressDto(
     Guid ChallengeId,
     LocationChallengeProgressState State,
     string? Name,
     LocationDto? Center,
     int? SearchRadiusInMeters,
-    List<HiddenPointProgressDto>? HiddenPoints);
+    List<HiddenPointProgressDto>? HiddenPoints,
+    DateTime? SolvedAt,
+    int? EarnedXp);

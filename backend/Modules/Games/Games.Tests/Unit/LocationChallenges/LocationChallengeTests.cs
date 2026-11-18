@@ -344,4 +344,18 @@ public class LocationChallengeTests
 
         playing.Should().Throw<DomainException>();
     }
+
+    // The first hidden point is 0.0005 degrees north of the start; 0.0000441 is about 4.9 m and 0.0000495 about 5.5 m further north.
+    [Theory]
+    [InlineData(0, new[] { 1 })]
+    [InlineData(0.0000441, new[] { 1 })]
+    [InlineData(0.0000495, new int[0])]
+    public void Hidden_point_is_within_the_discovery_range_only_up_to_five_meters_from_the_position(double latitudeOffset, int[] expected)
+    {
+        var challenge = CreateChallenge();
+
+        var numbers = challenge.PointNumbersWithinDiscoveryRange(LocationNorthOfStart(0.0005 + latitudeOffset));
+
+        numbers.Should().Equal(expected);
+    }
 }

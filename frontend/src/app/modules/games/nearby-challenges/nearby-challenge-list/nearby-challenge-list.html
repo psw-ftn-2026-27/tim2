@@ -65,7 +65,12 @@
             <td><span class="amount">{{ challenge.xp }} XP</span></td>
             <td>
               @if (challenge.isSolved) {
-                <span class="badge">Solved</span>
+                <div class="row">
+                  <span class="badge">Solved</span>
+                  @if (challenge.type === 'LocationChallenge' && challenge.earnedXp !== null) {
+                    <span>Earned <span class="amount">{{ challenge.earnedXp }} XP</span></span>
+                  }
+                </div>
               }
             </td>
             <td>

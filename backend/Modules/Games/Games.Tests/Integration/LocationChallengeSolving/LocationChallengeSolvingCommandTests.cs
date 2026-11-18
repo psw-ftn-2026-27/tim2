@@ -99,4 +99,87 @@ public class LocationChallengeSolvingCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Player_standing_on_the_last_undiscovered_point_checks_the_spot_and_the_attempt_is_solved_with_the_xp_of_the_challenge()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var challenge = LocationChallengeSeed.PublishedLimanPark;
+        var attempt = LocationChallengeAttemptSeed.ExplorersLimanParkWithoutTheFirstPoint;
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{challenge.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.LocationChallengeAttempts.Single(row => row.Id == attempt.Id);
+        stored.DiscoveredPointNumbers.Should().BeEquivalentTo(Enumerable.Range(1, challenge.HiddenPoints.Count));
+        stored.SolvedAt.Should().NotBeNull();
+        stored.EarnedXp.Should().Be(challenge.Xp);
+    }
+
+    [Fact]
+    public async Task Checking_without_a_saved_position_is_rejected_and_the_attempt_stays_the_same()
+    {
+        var attempt = LocationChallengeAttemptSeed.PlayerWithoutPositionsLimanParkInCurrentRound;
+        var client = Factory.CreateClientFor(attempt.PlayerId, "explorer");
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.LocationChallengeAttempts.Single(row => row.Id == attempt.Id);
+        stored.DiscoveredPointNumbers.Should().BeEmpty();
+        stored.SolvedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Checking_in_a_challenge_that_is_not_published_is_rejected_and_the_attempt_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+        var attempt = LocationChallengeAttemptSeed.ExplorersFishermansIslandBeforeItWasRetired;
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.RetiredFishermansIsland.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.LocationChallengeAttempts.Single(row => row.Id == attempt.Id);
+        stored.DiscoveredPointNumbers.Should().BeEmpty();
+        stored.SolvedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Checking_away_from_every_hidden_point_succeeds_and_the_attempt_stays_the_same()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.ThirdExplorer, "explorer");
+        var attempt = LocationChallengeAttemptSeed.ThirdExplorersStrandBeachInCurrentRound;
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedStrandBeach.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<GamesDbContext>();
+        var stored = assertContext.LocationChallengeAttempts.Single(row => row.Id == attempt.Id);
+        stored.DiscoveredPointNumbers.Should().BeEmpty();
+        stored.SolvedAt.Should().BeNull();
+        stored.EarnedXp.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_check_a_hidden_spot()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_check_a_hidden_spot()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsync($"/api/games/location-challenges/{LocationChallengeSeed.PublishedLimanPark.Id}/check", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

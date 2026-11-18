@@ -32,4 +32,17 @@ public sealed class LocationChallengeSolver
             challenge.SearchRadiusInMeters(extraRadiusInMeters),
             now);
     }
+
+    // The challenge answers which points are in range, and the attempt decides which of them are new and when it is solved.
+    public void Check(LocationChallenge challenge, LocationChallengeAttempt attempt, Location position, DateTime now)
+    {
+        challenge.EnsureCanBePlayed();
+        if (attempt.Round != challenge.CurrentRound)
+        {
+            throw new DomainException("This attempt belongs to an earlier round of the location challenge, so it cannot be checked.");
+        }
+
+        var numbersInRange = challenge.PointNumbersWithinDiscoveryRange(position);
+        attempt.RecordDiscovery(numbersInRange, challenge.HiddenPoints.Count, challenge.Xp, now);
+    }
 }

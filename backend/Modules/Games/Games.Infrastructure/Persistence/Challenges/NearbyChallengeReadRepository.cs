@@ -47,13 +47,17 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                 IsStarted = _dbContext.QuizAttempts
                     .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId),
                 IsSolved = _dbContext.QuizAttempts
-                    .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId && attempt.SolvedAt != null)
+                    .Any(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId && attempt.SolvedAt != null),
+                EarnedXp = _dbContext.QuizAttempts
+                    .Where(attempt => attempt.QuizId == quiz.Id && attempt.PlayerId == playerId)
+                    .Select(attempt => attempt.EarnedXp)
+                    .FirstOrDefault()
             })
             .ToListAsync();
     }
 
-    // Only an attempt from the current round counts as started. A location challenge cannot be solved yet,
-    // so IsSolved stays false until checking a hidden point adds the solved attempt.
+    // Only an attempt from the current round counts, so an attempt solved in an earlier round neither marks the row
+    // as solved nor brings its earned XP.
     private async Task<List<NearbyRow>> FindLocationChallengeRowsAsync(Guid playerId)
     {
         return await _dbContext.LocationChallenges
@@ -71,7 +75,17 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
                     .Any(attempt => attempt.ChallengeId == challenge.Id
                         && attempt.PlayerId == playerId
                         && attempt.Round == challenge.CurrentRound),
-                IsSolved = false
+                IsSolved = _dbContext.LocationChallengeAttempts
+                    .Any(attempt => attempt.ChallengeId == challenge.Id
+                        && attempt.PlayerId == playerId
+                        && attempt.Round == challenge.CurrentRound
+                        && attempt.SolvedAt != null),
+                EarnedXp = _dbContext.LocationChallengeAttempts
+                    .Where(attempt => attempt.ChallengeId == challenge.Id
+                        && attempt.PlayerId == playerId
+                        && attempt.Round == challenge.CurrentRound)
+                    .Select(attempt => attempt.EarnedXp)
+                    .FirstOrDefault()
             })
             .ToListAsync();
     }
@@ -89,7 +103,8 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             distance,
             MetersToRange(distance, row.RangeInMeters),
             row.IsStarted,
-            row.IsSolved);
+            row.IsSolved,
+            row.EarnedXp);
     }
 
     // 0 when the player is already inside the range; otherwise rounded up, so the player is never told a distance shorter than the real one.
@@ -109,5 +124,6 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
         public int RangeInMeters { get; init; }
         public bool IsStarted { get; init; }
         public bool IsSolved { get; init; }
+        public int? EarnedXp { get; init; }
     }
 }
