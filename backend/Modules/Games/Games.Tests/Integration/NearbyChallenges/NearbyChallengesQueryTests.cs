@@ -80,16 +80,16 @@ public class NearbyChallengesQueryTests : BaseIntegrationTest
         var nearby = await client.GetFromJsonAsync<List<NearbyChallengeDto>>("/api/games/nearby-challenges", JsonOptions);
 
         var closed = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.PublishedEveningConcertClosedNow.Id);
-        closed.IsWindowOpen.Should().BeFalse();
-        closed.WindowStart.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.Window.Start);
-        closed.RequiredParticipants.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.RequiredParticipants);
+        closed.Social!.IsWindowOpen.Should().BeFalse();
+        closed.Social.WindowStart.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.Window.Start);
+        closed.Social.RequiredParticipants.Should().Be(SocialChallengeSeed.PublishedEveningConcertClosedNow.RequiredParticipants);
         var inRun = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.PublishedPromenadeWalkOpenNow.Id);
-        inRun.IsWindowOpen.Should().BeTrue();
-        inRun.IsInActiveRun.Should().BeTrue();
+        inRun.Social!.IsWindowOpen.Should().BeTrue();
+        inRun.IsStarted.Should().BeTrue();
         inRun.IsSolved.Should().BeFalse();
         var solved = nearby!.Single(challenge => challenge.Id == SocialChallengeSeed.RepublishedRiverbankWithMoreXp.Id);
         solved.IsSolved.Should().BeTrue();
-        solved.EarnedXp.Should().Be(SocialChallengeRunSeed.RiverbankSolvedWithFortyXp.EarnedXp);
+        solved.Social!.EarnedXp.Should().Be(SocialChallengeRunSeed.RiverbankSolvedWithFortyXp.EarnedXp);
         nearby!.Select(challenge => challenge.Id).Should()
             .NotContain(SocialChallengeSeed.DraftMorningRun.Id)
             .And.NotContain(SocialChallengeSeed.DraftSquareMeetup.Id);

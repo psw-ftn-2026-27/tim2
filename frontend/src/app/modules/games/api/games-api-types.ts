@@ -128,10 +128,13 @@ export interface NearbyChallengeDto {
   metersToRange: number;
   isStarted: boolean;
   isSolved: boolean;
-  requiredParticipants: number | null;
-  windowStart: string | null;
-  isWindowOpen: boolean | null;
-  isInActiveRun: boolean | null;
+  social: NearbySocialChallengeDto | null;
+}
+
+export interface NearbySocialChallengeDto {
+  requiredParticipants: number;
+  windowStart: string;
+  isWindowOpen: boolean;
   earnedXp: number | null;
 }
 

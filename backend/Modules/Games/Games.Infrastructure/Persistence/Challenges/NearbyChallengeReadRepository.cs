@@ -96,10 +96,6 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             MetersToRange(distance, row.RangeInMeters),
             row.IsStarted,
             row.IsSolved,
-            null,
-            null,
-            null,
-            null,
             null);
     }
 
@@ -118,11 +114,11 @@ internal sealed class NearbyChallengeReadRepository : INearbyChallengeReadReposi
             MetersToRange(distance, row.RangeInMeters),
             row.IsInActiveRun,
             row.EarnedXp is not null,
-            row.RequiredParticipants,
-            row.WindowStart,
-            new TimeWindow(row.WindowStart, row.WindowDuration).Contains(now),
-            row.IsInActiveRun,
-            row.EarnedXp);
+            new NearbySocialChallengeDto(
+                row.RequiredParticipants,
+                row.WindowStart,
+                new TimeWindow(row.WindowStart, row.WindowDuration).Contains(now),
+                row.EarnedXp));
     }
 
     private static double DistanceInMeters(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)

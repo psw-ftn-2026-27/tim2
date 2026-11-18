@@ -99,7 +99,7 @@ export class NearbyChallengeList {
   }
 
   // The server sends the window start as "HH:mm:ss" local time at the challenge's place; the row shows hours and minutes.
-  protected windowStartTime(windowStart: string | null): string {
-    return windowStart === null ? '' : windowStart.slice(0, 5);
+  protected windowStartTime(windowStart: string): string {
+    return windowStart.slice(0, 5);
   }
 }
