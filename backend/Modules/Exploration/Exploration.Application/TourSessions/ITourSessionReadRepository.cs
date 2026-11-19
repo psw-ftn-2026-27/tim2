@@ -4,5 +4,5 @@ namespace Exploration.Application.TourSessions;
 
 public interface ITourSessionReadRepository
 {
-    Task<ActiveTourDto?> GetActiveTourAsync(Guid touristId, Guid tourId);
+    Task<TourProgressDto?> GetTourProgressAsync(Guid touristId, Guid tourId);
 }

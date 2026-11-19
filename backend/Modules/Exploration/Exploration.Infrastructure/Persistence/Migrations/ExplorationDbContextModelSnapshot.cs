@@ -97,6 +97,12 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("AbandonedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -282,6 +288,29 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Exploration.Domain.TourSessions.TourSession", b =>
                 {
+                    b.OwnsMany("Exploration.Domain.TourSessions.KeyPointCompletion", "CompletedKeyPoints", b1 =>
+                        {
+                            b1.Property<Guid>("TourSessionId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<DateTime>("CompletedAt");
+
+                            b1.Property<Guid>("KeyPointId");
+
+                            b1.HasKey("TourSessionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("TourSessions", "exploration");
+
+                            b1
+                                .ToJson("CompletedKeyPoints")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourSessionId");
+                        });
+
                     b.OwnsOne("Exploration.Domain.Locations.Location", "StartPosition", b1 =>
                         {
                             b1.Property<Guid>("TourSessionId")
@@ -300,6 +329,8 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TourSessionId");
                         });
+
+                    b.Navigation("CompletedKeyPoints");
 
                     b.Navigation("StartPosition")
                         .IsRequired();

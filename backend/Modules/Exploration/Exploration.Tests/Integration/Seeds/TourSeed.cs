@@ -27,6 +27,7 @@ internal static class TourSeed
     public static readonly Tour DraftDorcolWithVisibleKeyPointInBelgrade;
     public static readonly Tour ArchivedTasmajdanWithVisibleKeyPointInBelgrade;
     public static readonly Tour PublishedSynagogueWithSecretOnVisibleKeyPoint;
+    public static readonly Tour ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition;
 
     static TourSeed()
     {
@@ -174,7 +175,17 @@ internal static class TourSeed
         PublishedSynagogueWithSecretOnVisibleKeyPoint.AddKeyPoint("Trg mladenaca", "Mali trg na kraju Jevrejske ulice.", "/images/trg-mladenaca.jpg", new Location(45.2514, 19.8385), "Na trgu je nekada bila gradska vaga.", false);
         PublishedSynagogueWithSecretOnVisibleKeyPoint.SetCalculatedLength(0.5);
         PublishedSynagogueWithSecretOnVisibleKeyPoint.Publish();
+
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition = new(WellKnownUsers.Explorer, "Knez Mihailova ulica", "Šetnja počinje kod spomenika knezu Mihailu na Trgu republike, vodi Knez Mihailovom ulicom pored starih palata i završava se na ulazu u Kalemegdanski park.", TourDifficulty.Easy, ["beograd"]);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.ChangeRecommendedGroupSize(1, 10);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.AddTransportTime(TransportMode.Walking, 40);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.AddKeyPoint("Spomenik knezu Mihailu", "Konjanička statua na Trgu republike.", "/images/knez-mihailo.jpg", new Location(44.8164, 20.4600), "Vajar je statuu izlio u Firenci.", true);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.AddKeyPoint("Knez Mihailova ulica", "Pešačka ulica sa palatama iz devetnaestog veka.", "/images/knez-mihailova.jpg", new Location(44.8176, 20.4569), "Ispod ulice su ostaci rimskog Singidunuma.", false);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.AddKeyPoint("Ulaz u Kalemegdan", "Ulaz u park na kraju ulice.", "/images/kalemegdan-ulaz.jpg", new Location(44.8215, 20.4515), "Kod ulaza je nekada bio gradski šanac.", false);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.SetCalculatedLength(1.0);
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.Publish();
+        ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition.Archive();
     }
 
-    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints, PublishedKalemegdanWithVisibleKeyPointInBelgrade, PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade, PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade, DraftDorcolWithVisibleKeyPointInBelgrade, ArchivedTasmajdanWithVisibleKeyPointInBelgrade, PublishedSynagogueWithSecretOnVisibleKeyPoint];
+    public static Tour[] All => [FortressWalk, CityStroll, SecondExplorersTrail, PublishableRiverside, PublishedVineyards, PublishedMonasteries, PublishedLakeside, PublishedFreeParkWalk, PublishedCheapGallery, PublishedModeratelyPricedFortress, PublishedExpensiveMountain, ArchivedCastle, DraftOldTownWithThreeKeyPoints, SecondExplorersDraftMarketWithTwoKeyPoints, PublishedBridgesWithTwoKeyPoints, PublishedKalemegdanWithVisibleKeyPointInBelgrade, PublishedSkadarlijaWithOnlyHiddenKeyPointInBelgrade, PublishedAvalaWithFirstVisibleKeyPointOutsideBelgrade, DraftDorcolWithVisibleKeyPointInBelgrade, ArchivedTasmajdanWithVisibleKeyPointInBelgrade, PublishedSynagogueWithSecretOnVisibleKeyPoint, ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition];
 }

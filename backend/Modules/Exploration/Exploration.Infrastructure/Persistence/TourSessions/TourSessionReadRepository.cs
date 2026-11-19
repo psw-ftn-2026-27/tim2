@@ -1,6 +1,5 @@
 using Exploration.Application.TourExecution;
 using Exploration.Application.TourSessions;
-using Exploration.Domain.TourSessions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Exploration.Infrastructure.Persistence.TourSessions;
@@ -14,21 +13,30 @@ internal sealed class TourSessionReadRepository : ITourSessionReadRepository
         _dbContext = dbContext;
     }
 
-    // Progress through the key points is not recorded yet, so the next uncompleted key point is the first one.
-    public Task<ActiveTourDto?> GetActiveTourAsync(Guid touristId, Guid tourId)
+    // The tourist's latest session for the tour, whatever its status, so a completed tour is shown as completed.
+    // Secrets come only with completed key points (P4); a completed tour has no next key point left.
+    public Task<TourProgressDto?> GetTourProgressAsync(Guid touristId, Guid tourId)
     {
         return _dbContext.TourSessions
-            .Where(session => session.TouristId == touristId && session.TourId == tourId && session.Status == TourSessionStatus.Active)
-            .Join(_dbContext.Tours, session => session.TourId, tour => tour.Id, (session, tour) => tour)
-            .Select(tour => new ActiveTourDto(
-                tour.Name,
-                tour.KeyPoints
+            .Where(session => session.TouristId == touristId && session.TourId == tourId)
+            .OrderByDescending(session => session.StartedAt)
+            .Join(_dbContext.Tours, session => session.TourId, tour => tour.Id, (session, tour) => new { session, tour })
+            .Select(row => new TourProgressDto(
+                row.tour.Name,
+                row.session.Status,
+                row.tour.KeyPoints
+                    .Where(keyPoint => !row.session.CompletedKeyPoints.Any(completion => completion.KeyPointId == keyPoint.Id))
                     .OrderBy(keyPoint => keyPoint.Order)
-                    .Select(keyPoint => new ActiveTourKeyPointDto(
+                    .Select(keyPoint => new TourProgressKeyPointDto(
                         keyPoint.Name,
                         keyPoint.Location.Latitude,
                         keyPoint.Location.Longitude))
-                    .First()))
+                    .FirstOrDefault(),
+                row.tour.KeyPoints
+                    .Where(keyPoint => row.session.CompletedKeyPoints.Any(completion => completion.KeyPointId == keyPoint.Id))
+                    .OrderBy(keyPoint => keyPoint.Order)
+                    .Select(keyPoint => new CompletedKeyPointDto(keyPoint.Name, keyPoint.Secret))
+                    .ToList()))
             .FirstOrDefaultAsync();
     }
 }
