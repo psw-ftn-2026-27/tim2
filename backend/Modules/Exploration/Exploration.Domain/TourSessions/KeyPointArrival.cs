@@ -19,10 +19,7 @@ public sealed class KeyPointArrival
 
         session.RecordActivity();
 
-        var remainingKeyPoints = tour.KeyPoints
-            .OrderBy(keyPoint => keyPoint.Order)
-            .Where(keyPoint => session.CompletedKeyPoints.All(completion => completion.KeyPointId != keyPoint.Id))
-            .ToList();
+        var remainingKeyPoints = RemainingKeyPoints(session, tour);
         if (remainingKeyPoints.Count == 0)
         {
             return;
@@ -33,5 +30,13 @@ public sealed class KeyPointArrival
         {
             session.CompleteKeyPoint(nextKeyPoint.Id, remainingKeyPoints.Count == 1);
         }
+    }
+
+    private static List<KeyPoint> RemainingKeyPoints(TourSession session, Tour tour)
+    {
+        return tour.KeyPoints
+            .OrderBy(keyPoint => keyPoint.Order)
+            .Where(keyPoint => session.CompletedKeyPoints.All(completion => completion.KeyPointId != keyPoint.Id))
+            .ToList();
     }
 }

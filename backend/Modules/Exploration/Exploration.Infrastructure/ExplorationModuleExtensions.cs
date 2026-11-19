@@ -31,6 +31,17 @@ public static class ExplorationModuleExtensions
         services.AddHostedService<ExplorationModuleInitializer>();
         services.AddAutoMapper(mapper => mapper.AddProfile<ExplorationMapperProfile>());
 
+        AddRepositories(services);
+        AddServices(services);
+        AddQueries(services);
+
+        services.AddScoped<IExplorationApi, ExplorationApi>();
+
+        return services;
+    }
+
+    private static void AddRepositories(IServiceCollection services)
+    {
         services.AddScoped<ITourRepository, TourRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<ExplorationDbContext>());
         services.AddScoped<ITourReadRepository, TourReadRepository>();
@@ -39,24 +50,26 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourLocationSearchRecordRepository, TourLocationSearchRecordRepository>();
         services.AddScoped<ITourSessionRepository, TourSessionRepository>();
         services.AddScoped<ITourSessionReadRepository, TourSessionReadRepository>();
+    }
 
+    private static void AddServices(IServiceCollection services)
+    {
         services.AddScoped<TourStarting>();
         services.AddScoped<KeyPointArrival>();
-
         services.AddScoped<TourAuthoringService>();
-        services.AddScoped<TourAuthoringQueries>();
         services.AddScoped<TourPublishingService>();
         services.AddScoped<KeyPointAuthoringService>();
-        services.AddScoped<KeyPointAuthoringQueries>();
-        services.AddScoped<TourBrowsingQueries>();
         services.AddScoped<TourPreferenceSettingService>();
-        services.AddScoped<TourPreferenceSettingQueries>();
         services.AddScoped<TourLocationSearchRecordingService>();
         services.AddScoped<TourExecutionService>();
+    }
+
+    private static void AddQueries(IServiceCollection services)
+    {
+        services.AddScoped<TourAuthoringQueries>();
+        services.AddScoped<KeyPointAuthoringQueries>();
+        services.AddScoped<TourBrowsingQueries>();
+        services.AddScoped<TourPreferenceSettingQueries>();
         services.AddScoped<TourExecutionQueries>();
-
-        services.AddScoped<IExplorationApi, ExplorationApi>();
-
-        return services;
     }
 }
