@@ -33,9 +33,16 @@ public sealed class TourExecutionController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{id:guid}/active")]
-    public async Task<ActionResult<ActiveTourDto?>> GetActive(Guid id)
+    [HttpPost("{id:guid}/check-arrival")]
+    public async Task<ActionResult> CheckArrival(Guid id)
     {
-        return await _executionQueries.GetActiveTourAsync(User.GetUserId(), id);
+        await _executionService.CheckArrivalAsync(User.GetUserId(), id);
+        return NoContent();
+    }
+
+    [HttpGet("{id:guid}/progress")]
+    public async Task<ActionResult<TourProgressDto?>> GetProgress(Guid id)
+    {
+        return await _executionQueries.GetTourProgressAsync(User.GetUserId(), id);
     }
 }

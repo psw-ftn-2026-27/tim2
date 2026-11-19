@@ -41,6 +41,7 @@ public static class ExplorationModuleExtensions
         services.AddScoped<ITourSessionReadRepository, TourSessionReadRepository>();
 
         services.AddScoped<TourStarting>();
+        services.AddScoped<KeyPointArrival>();
 
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();

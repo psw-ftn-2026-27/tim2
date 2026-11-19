@@ -169,13 +169,22 @@ export interface TourDetailsDto {
   isOwnTour: boolean;
 }
 
-export interface ActiveTourKeyPointDto {
+export type TourSessionStatus = 'Active' | 'Completed' | 'Abandoned';
+
+export interface TourProgressKeyPointDto {
   name: string;
   latitude: number;
   longitude: number;
 }
 
-export interface ActiveTourDto {
+export interface CompletedKeyPointDto {
+  name: string;
+  secret: string | null;
+}
+
+export interface TourProgressDto {
   tourName: string;
-  nextKeyPoint: ActiveTourKeyPointDto;
+  status: TourSessionStatus;
+  nextKeyPoint: TourProgressKeyPointDto | null;
+  completedKeyPoints: CompletedKeyPointDto[];
 }

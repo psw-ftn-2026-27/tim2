@@ -153,4 +153,58 @@ public class TourExecutionCommandTests : BaseIntegrationTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Tourist_standing_at_the_next_key_point_checks_arrival_and_it_is_completed_with_the_activity_recorded()
+    {
+        var activeSession = TourSessionSeed.SecondExplorersActiveKnezMihailovaWithFirstKeyPointReached;
+        var tour = TourSeed.ArchivedKnezMihailovaWithSecondKeyPointAtSecondExplorersPosition;
+        var client = Factory.CreateClientFor(activeSession.TouristId, "explorer");
+
+        var response = await client.PostAsync($"/api/exploration/tours/{tour.Id}/check-arrival", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourSessions.Single(session => session.Id == activeSession.Id);
+        stored.CompletedKeyPoints.Select(completion => completion.KeyPointId)
+            .Should().Equal(tour.KeyPoints[0].Id, tour.KeyPoints[1].Id);
+        stored.CompletedKeyPoints[1].CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        stored.LastActivityAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+        stored.Status.Should().Be(TourSessionStatus.Active);
+    }
+
+    [Fact]
+    public async Task Checking_arrival_without_an_active_session_is_rejected_and_nothing_is_recorded()
+    {
+        var completedSession = TourSessionSeed.BuyersCompletedKalemegdan;
+        var client = Factory.CreateClientFor(completedSession.TouristId, "explorer");
+
+        var response = await client.PostAsync($"/api/exploration/tours/{completedSession.TourId}/check-arrival", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var stored = assertContext.TourSessions.Single(session => session.Id == completedSession.Id);
+        stored.LastActivityAt.Should().BeNull();
+        stored.CompletedKeyPoints.Should().HaveCount(completedSession.CompletedKeyPoints.Count);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_check_arrival()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsync($"/api/exploration/tours/{TourSessionSeed.ExplorersActiveFortressUnderground.TourId}/check-arrival", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Administrator_cannot_check_arrival()
+    {
+        var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+
+        var response = await client.PostAsync($"/api/exploration/tours/{TourSessionSeed.ExplorersActiveFortressUnderground.TourId}/check-arrival", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

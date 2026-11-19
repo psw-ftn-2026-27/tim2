@@ -11,8 +11,8 @@ public sealed class TourExecutionQueries
         _sessionReadRepository = sessionReadRepository;
     }
 
-    public Task<ActiveTourDto?> GetActiveTourAsync(Guid touristId, Guid tourId)
+    public Task<TourProgressDto?> GetTourProgressAsync(Guid touristId, Guid tourId)
     {
-        return _sessionReadRepository.GetActiveTourAsync(touristId, tourId);
+        return _sessionReadRepository.GetTourProgressAsync(touristId, tourId);
     }
 }

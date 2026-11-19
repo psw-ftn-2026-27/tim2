@@ -11,4 +11,8 @@ export class TourExecution {
   async abandon(id: string): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/abandon`, {}));
   }
+
+  async checkArrival(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/check-arrival`, {}));
+  }
 }

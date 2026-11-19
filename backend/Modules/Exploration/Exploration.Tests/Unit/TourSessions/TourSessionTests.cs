@@ -19,4 +19,15 @@ public class TourSessionTests
 
         abandoning.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Arrival_cannot_be_checked_on_a_session_that_is_not_active()
+    {
+        var session = new TourSession(WellKnownUsers.Explorer, Guid.NewGuid(), new Location(45.2671, 19.8335));
+        session.Abandon();
+
+        var checking = () => session.RecordActivity();
+
+        checking.Should().Throw<DomainException>();
+    }
 }
