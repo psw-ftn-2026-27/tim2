@@ -37,6 +37,39 @@ public class TourExecutionCommandTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Starting_the_tour_that_is_already_active_resumes_its_session_without_creating_a_new_one()
+    {
+        var activeSession = TourSessionSeed.ExplorersActiveFortressUnderground;
+        var client = Factory.CreateClientFor(activeSession.TouristId, "explorer");
+        using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+        var countBefore = arrangeContext.TourSessions.Count(session => session.TouristId == activeSession.TouristId);
+
+        var response = await client.PostAsync($"/api/exploration/tours/{activeSession.TourId}/start", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        var sessions = assertContext.TourSessions.Where(session => session.TouristId == activeSession.TouristId).ToList();
+        sessions.Should().HaveCount(countBefore);
+        sessions.Single(session => session.Status == TourSessionStatus.Active).Id.Should().Be(activeSession.Id);
+    }
+
+    // The spec assumes that a bought tour stays the buyer's even after its author archives it.
+    [Fact]
+    public async Task Tourist_starts_a_purchased_tour_that_the_author_has_since_archived()
+    {
+        var touristId = TourPurchaseSeed.Buyer;
+        var tourId = TourSeed.ArchivedTasmajdanWithVisibleKeyPointInBelgrade.Id;
+        var client = Factory.CreateClientFor(touristId, "explorer");
+
+        var response = await client.PostAsync($"/api/exploration/tours/{tourId}/start", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+        assertContext.TourSessions
+            .Should().ContainSingle(session => session.TouristId == touristId && session.TourId == tourId && session.Status == TourSessionStatus.Active);
+    }
+
+    [Fact]
     public async Task Starting_another_tour_while_one_is_active_is_rejected_and_no_session_is_created()
     {
         var touristId = TourSessionSeed.ExplorersActiveFortressUnderground.TouristId;

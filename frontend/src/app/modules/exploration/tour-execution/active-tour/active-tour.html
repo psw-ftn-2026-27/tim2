@@ -4,7 +4,7 @@
   @if (activeTour.isLoading()) {
     <p>Loading the active tour...</p>
   } @else if (activeTour.error()) {
-    <p class="error">Could not load the active tour. Log in and try again.</p>
+    <p class="error">Could not load the tour.</p>
   } @else if (activeTour.value(); as current) {
     <header class="page-header">
       <h1>{{ current.tourName }}</h1>

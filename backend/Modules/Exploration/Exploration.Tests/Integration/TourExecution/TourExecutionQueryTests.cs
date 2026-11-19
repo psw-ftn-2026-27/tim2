@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Exploration.Application.TourExecution;
 using Exploration.Tests.Integration.Seeds;
@@ -24,5 +25,27 @@ public class TourExecutionQueryTests : BaseIntegrationTest
         activeTour.NextKeyPoint.Name.Should().Be(firstKeyPoint.Name);
         activeTour.NextKeyPoint.Latitude.Should().Be(firstKeyPoint.Location.Latitude);
         activeTour.NextKeyPoint.Longitude.Should().Be(firstKeyPoint.Location.Longitude);
+    }
+
+    [Fact]
+    public async Task A_tour_that_is_not_active_for_the_tourist_returns_no_content()
+    {
+        var activeSession = TourSessionSeed.ExplorersActiveFortressUnderground;
+        var client = Factory.CreateClientFor(activeSession.TouristId, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{TourSeed.PublishedCheapGallery.Id}/active");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task Another_tourists_active_tour_is_not_shown()
+    {
+        var activeSession = TourSessionSeed.ExplorersActiveFortressUnderground;
+        var client = Factory.CreateClientFor(TourPurchaseSeed.Buyer, "explorer");
+
+        var response = await client.GetAsync($"/api/exploration/tours/{activeSession.TourId}/active");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }
