@@ -1,8 +1,11 @@
 import { HttpErrorResponse, httpResource } from '@angular/common/http';
-import { Component, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { UserPositionDto } from '../../../../shared/api/user-position';
 import { MapLocation, MapView } from '../../../../shared/map/map';
+import { serverMessage } from '../../../../shared/util/server-message';
 import { TourDetailsDto } from '../../api/exploration-api-types';
+import { TourBrowsing } from '../tour-browsing';
 
 @Component({
   imports: [MapView, RouterLink],
@@ -11,6 +14,9 @@ import { TourDetailsDto } from '../../api/exploration-api-types';
   templateUrl: './tour-details.html',
 })
 export class TourDetails {
+  private readonly tourBrowsing = inject(TourBrowsing);
+  private readonly router = inject(Router);
+
   readonly id = input.required<string>();
 
   protected readonly tour = httpResource<TourDetailsDto>(
@@ -38,4 +44,25 @@ export class TourDetails {
       name: keyPoint.name,
     }));
   });
+
+  // The server answers 204 while the user has no position, which arrives here as null.
+  protected readonly position = httpResource<UserPositionDto | null>(() => '/api/positions/mine');
+
+  // The link to set the position helps only when the position is what is missing.
+  protected readonly positionMissing = computed(
+    () => this.position.hasValue() && this.position.value() === null,
+  );
+
+  protected readonly startError = signal<string | null>(null);
+
+  // Starting a tour that is already active resumes it, so the same click leads to the same page.
+  protected async start(): Promise<void> {
+    this.startError.set(null);
+    try {
+      await this.tourBrowsing.startTour(this.id());
+      await this.router.navigate(['/exploration/tours', this.id(), 'run']);
+    } catch (failure) {
+      this.startError.set(serverMessage(failure, 'Could not start the tour.'));
+    }
+  }
 }

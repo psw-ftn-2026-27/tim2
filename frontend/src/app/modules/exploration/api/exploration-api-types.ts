@@ -168,3 +168,14 @@ export interface TourDetailsDto {
   isPurchased: boolean;
   isOwnTour: boolean;
 }
+
+export interface ActiveTourKeyPointDto {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface ActiveTourDto {
+  tourName: string;
+  nextKeyPoint: ActiveTourKeyPointDto;
+}

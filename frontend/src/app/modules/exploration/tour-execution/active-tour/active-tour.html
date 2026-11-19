@@ -1,0 +1,26 @@
+<div class="stack">
+  <p><a [routerLink]="['/exploration/tours', id()]">Back to the tour</a></p>
+
+  @if (activeTour.isLoading()) {
+    <p>Loading the active tour...</p>
+  } @else if (activeTour.error()) {
+    <p class="error">Could not load the tour.</p>
+  } @else if (activeTour.value(); as current) {
+    <header class="page-header">
+      <h1>{{ current.tourName }}</h1>
+    </header>
+
+    <app-map [locations]="pathLocations()" [showPath]="true" [selectedLocation]="youAreHere()" />
+
+    <p>Next key point: {{ current.nextKeyPoint.name }}</p>
+
+    <p>
+      <button class="button button--danger" type="button" (click)="leave()">Leave tour</button>
+    </p>
+    @if (leaveError()) {
+      <p class="error">{{ leaveError() }}</p>
+    }
+  } @else {
+    <p>This tour is not active.</p>
+  }
+</div>

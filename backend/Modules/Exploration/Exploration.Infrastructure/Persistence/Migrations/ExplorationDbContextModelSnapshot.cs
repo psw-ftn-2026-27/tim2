@@ -88,6 +88,38 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.ToTable("TourPreferences", "exploration");
                 });
 
+            modelBuilder.Entity("Exploration.Domain.TourSessions.TourSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AbandonedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TouristId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TouristId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'Active'");
+
+                    b.ToTable("TourSessions", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.KeyPoint", b =>
                 {
                     b.Property<Guid>("Id")
@@ -245,6 +277,31 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Criteria")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Exploration.Domain.TourSessions.TourSession", b =>
+                {
+                    b.OwnsOne("Exploration.Domain.Locations.Location", "StartPosition", b1 =>
+                        {
+                            b1.Property<Guid>("TourSessionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("TourSessionId");
+
+                            b1.ToTable("TourSessions", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TourSessionId");
+                        });
+
+                    b.Navigation("StartPosition")
                         .IsRequired();
                 });
 
