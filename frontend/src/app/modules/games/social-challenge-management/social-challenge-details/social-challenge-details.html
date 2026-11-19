@@ -1,0 +1,210 @@
+<div class="stack">
+  <p><a routerLink="/games/challenges">Back to challenges</a></p>
+
+  @if (challenge.isLoading()) {
+    <p>Loading the challenge...</p>
+  } @else if (challenge.error()) {
+    <p class="error">Could not load the challenge. It may have been deleted, or you are not logged in as an administrator.</p>
+  } @else {
+    @if (challenge.value(); as current) {
+      <h1>{{ current.name }}</h1>
+
+      <p class="row">
+        <span class="amount">{{ current.xp }} XP</span>
+        <span class="badge" [class.badge--muted]="current.status !== 'Published'">{{ current.status }}</span>
+      </p>
+
+      @if (editing()) {
+        <form class="card stack" (submit)="saveEdit($event)">
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" [formField]="editForm.name" />
+            @if (editForm.name().touched()) {
+              @for (message of editForm.name().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="start">Start time</label>
+            <input id="start" type="time" [formField]="editForm.start" />
+            @if (editForm.start().touched()) {
+              @for (message of editForm.start().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="durationMinutes">Duration in minutes</label>
+            <input id="durationMinutes" type="number" step="1" [formField]="editForm.durationMinutes" />
+            @if (editForm.durationMinutes().touched()) {
+              @for (message of editForm.durationMinutes().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="requiredParticipants">Number of people</label>
+            <input
+              id="requiredParticipants"
+              type="number"
+              step="1"
+              [formField]="editForm.requiredParticipants"
+            />
+            @if (editForm.requiredParticipants().touched()) {
+              @for (message of editForm.requiredParticipants().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="rangeInMeters">Range in meters</label>
+            <input id="rangeInMeters" type="number" step="1" [formField]="editForm.rangeInMeters" />
+            @if (editForm.rangeInMeters().touched()) {
+              @for (message of editForm.rangeInMeters().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <section class="stack">
+            <h2>Location</h2>
+
+            <app-quiz-location-fields
+              [location]="editLocation()"
+              (locationPicked)="editLocation.set($event)"
+              (locationRemoved)="editLocation.set(null)"
+            />
+          </section>
+
+          <div class="field">
+            <label for="xp">XP</label>
+            <input id="xp" type="number" step="1" [formField]="editForm.xp" />
+            @if (editForm.xp().touched()) {
+              @for (message of editForm.xp().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="completionMessage">Completion message</label>
+            <textarea id="completionMessage" rows="3" [formField]="editForm.completionMessage"></textarea>
+            @if (editForm.completionMessage().touched()) {
+              @for (message of editForm.completionMessage().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          @if (editError()) {
+            <p class="error">{{ editError() }}</p>
+          }
+
+          <div class="row">
+            <button
+              class="button button--primary"
+              type="submit"
+              [disabled]="!editForm().valid() || pending()"
+            >
+              Save
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelEdit()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      } @else {
+        <section class="stack">
+          <h2>When</h2>
+          <p>
+            Every day from {{ current.start.slice(0, 5) }} to {{ current.end.slice(0, 5) }}
+            ({{ current.duration.slice(0, 5) }})
+          </p>
+        </section>
+
+        <section class="stack">
+          <h2>Players</h2>
+          <p>{{ current.requiredParticipants }} people within {{ current.rangeInMeters }} m</p>
+        </section>
+
+        <section class="stack">
+          <h2>Location</h2>
+          @if (current.location; as location) {
+            <app-map [locations]="savedLocation()" />
+            <p>Location: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}</p>
+          } @else {
+            <p>Location not set</p>
+            @if (current.status === 'Draft') {
+              <p class="hint">The challenge cannot be published until a location is set.</p>
+            }
+          }
+        </section>
+
+        <section class="stack">
+          <h2>Completion message</h2>
+          <p class="completion-message">{{ current.completionMessage }}</p>
+        </section>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <div class="row">
+          @if (confirmingAction()) {
+            <button
+              class="button"
+              [class.button--primary]="confirmingAction() === 'publish' || confirmingAction() === 'repeat'"
+              [class.button--danger]="confirmingAction() !== 'publish' && confirmingAction() !== 'repeat'"
+              type="button"
+              [disabled]="pending()"
+              (click)="confirm()"
+            >
+              @switch (confirmingAction()) {
+                @case ('delete') {
+                  Confirm delete
+                }
+                @case ('publish') {
+                  Confirm publish
+                }
+                @case ('retire') {
+                  Confirm retire
+                }
+                @case ('archive') {
+                  Confirm archive
+                }
+                @case ('repeat') {
+                  Confirm repeat
+                }
+              }
+            </button>
+            <button class="button" type="button" [disabled]="pending()" (click)="cancelConfirm()">
+              Cancel
+            </button>
+          } @else {
+            @if (current.status === 'Draft') {
+              <button class="button" type="button" (click)="startEdit(current)">Edit</button>
+              <button class="button" type="button" (click)="askToConfirm('publish')">Publish</button>
+            }
+            @if (current.status === 'Draft' || current.status === 'Archived') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('delete')">Delete</button>
+            }
+            @if (current.status === 'Published') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('retire')">Retire</button>
+            }
+            @if (current.status === 'Retired') {
+              <button class="button button--danger" type="button" (click)="askToConfirm('archive')">Archive</button>
+            }
+            @if (current.status === 'Retired' || current.status === 'Archived') {
+              <button class="button" type="button" (click)="askToConfirm('repeat')">Repeat</button>
+            }
+          }
+        </div>
+      }
+    }
+  }
+</div>

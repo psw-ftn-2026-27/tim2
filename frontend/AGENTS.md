@@ -50,7 +50,8 @@ frontend/src/
       map/                   presentational component showing locations and a
                              walking path on a map, see Conventions            [platform]
       analytics/             Analytics service, event catalog, consent banner
-                             rendered by the app shell, see Conventions        [platform]
+                             rendered by the app shell; the service records page
+                             views by itself, see Conventions                  [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -139,7 +140,10 @@ construct means adding a lesson, so treat it as a platform decision.
   needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
   drive something outside the component tree, and it needs a reason (the example is
-  `shared/analytics`, where consent switches Google's opt-out flag on the window). Page-scoped state, including its read resources, lives in the page.
+  `shared/analytics`, where consent switches Google's opt-out flag on the window). The
+  one use of `untracked` is the page-view effect in `shared/analytics`: it must re-run
+  only on navigation, not when consent or the user changes, or it would log a second view
+  of the same page. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
 - Timers: a page that repeats a command on a fixed interval uses a plain `setInterval`,
   never RxJS `interval` and never `effect()`. It stops the timer through `DestroyRef`,
@@ -166,7 +170,9 @@ construct means adding a lesson, so treat it as a platform decision.
   (`quiz-management/quiz-form-schema.ts`); the pages import from there.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
-  after a command.
+  after a command. The one exception is the `Analytics` service in `shared/analytics`,
+  which reads `lastSuccessfulNavigation` and the route template from `Router`, because a
+  page view is tied to the route; modules never read the router this way.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
 
@@ -401,7 +407,9 @@ assigned to the platform team, and misalignment is an accepted learning experien
   is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
   content identifiers or closed-set values as params, never a user id, name, email or
   free text. The service adds the role and checks sign-in, consent and the measurement
-  ID itself; a module never calls `gtag` or checks consent. `shared/analytics/README.md`
+  ID itself; a module never calls `gtag` or checks consent. Page views are recorded by the
+  service itself after every navigation, with the route template instead of the real
+  address; a module never logs them. `shared/analytics/README.md`
   shows how to add an event and how to check it in the browser:
 
   ```ts

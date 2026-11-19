@@ -1,5 +1,7 @@
+using Games.Application.LocationChallengeAttempts;
 using Games.Application.LocationChallenges;
 using Games.Application.Locations;
+using Games.Domain.LocationChallengeAttempts;
 using Games.Domain.LocationChallenges;
 using Games.Domain.Locations;
 using Shared.Domain.Exceptions;
@@ -9,11 +11,19 @@ namespace Games.Application.LocationChallengeManagement;
 public sealed class LocationChallengeManagementService
 {
     private readonly ILocationChallengeRepository _challengeRepository;
+    private readonly ILocationChallengeAttemptRepository _attemptRepository;
+    private readonly LocationChallengeRemover _challengeRemover;
     private readonly IUnitOfWork _unitOfWork;
 
-    public LocationChallengeManagementService(ILocationChallengeRepository challengeRepository, IUnitOfWork unitOfWork)
+    public LocationChallengeManagementService(
+        ILocationChallengeRepository challengeRepository,
+        ILocationChallengeAttemptRepository attemptRepository,
+        LocationChallengeRemover challengeRemover,
+        IUnitOfWork unitOfWork)
     {
         _challengeRepository = challengeRepository;
+        _attemptRepository = attemptRepository;
+        _challengeRemover = challengeRemover;
         _unitOfWork = unitOfWork;
     }
 
@@ -38,8 +48,10 @@ public sealed class LocationChallengeManagementService
     public async Task DeleteAsync(Guid challengeId)
     {
         var challenge = await GetChallengeAsync(challengeId);
+        var attempts = await _attemptRepository.GetAllByChallengeAsync(challengeId);
 
-        challenge.EnsureCanBeDeleted();
+        _challengeRemover.EnsureCanBeDeleted(challenge, attempts);
+        _attemptRepository.RemoveRange(attempts);
         _challengeRepository.Remove(challenge);
         await _unitOfWork.SaveChangesAsync();
     }

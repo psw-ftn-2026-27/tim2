@@ -10,10 +10,14 @@ namespace Games.Api;
 public sealed class SocialChallengeManagementController : ControllerBase
 {
     private readonly SocialChallengeManagementService _managementService;
+    private readonly SocialChallengeManagementQueries _managementQueries;
 
-    public SocialChallengeManagementController(SocialChallengeManagementService managementService)
+    public SocialChallengeManagementController(
+        SocialChallengeManagementService managementService,
+        SocialChallengeManagementQueries managementQueries)
     {
         _managementService = managementService;
+        _managementQueries = managementQueries;
     }
 
     [HttpPost]
@@ -34,5 +38,11 @@ public sealed class SocialChallengeManagementController : ControllerBase
     {
         await _managementService.DeleteAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<SocialChallengeDto>> GetById(Guid id)
+    {
+        return await _managementQueries.GetByIdAsync(id);
     }
 }

@@ -31,10 +31,15 @@ public sealed class LocationChallengeAttempt : AggregateRoot
         DiscoveredPointNumbers = [];
     }
 
+    public bool IsSolved()
+    {
+        return SolvedAt is not null;
+    }
+
     // A check without points in range is an ordinary miss, not an error, so an empty list leaves the attempt unchanged.
     public void RecordDiscovery(List<int> numbersInRange, int pointCount, int xp, DateTime checkedAt)
     {
-        if (SolvedAt is not null)
+        if (IsSolved())
         {
             throw new DomainException("You have already solved this location challenge, so it does not accept new checks.");
         }

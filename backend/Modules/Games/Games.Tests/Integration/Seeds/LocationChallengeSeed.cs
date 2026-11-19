@@ -30,6 +30,8 @@ internal static class LocationChallengeSeed
     public static readonly LocationChallenge PublishedSynagogueSquare;
     public static readonly LocationChallenge RepublishedSynagogueCourtyardInSecondRound;
     public static readonly LocationChallenge PublishedLimanPark;
+    public static readonly LocationChallenge ArchivedDanubePark;
+    public static readonly LocationChallenge ArchivedCathedralInSecondRoundSolvedInFirstRound;
 
     static LocationChallengeSeed()
     {
@@ -103,7 +105,35 @@ internal static class LocationChallengeSeed
                 new HiddenPoint("/uploads/liman-most.jpg", new Location(45.2671, 19.8355))
             ]);
         PublishedLimanPark.Publish();
+
+        ArchivedDanubePark = new(
+            "Kutci Dunavskog parka",
+            65,
+            new Location(45.2560, 19.8520),
+            [
+                new HiddenPoint("/uploads/dunavski-park-jezerce.jpg", new Location(45.2570, 19.8520)),
+                new HiddenPoint("/uploads/dunavski-park-spomenik.jpg", new Location(45.2560, 19.8540))
+            ]);
+        ArchivedDanubePark.Publish();
+        ArchivedDanubePark.Retire();
+        ArchivedDanubePark.Archive();
+
+        // Published again after a repeat, so it is archived in its second round; its solved attempt is from the first round.
+        ArchivedCathedralInSecondRoundSolvedInFirstRound = new(
+            "Oko Katedrale",
+            95,
+            new Location(45.2555, 19.8450),
+            [
+                new HiddenPoint("/uploads/katedrala-portal.jpg", new Location(45.2565, 19.8450)),
+                new HiddenPoint("/uploads/katedrala-zvonik.jpg", new Location(45.2555, 19.8470))
+            ]);
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Publish();
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Retire();
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Repeat();
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Publish();
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Retire();
+        ArchivedCathedralInSecondRoundSolvedInFirstRound.Archive();
     }
 
-    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels, PublishedSynagogueSquare, RepublishedSynagogueCourtyardInSecondRound, PublishedLimanPark];
+    public static LocationChallenge[] All => [DraftQuayByTheBridge, DraftOldTownSecrets, PublishedStrandBeach, RetiredFishermansIsland, ArchivedFortressTunnels, PublishedSynagogueSquare, RepublishedSynagogueCourtyardInSecondRound, PublishedLimanPark, ArchivedDanubePark, ArchivedCathedralInSecondRoundSolvedInFirstRound];
 }
