@@ -16,6 +16,18 @@
       Browse tours
     </a>
   </p>
+  <!-- The poster is the video's first frame, so the switch to the playing video is not seen.
+       Muted is bound as a property, because browsers autoplay only a muted video. -->
+  <video
+    class="hero-video"
+    src="/hero.mp4"
+    poster="/hero.jpg"
+    autoplay
+    loop
+    playsinline
+    aria-hidden="true"
+    [muted]="true"
+  ></video>
 </section>
 
 <section class="stack">
