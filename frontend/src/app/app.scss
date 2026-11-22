@@ -43,10 +43,13 @@ nav a:hover {
 }
 
 // The page fills the window, so the footer and the banner sit at its bottom.
+// The clip hides what a full-width section (the landing page photo) pushes under the
+// vertical scrollbar, so the page never scrolls sideways.
 :host {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 // Without the width, the side margins of .container make main only as wide as its

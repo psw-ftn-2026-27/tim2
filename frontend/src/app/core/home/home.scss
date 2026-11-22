@@ -6,13 +6,60 @@
   margin-top: var(--space-6);
 }
 
+// The top of the page plays a muted video behind the text. Until the video loads, the
+// section shows the video's first frame, cropped the same way, so the start is not seen;
+// users who turned off motion in their system settings see only that frame.
+// The negative side margins pull the section out of the page container to the window edges,
+// and the negative top margin cancels the gap the app shell leaves under the header
+// (the header's bottom margin plus the stack spacing before the page).
+// `isolation` keeps the video and the dark wash, both at z-index -1, inside this section.
+// The section is as high as the window, so the rest of the page appears only on scrolling;
+// the text sits in its middle.
 .hero {
-  padding-block: var(--space-6);
+  background: url('/hero.jpg') center top / cover;
+  color: var(--color-accent-text);
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  justify-content: center;
+  margin-inline: calc(50% - 50vw);
+  margin-top: calc((var(--space-5) + var(--space-4)) * -1);
+  min-height: 100svh;
+  padding: var(--space-6) var(--space-4);
+  position: relative;
   text-align: center;
 }
 
+// The video fills the section; when the section is lower than the video, its bottom is cut off.
+// The zero margin undoes the spacing `.stack` gives every child after the first.
+.hero-video {
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  object-fit: cover;
+  object-position: center top;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+
+// A dark wash over the video and the photo keeps the light text readable.
+.hero::after {
+  background: color-mix(in srgb, var(--color-text) 45%, transparent);
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    display: none;
+  }
+}
+
 .lead {
-  color: var(--color-text-muted);
+  color: var(--color-accent-text);
   font-size: var(--font-size-lg);
   margin-inline: auto;
   max-width: 36rem;
