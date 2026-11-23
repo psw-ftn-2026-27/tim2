@@ -1,0 +1,13 @@
+.place {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.placing {
+  align-items: center;
+  justify-content: space-between;
+}

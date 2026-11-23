@@ -28,6 +28,20 @@ h2 {
   font-size: var(--font-size-lg);
 }
 
+h3 {
+  font-size: var(--font-size-md);
+}
+
 a {
   color: var(--color-accent);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+// One visible focus ring for everything reachable with the Tab key.
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }

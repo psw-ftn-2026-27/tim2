@@ -1,0 +1,230 @@
+<div class="stack">
+  <p><a routerLink="/exploration/mine">Back to my tours</a></p>
+
+  <header class="page-header">
+    @if (tour.value(); as current) {
+      <h1>Key points: {{ current.name }}</h1>
+      @if (current.status === 'Draft' && !formOpen()) {
+        <button
+          class="button button--primary"
+          type="button"
+          [disabled]="pending()"
+          (click)="startAdd()"
+        >
+          Add key point
+        </button>
+      }
+    } @else {
+      <h1>Key points</h1>
+    }
+  </header>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (tour.isLoading()) {
+    <p>Loading the key points...</p>
+  } @else if (tour.error()) {
+    <p class="error">Could not load the key points of this tour.</p>
+  } @else if (tour.value(); as current) {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Description</th>
+          <th scope="col">Image</th>
+          <th scope="col">Location</th>
+          <th scope="col">Secret</th>
+          <th scope="col">Visible before purchase</th>
+          @if (current.status === 'Draft') {
+            <th scope="col">Actions</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (keyPoint of current.keyPoints; track keyPoint.id; let first = $first, last = $last) {
+          <tr>
+            <td>{{ keyPoint.order }}</td>
+            <td>{{ keyPoint.name }}</td>
+            <td>{{ keyPoint.description }}</td>
+            <td><img class="thumbnail" [src]="keyPoint.imageUrl" [alt]="keyPoint.name" /></td>
+            <td>{{ keyPoint.latitude.toFixed(5) }}, {{ keyPoint.longitude.toFixed(5) }}</td>
+            <td>
+              @if (keyPoint.secret) {
+                {{ keyPoint.secret }}
+              } @else {
+                <span class="meta">none</span>
+              }
+            </td>
+            <td>{{ keyPoint.isVisibleBeforePurchase ? 'Yes' : 'No' }}</td>
+            @if (current.status === 'Draft') {
+              <td>
+                @if (deletingKeyPointId() === keyPoint.id) {
+                  <p class="delete-question">Are you sure you want to delete this key point?</p>
+                  <div class="row">
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="confirmDelete(keyPoint.id)"
+                    >
+                      Yes
+                    </button>
+                    <button class="button" type="button" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row">
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending() || first"
+                      (click)="move(keyPoint.id, 'Up')"
+                    >
+                      Move up
+                    </button>
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending() || last"
+                      (click)="move(keyPoint.id, 'Down')"
+                    >
+                      Move down
+                    </button>
+                    <button
+                      class="button"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="startEdit(keyPoint)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="button button--danger"
+                      type="button"
+                      [disabled]="pending()"
+                      (click)="startDelete(keyPoint.id)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="current.status === 'Draft' ? 8 : 7">
+              This tour has no key points yet.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <section class="stack">
+      <h2>Path</h2>
+      @if (pathMapShown()) {
+        <app-map
+          [locations]="pathLocations()"
+          [showPath]="true"
+          (pathLength)="saveLength($event)"
+        />
+      }
+      @if (current.keyPoints.length < 2) {
+        <p>Length: 0 km</p>
+      } @else if (current.lengthKm !== null) {
+        <p>Length: {{ current.lengthKm.toFixed(1) }} km</p>
+      } @else {
+        <p class="meta">The length of the tour is not calculated.</p>
+        @if (current.status === 'Draft') {
+          <div class="row">
+            <button class="button" type="button" [disabled]="pending()" (click)="retryPath()">
+              Try again
+            </button>
+          </div>
+        }
+      }
+    </section>
+
+    @if (current.status === 'Draft') {
+      @if (formOpen()) {
+        <form class="card stack key-point-form" (submit)="save($event)">
+          <h2>{{ editingKeyPointId() === null ? 'Add key point' : 'Edit key point' }}</h2>
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" [formField]="form.name" />
+            @if (form.name().touched()) {
+              @for (message of form.name().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" rows="4" [formField]="form.description"></textarea>
+            @if (form.description().touched()) {
+              @for (message of form.description().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <div class="field">
+            <span>Image</span>
+            <app-image-upload
+              [pending]="imagePending()"
+              [error]="imageError()"
+              [uploadedUrl]="form.imageUrl().value() || null"
+              (upload)="uploadImage($event)"
+            />
+            @for (message of form.imageUrl().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <span>Location, click on the map to choose it</span>
+            <app-map
+              [pickLocation]="true"
+              [selectedLocation]="selectedLocation()"
+              (locationPicked)="pickLocation($event)"
+            />
+            @if (selectedLocation(); as location) {
+              <p class="meta">
+                Picked: {{ location.latitude.toFixed(5) }}, {{ location.longitude.toFixed(5) }}
+              </p>
+            }
+            @for (message of form.latitude().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label for="secret">Secret (optional)</label>
+            <textarea id="secret" rows="3" [formField]="form.secret"></textarea>
+          </div>
+
+          <label>
+            <input type="checkbox" [formField]="form.isVisibleBeforePurchase" />
+            Visible before purchase
+          </label>
+
+          <div class="row">
+            <button
+              class="button button--primary"
+              type="submit"
+              [disabled]="!form().valid() || pending()"
+            >
+              Save
+            </button>
+            <button class="button" type="button" (click)="cancelForm()">Cancel</button>
+          </div>
+        </form>
+      }
+    }
+  }
+</div>

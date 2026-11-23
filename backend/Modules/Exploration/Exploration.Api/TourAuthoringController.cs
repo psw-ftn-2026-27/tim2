@@ -35,10 +35,17 @@ public sealed class TourAuthoringController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id:guid}/publish")]
-    public async Task<ActionResult> Publish(Guid id)
+    [HttpPut("{id:guid}/recommended-group-size")]
+    public async Task<ActionResult> ChangeRecommendedGroupSize(Guid id, RecommendedGroupSizeDto dto)
     {
-        await _authoringService.PublishAsync(id, User.GetUserId());
+        await _authoringService.ChangeRecommendedGroupSizeAsync(id, User.GetUserId(), dto);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/price")]
+    public async Task<ActionResult> ChangePrice(Guid id, TourPriceDto dto)
+    {
+        await _authoringService.ChangePriceAsync(id, User.GetUserId(), dto);
         return NoContent();
     }
 

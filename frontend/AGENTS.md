@@ -25,15 +25,33 @@ frontend/src/
   styles/
     _tokens.scss             colours, spacing, radius, type as CSS custom properties
     _base.scss               reset, body, headings, links
-    _layout.scss             page container, stack, grid helpers
-    _components.scss         global classes: button, card, form field, table
+    _layout.scss             page container, stack, grid, page header, row, form page
+    _components.scss         global classes: button, card, form field, table, badge,
+                             amount, paging
+    README.md                styling guide: which class to use when, page structure,
+                             review checklist
+  environments/              environment.ts (production) and environment.development.ts,
+                             swapped by fileReplacements; the GA4 measurement ID   [platform]
   app/
     core/                    auth (state, interceptor, login, register), home,
+                             map-demo (live example of shared/map for the team),
+                             my-position (sets the explorer's simulated position),
                              app.routes.ts                                    [platform]
     shared/
       util/
-      api/                   shared types (PageResult, ProblemDetails),
-                             mirror the server, no client-only fields          [platform]
+      api/                   shared types (PageResult, ProblemDetails, UploadedImageDto,
+                             UserPositionDto), mirror the server, no client-only
+                             fields                                            [platform]
+      images/                Images service: sends one file to POST /api/images [platform]
+      positions/             Positions service: sends the user's position to
+                             PUT /api/positions/mine                           [platform]
+      image-upload/          presentational component for choosing and sending
+                             an image, see Conventions                         [platform]
+      map/                   presentational component showing locations and a
+                             walking path on a map, see Conventions            [platform]
+      analytics/             Analytics service, event catalog, consent banner
+                             rendered by the app shell; the service records page
+                             views by itself, see Conventions                  [platform]
     modules/
       <name>/
         api/                 this module's DTO types, mirror the server, no client-only fields
@@ -47,12 +65,16 @@ frontend/src/
           create-tour/
           my-tours/
           tour-authoring.ts  the group's service: its commands, nothing else
+          tour-form-schema.ts
+                             a form shared by the group's pages: its model and
+                             schema, see Forms
         <name>.routes.ts     the module's routes, lazy-loaded by core/app.routes.ts; the
                              only module file imported from outside the module
 ```
 
 A module is a flat list of use-case groups. A group is a flat list of component
-folders plus at most one service file. That is the whole layout, and it follows the
+folders plus at most one service file, and one form schema file for each form its pages
+share. That is the whole layout, and it follows the
 2025 Angular style guide: organise by feature, never by type, so there are no
 `pages/`, `components/` or `services/` folders. Three rules place any file:
 
@@ -67,6 +89,8 @@ folders plus at most one service file. That is the whole layout, and it follows 
    `tour-list.scss`, no `.component` suffix. Generate with `ng g c tour-browsing/tour-list`
    from the module folder. A client-only type is exported from the file of the
    component whose input or output uses it; other components import it from there.
+   The one exception is the model of a form shared by several pages, which lives in
+   the group's form schema file (see Forms).
 3. Queries live in the page as an `httpResource`; commands live in the group's
    service. A page that runs a command reloads its own resource afterwards.
 
@@ -91,6 +115,10 @@ nothing.
   module's endpoints, and the page's DTO is mirrored in the module's own `api/`. There
   is no third way: a module never uses another module's component or type, never calls
   another module's endpoints, and never shares state with it.
+- The one agreed exception is the host, not a module: the landing page (`core/home`) reads
+  Exploration's agreed featured-tours address (`GET /api/exploration/tours/featured`)
+  directly, with its own type in `core/home`. That address does not change without
+  agreement with the platform team.
 - A module's route paths are its only surface toward other modules. Renaming or
   removing a path another module links to is a cross-team change; flag it.
 - The one legitimately shared state is the current user (identity, roles) in `core/`.
@@ -107,19 +135,44 @@ construct means adding a lesson, so treat it as a platform decision.
   framework-initialised properties.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
   bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`. No template reference
-  variables (`#name`); every value the user types goes through Signal Forms.
+  variables (`#name`); every value the user types goes through Signal Forms. The one
+  exception is `<div #map>` in `shared/map`, read with `viewChild`, because Leaflet
+  needs an element to draw into.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
-  drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
+  drive something outside the component tree, and it needs a reason (the example is
+  `shared/analytics`, where consent switches Google's opt-out flag on the window). The
+  one use of `untracked` is the page-view effect in `shared/analytics`: it must re-run
+  only on navigation, not when consent or the user changes, or it would log a second view
+  of the same page. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
+- Timers: a page that repeats a command on a fixed interval uses a plain `setInterval`,
+  never RxJS `interval` and never `effect()`. It stops the timer through `DestroyRef`,
+  taken with `inject()` like any dependency, and registers `onDestroy` in a constructor
+  without parameters, right after starting the timer, so the start and the stop sit
+  together. That is not constructor injection. `inject()` works only while Angular
+  creates the page, so never call it inside a method. No lifecycle hooks (`ngOnInit`,
+  `ngOnDestroy`). See the periodic check in Conventions.
 - HTTP: `httpResource()` in the page for reads (it carries loading and error state as
   signals, and a fresh one is created on every visit); `HttpClient` with
   `firstValueFrom` in the group's service for writes. Functional interceptors
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
+  A form with a variable number of items (a quiz's questions, each with its answers) keeps
+  one model signal whose fields are arrays, which may nest (each question holds its own
+  array of answers); rules for every item are declared with
+  `applyEach`, add and remove buttons replace the array in the model, and the template
+  walks the arrays with `@for`. Limits on the number of items are shown by disabling those
+  buttons; this only helps the user, the backend domain still enforces the limits.
+  A form used by one page keeps its model type and schema function in that page's file.
+  A form shared by several pages of one group (a quiz's create and details pages) keeps them in
+  `<form>-form-schema.ts` in the group folder, next to the group's service
+  (`quiz-management/quiz-form-schema.ts`); the pages import from there.
 - Routing: `router-outlet`, `routerLink`, `loadChildren`, route parameters bound as
   signal inputs via `withComponentInputBinding`; `inject(Router)` only for navigation
-  after a command.
+  after a command. The one exception is the `Analytics` service in `shared/analytics`,
+  which reads `lastSuccessfulNavigation` and the route template from `Router`, because a
+  page view is tied to the route; modules never read the router this way.
 - No RxJS in student code. `Observable` appears only as the return type of `HttpClient`
   writes, immediately awaited. No NgRx, no facades.
 
@@ -131,6 +184,10 @@ lean files that students extend, not a design system. The four global partials i
 nothing else; every colour, spacing and font value elsewhere refers to a custom property
 defined there.
 
+`src/styles/README.md` is the styling guide every team follows: the palette, the page
+structure, which global class to use when, and the review checklist for frontend PRs.
+Read it before styling a page.
+
 Where a style goes, in order:
 
 1. A token value changes: `_tokens.scss`.
@@ -140,7 +197,10 @@ Where a style goes, in order:
    Never `::ng-deep`.
 
 Do not hand-roll a design system, do not add utility-class frameworks, do not introduce
-`shared/ui` wrappers unprompted. Visual consistency across modules is an open problem
+`shared/ui` wrappers unprompted. The two shared components, `shared/image-upload` and
+`shared/map`, exist because several modules need the same upload and the same map; the
+consent banner in `shared/analytics` is rendered only by the app shell, never by a module.
+Adding another is a platform decision. Visual consistency across modules is an open problem
 assigned to the platform team, and misalignment is an accepted learning experience.
 
 ## Conventions
@@ -148,8 +208,8 @@ assigned to the platform team, and misalignment is an accepted learning experien
 - In feature modules, DTO types mirror the backend's Application DTOs one to one: one
   file per module in `modules/<name>/api/`, shared envelope types in `shared/api/`, so
   the import boundary covers types as well. Client-only types follow rule 2 above.
-  There is no `models/` folder; a client-only type with no single owning component is
-  a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
+  There is no `models/` folder; apart from a shared form's model, a client-only type
+  with no single owning component is a case to raise, not a reason to invent one. There is no generator. The change that alters a DTO on the
   backend also updates the mirrored type in the same commit, and nothing else ever
   touches these files: no client-only fields, no renames, no extra types. Mapping
   rules: enum to a union of string literals, `Guid` and `DateTime` to `string`,
@@ -158,5 +218,203 @@ assigned to the platform team, and misalignment is an accepted learning experien
 - A page component owns the interaction: it declares its read resource, injects its
   group's service for commands, and passes plain values down to presentational
   components, which take `input()`s and raise `output()`s and inject nothing.
+- A page that lets the user add an image renders `app-image-upload` from
+  `shared/image-upload`, passes the file it raises to `upload` of the `Images` service
+  from `shared/images`, and hands the component `pending`, `error` and `uploadedUrl`
+  back. The module keeps only the returned `url`, in its own DTO; it never stores the
+  file itself. The page clears `error` before each upload, which is what lets the
+  component offer a retry after a failure:
+
+  ```html
+  <app-image-upload [pending]="pending()" [error]="error()" [uploadedUrl]="uploadedUrl()"
+                    (upload)="upload($event)" />
+  ```
+
+  ```ts
+  private readonly images = inject(Images);
+
+  protected readonly pending = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly uploadedUrl = signal<string | null>(null);
+
+  protected async upload(file: File): Promise<void> {
+    this.pending.set(true);
+    this.error.set(null);
+    try {
+      const uploaded = await this.images.upload(file);
+      this.uploadedUrl.set(uploaded.url);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not upload the image.'));
+    } finally {
+      this.pending.set(false);
+    }
+  }
+  ```
+- A page that shows locations renders `app-map` from `shared/map` with `locations`
+  (`MapLocation[]`: `latitude`, `longitude`, optional `name` and `label`) and `showPath`.
+  The component draws one pin per location and, when `showPath` is on, a walking path
+  through them in the given order. The `name` shows when the mouse is over the pin; a
+  `label` is a short mark such as `S` or `1` written on the pin itself, for pages where
+  the user must tell the pins apart at a glance. `pathLength` emits the length in km, and `null`
+  whenever there is no path (hidden, fewer than two locations, or routing failed); the
+  page decides whether to show or store it. The component itself shows
+  `Loading path...` while it waits and `Path could not be created` when routing fails.
+  Paths come from `routing.openstreetmap.de` (profile `foot`) and tiles from
+  OpenStreetMap: free public servers with no guarantee they are always up; when routing
+  does not answer within 10 seconds, the map shows that message. Pass `locations` from a
+  field or a `computed()`, never as an array written in the template; the map compares
+  coordinates and asks for a new path only when they change. `/map-demo` is the live
+  example:
+
+  ```html
+  <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
+  ```
+
+  To let the user choose a place, turn on `pickLocation`. Each click emits
+  `locationPicked` with the clicked `latitude` and `longitude` and nothing else; the
+  map does not move the picked pin itself. The page keeps the coordinates in a signal
+  and passes them back through `selectedLocation` (`MapLocation | null`), which the map
+  draws as one pin, styled apart from the `locations` pins; when that pin is off screen,
+  the map pans to it. To edit an existing place, start the signal at it. `/map-demo` shows this too:
+
+  ```html
+  <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
+  ```
+
+  The map shows the `name` of `selectedLocation` on its pin.
+
+  To show an area, such as where a hidden location must be searched for, pass `circle`
+  (`MapCircle | null`: `latitude`, `longitude` and `radiusMeters`, the radius in metres).
+  The map draws it as one see-through circle and fits the view so that every pin and the
+  whole circle are on screen together. A click inside the circle still reaches the map,
+  so `pickLocation` works there too. Without `circle` the map looks as before. Pass it
+  from a field or a `computed()`, like `locations`. `/map-demo` shows this too:
+
+  ```html
+  <app-map [locations]="locations" [circle]="searchArea" />
+  ```
+- The explorer's position is simulated: until there is a mobile app, the explorer clicks
+  on a map to say where they are. The server keeps exactly one position per explorer, so
+  it does not matter on which page it was set. `/my-position` is the temporary place to
+  set it until the pages that need it exist (the running tour of E22, for example).
+  A page of any module that wants the explorer to set their position right there, next
+  to its own key points or challenges, turns on `pickLocation` of `app-map` and passes
+  the saved position as `selectedLocation`, named `You are here`. It reads that position
+  with an `httpResource` on `/api/positions/mine`, which gives `null` while there is
+  none, so there is no pin. On `locationPicked` it ignores the click while a save is
+  running; otherwise it shows `Saving position...` below the map and sends the place to
+  `save` of the `Positions` service from `shared/positions`. On success it reloads the
+  resource, so the pin moves only after the server confirms, and shows `Position saved`;
+  on failure the pin stays and it shows `Position could not be saved`. `/my-position` is
+  the live example:
+
+  ```html
+  <app-map [locations]="keyPoints()" [pickLocation]="true" [selectedLocation]="youAreHere()"
+           (locationPicked)="save($event)" />
+  ```
+
+  ```ts
+  private readonly positions = inject(Positions);
+
+  protected readonly position = httpResource<UserPositionDto | null>(() => '/api/positions/mine');
+  protected readonly youAreHere = computed<MapLocation | null>(() => {
+    const position = this.position.hasValue() ? this.position.value() : null;
+    return position === null ? null : { ...position, name: 'You are here' };
+  });
+
+  protected readonly saving = signal(false);
+  protected readonly saved = signal(false);
+  protected readonly failed = signal(false);
+
+  protected async save(location: MapLocation): Promise<void> {
+    if (this.saving()) {
+      return;
+    }
+    this.saving.set(true);
+    this.saved.set(false);
+    this.failed.set(false);
+    try {
+      await this.positions.save({ latitude: location.latitude, longitude: location.longitude });
+      this.position.reload();
+      this.saved.set(true);
+    } catch {
+      this.failed.set(true);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+  ```
+
+  The page only sets and shows the position. When a module's backend needs to know where
+  the explorer is (to decide that a key point is reached, for example), the page calls
+  that module's own endpoint without coordinates, and the module's backend reads the
+  position through `IPositionsApi` in `Positions.Contracts`. A page never sends the
+  explorer's coordinates to its own module.
+- A page that repeats a check while an execution runs (the participants of a social
+  challenge, the running tour of E22) keeps the check in one method, the same one a
+  `Check` button would call: it sends the command through the group's service and then
+  reloads the page's resource, like any command. The timer starts with the page and calls
+  that method every 10 seconds. The method returns at once while the previous check is
+  still running and while the execution is not active (not loaded, not started, or
+  finished), so a finished execution sends nothing more and the first check goes out on
+  the first tick after the execution becomes active. A failed check shows a message and
+  the timer keeps going; the next successful check clears the message. The timer stops
+  when the user leaves the page. The page sends no coordinates; the module's backend
+  reads the position itself, as described above. While the browser tab is in the
+  background, the browser may slow the timer down, and that is accepted. The names below
+  are an example:
+
+  ```ts
+  private readonly solving = inject(SocialChallengeSolving);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly id = input.required<string>();
+
+  protected readonly execution = httpResource<SocialChallengeExecutionDto>(
+    () => `/api/games/social-challenges/${this.id()}/execution`,
+  );
+  protected readonly active = computed(
+    () => this.execution.hasValue() && this.execution.value().status === 'Active',
+  );
+
+  protected readonly checking = signal(false);
+  protected readonly error = signal<string | null>(null);
+
+  constructor() {
+    const timerId = setInterval(() => this.check(), 10_000);
+    // Without this the timer keeps sending checks after the user has left the page.
+    this.destroyRef.onDestroy(() => clearInterval(timerId));
+  }
+
+  protected async check(): Promise<void> {
+    if (this.checking() || !this.active()) {
+      return;
+    }
+    this.checking.set(true);
+    try {
+      await this.solving.check(this.id());
+      this.error.set(null);
+    } catch (failure) {
+      this.error.set(serverMessage(failure, 'Could not check the challenge.'));
+    } finally {
+      this.execution.reload();
+      this.checking.set(false);
+    }
+  }
+  ```
+- A page that records a GA4 event injects `Analytics` from `shared/analytics` and calls
+  `logEvent` on the line after the awaited command, never in `catch`, so a failed command
+  is not recorded. The event must exist in the catalog `analytics-events.ts`, with only
+  content identifiers or closed-set values as params, never a user id, name, email or
+  free text. The service adds the role and checks sign-in, consent and the measurement
+  ID itself; a module never calls `gtag` or checks consent. Page views are recorded by the
+  service itself after every navigation, with the route template instead of the real
+  address; a module never logs them. `shared/analytics/README.md`
+  shows how to add an event and how to check it in the browser:
+
+  ```ts
+  await this.tourAuthoring.publish(tourId);
+  this.analytics.logEvent({ name: 'tour_published', params: { tour_id: tourId } });
+  ```
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.

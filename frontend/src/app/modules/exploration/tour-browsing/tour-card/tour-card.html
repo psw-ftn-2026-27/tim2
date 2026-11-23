@@ -1,9 +1,27 @@
 <article class="card stack">
   <h3>{{ tour().name }}</h3>
 
-  <p>{{ tour().description }}</p>
+  <p>{{ excerpt() }}</p>
 
   <p class="meta">Difficulty: {{ tour().difficulty }}</p>
+
+  @if (tour().price === 0) {
+    <p class="meta">Price: FREE</p>
+  } @else {
+    <p class="meta">Price: <span class="amount">{{ tour().price }} EC</span></p>
+  }
+
+  @if (tour().lengthKm !== null) {
+    <p class="meta">Length: {{ tour().lengthKm?.toFixed(1) }} km</p>
+  } @else {
+    <p class="meta">Length: Not calculated</p>
+  }
+
+  @if (tour().recommendedGroupSize; as groupSize) {
+    <p class="meta">Group size: {{ groupSize.min }}–{{ groupSize.max }} people</p>
+  } @else {
+    <p class="meta">Group size: Not specified</p>
+  }
 
   @if (tour().tags.length > 0) {
     <ul class="tags">
@@ -22,4 +40,9 @@
   } @else {
     <p class="meta">No transport times yet.</p>
   }
+
+  <p class="row">
+    <a [routerLink]="['/exploration/tours', tour().id]">Details</a>
+    <a [routerLink]="['/payment/cart/add', tour().id]">Add to cart</a>
+  </p>
 </article>

@@ -1,0 +1,56 @@
+<div class="card stack form-page">
+  <p><a routerLink="/payment">Back to payment</a></p>
+
+  <h1>Buy a gift card</h1>
+
+  @if (balance.isLoading()) {
+    <p>Loading the balance...</p>
+  } @else if (balance.error()) {
+    <p class="error">Could not load the balance. Log in and try again.</p>
+  } @else {
+    <p class="balance">Balance: <span class="amount">{{ balance.value()?.balance ?? 0 }} EC</span></p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="recipientEmail">Recipient email</label>
+      <input id="recipientEmail" type="email" [formField]="form.recipientEmail" />
+      @if (form.recipientEmail().touched()) {
+        @for (message of form.recipientEmail().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="amount">Amount in EC</label>
+      <input id="amount" type="number" step="1" [formField]="form.amount" />
+      @if (form.amount().touched()) {
+        @for (message of form.amount().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="message">Message (optional)</label>
+      <textarea id="message" rows="3" [formField]="form.message"></textarea>
+      @if (form.message().touched()) {
+        @for (message of form.message().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="row">
+      <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+        Buy
+      </button>
+      <a class="button" routerLink="/payment/gift-cards">Cancel</a>
+    </div>
+  </form>
+</div>

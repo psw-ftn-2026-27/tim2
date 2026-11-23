@@ -1,0 +1,74 @@
+<div class="stack">
+  <p><a routerLink="/games/play">Back to challenges</a></p>
+
+  @if (progress.isLoading()) {
+    <p>Loading the social challenge...</p>
+  } @else if (progress.error()) {
+    <p class="error">Could not load the social challenge. Log in as an explorer and try again.</p>
+  } @else {
+    @if (progress.value(); as current) {
+      <header class="page-header">
+        <h1>{{ current.name }}</h1>
+      </header>
+
+      @switch (current.state) {
+        @case ('InRun') {
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+
+          <section class="card stack">
+            <p>Players in range: {{ current.participantCount }} / needed {{ current.requiredParticipants }}</p>
+            <p>Waiting for other players</p>
+            <p class="meta">
+              Your position is checked every 10 s while you stay on this page.
+              @if (current.lastCheckedAt) {
+                Last check: {{ formatTime(current.lastCheckedAt) }}
+              }
+            </p>
+          </section>
+        }
+        @case ('NotInRun') {
+          <section class="card stack">
+            <p>You are not in the run (out of range or no check for more than 20 s).</p>
+            <p><a routerLink="/games/play">Back to challenges</a></p>
+          </section>
+        }
+        @case ('Expired') {
+          <section class="card stack">
+            <p>The time window has expired.</p>
+            <p><a routerLink="/games/play">Back to challenges</a></p>
+          </section>
+        }
+        @case ('Solved') {
+          <section class="card stack">
+            <h2>Result</h2>
+            <p>{{ current.completionMessage }}</p>
+            <p>Earned: <span class="amount">{{ current.earnedXp }} XP</span></p>
+            @if (current.solvedAt) {
+              <p class="meta">Solved at {{ formatTime(current.solvedAt) }}</p>
+            }
+            <p><a routerLink="/games/play">Back to challenges</a></p>
+          </section>
+        }
+      }
+
+      <app-map
+        [locations]="challengePins()"
+        [pickLocation]="true"
+        [selectedLocation]="youAreHere()"
+        (locationPicked)="save($event)"
+      />
+
+      @if (saving()) {
+        <p>Saving position...</p>
+      }
+      @if (saved()) {
+        <p>Position saved</p>
+      }
+      @if (failed()) {
+        <p class="error">Position could not be saved</p>
+      }
+    }
+  }
+</div>

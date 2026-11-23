@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Games.Infrastructure.Persistence;
 using Games.Tests.Integration.Seeds;
+using Positions.Tests.Integration.Seeds;
 using Shared.Tests;
 using Xunit;
 
@@ -25,6 +26,7 @@ public abstract class BaseIntegrationTest
     protected BaseIntegrationTest(GamesApiFactory factory)
     {
         Factory = factory;
+        PositionsReseed.Apply(Factory);
         Factory.Reseed<GamesDbContext>(GamesSeed.All);
     }
 }

@@ -1,0 +1,91 @@
+<div class="stack">
+  <p><a routerLink="/payment">Back to payment</a></p>
+
+  <header class="page-header">
+    <h1>Coupons</h1>
+  </header>
+
+  <div class="coupons-layout">
+    <div>
+      @if (coupons.isLoading()) {
+        <p>Loading coupons...</p>
+      } @else if (coupons.error()) {
+        <p class="error">Could not load the coupons. Log in as an explorer and try again.</p>
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Code</th>
+              <th scope="col">Discount</th>
+              <th scope="col">Valid until</th>
+              <th scope="col">Product</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (coupon of coupons.value() ?? []; track coupon.id) {
+              <tr>
+                <td>{{ coupon.code }}</td>
+                <td>{{ coupon.percent }}%</td>
+                <td>{{ formatDate(coupon.expiresOn) }}</td>
+                <td>{{ coupon.productId === null ? 'All my tours' : coupon.productName }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="meta">No coupons yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="card stack">
+      <h2>New coupon</h2>
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <form class="stack" (submit)="submit($event)">
+        <div class="field">
+          <label for="productId">Tour</label>
+          <select id="productId" [formField]="form.productId">
+            <option value="">All my tours</option>
+            @for (product of products.value() ?? []; track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+          @if (products.error()) {
+            <p class="error">Could not load your tours.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="percent">Discount in percent</label>
+          <input id="percent" type="number" step="1" [formField]="form.percent" />
+          @if (form.percent().touched()) {
+            @for (message of form.percent().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <div class="field">
+          <label for="expiresOn">Valid until</label>
+          <input id="expiresOn" type="date" [min]="minDate" [formField]="form.expiresOn" />
+          @if (form.expiresOn().touched()) {
+            @for (message of form.expiresOn().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          }
+        </div>
+
+        <div class="row">
+          <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+            Create coupon
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

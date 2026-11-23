@@ -1,0 +1,28 @@
+.question {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.answers {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.answer {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.answer input[type='radio'] {
+  margin-top: var(--space-3);
+}
+
+.answer-text {
+  flex: 1;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}

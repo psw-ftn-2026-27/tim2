@@ -1,7 +1,8 @@
 <div class="stack">
-  <h1>My tours</h1>
-
-  <p><a routerLink="/exploration/create">Create tour</a></p>
+  <header class="page-header">
+    <h1>My tours</h1>
+    <a class="button button--primary" routerLink="/exploration/create">Create tour</a>
+  </header>
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -19,6 +20,9 @@
           <th scope="col">Difficulty</th>
           <th scope="col">Status</th>
           <th scope="col">Transport times</th>
+          <th scope="col">Recommended group size</th>
+          <th scope="col">Price</th>
+          <th scope="col">Length</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -27,7 +31,14 @@
           <tr>
             <td>{{ tour.name }}</td>
             <td>{{ tour.difficulty }}</td>
-            <td>{{ tour.status }}</td>
+            <td>
+              <span class="badge" [class.badge--muted]="tour.status !== 'Published'">
+                {{ tour.status }}
+              </span>
+              @if (tour.status === 'Archived' && tour.archivedAt) {
+                <span class="meta">{{ formatDate(tour.archivedAt) }}</span>
+              }
+            </td>
             <td>
               @for (time of tour.transportTimes; track time.transport) {
                 <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
@@ -35,23 +46,73 @@
                 <span class="meta">none</span>
               }
             </td>
-            <td class="actions">
-              <button class="button" type="button" (click)="select(tour.id)">Add time</button>
-              @if (tour.status === 'Draft') {
-                <button
-                  class="button button--primary"
-                  type="button"
-                  [disabled]="pending()"
-                  (click)="publish(tour.id)"
-                >
-                  Publish
-                </button>
+            <td>
+              @if (tour.recommendedGroupSize) {
+                {{ tour.recommendedGroupSize.min }}–{{ tour.recommendedGroupSize.max }}
+              } @else {
+                <span class="meta">Not specified</span>
               }
+            </td>
+            <td>
+              @if (tour.price === 0) {
+                Free
+              } @else {
+                <span class="amount">{{ tour.price }} EC</span>
+              }
+            </td>
+            <td>
+              @if (tour.lengthKm !== null) {
+                {{ tour.lengthKm.toFixed(1) }} km
+              } @else {
+                <span class="meta">Not calculated</span>
+              }
+            </td>
+            <td>
+              <div class="row">
+                <a class="button" [routerLink]="['/exploration/mine', tour.id, 'key-points']">
+                  Key points
+                </a>
+                <button class="button" type="button" (click)="select(tour.id)">Add time</button>
+                @if (tour.status === 'Draft') {
+                  <button class="button" type="button" (click)="selectGroupSize(tour)">
+                    Group size
+                  </button>
+                  <button class="button" type="button" (click)="selectPrice(tour)">
+                    Change price
+                  </button>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="publish(tour.id)"
+                  >
+                    Publish
+                  </button>
+                } @else if (tour.status === 'Published') {
+                  <button
+                    class="button button--danger"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="archive(tour.id)"
+                  >
+                    Archive
+                  </button>
+                } @else if (tour.status === 'Archived') {
+                  <button
+                    class="button"
+                    type="button"
+                    [disabled]="pending()"
+                    (click)="reactivate(tour.id)"
+                  >
+                    Reactivate
+                  </button>
+                }
+              </div>
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">You have no tours yet.</td>
+            <td colspan="8">You have no tours yet.</td>
           </tr>
         }
       </tbody>
@@ -85,6 +146,64 @@
         class="button button--primary"
         type="submit"
         [disabled]="!form().valid() || pending()"
+      >
+        Save
+      </button>
+    </form>
+  }
+
+  @if (groupSizeTourId()) {
+    <form class="card stack" (submit)="changeGroupSize($event)">
+      <h2>Recommended group size</h2>
+
+      <div class="field">
+        <label for="group-min">Minimum</label>
+        <input id="group-min" type="number" [formField]="groupSizeForm.min" />
+        @if (groupSizeForm.min().touched()) {
+          @for (message of groupSizeForm.min().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="group-max">Maximum</label>
+        <input id="group-max" type="number" [formField]="groupSizeForm.max" />
+        @if (groupSizeForm.max().touched()) {
+          @for (message of groupSizeForm.max().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!groupSizeForm().valid() || pending()"
+      >
+        Save
+      </button>
+    </form>
+  }
+
+  @if (priceTourId()) {
+    <form class="card stack" (submit)="changePrice($event)">
+      <h2>Change price</h2>
+
+      <div class="field">
+        <label for="price">Price (EC)</label>
+        <input id="price" type="number" [formField]="priceForm.price" />
+        @if (priceForm.price().touched()) {
+          @for (message of priceForm.price().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!priceForm().valid() || pending()"
       >
         Save
       </button>

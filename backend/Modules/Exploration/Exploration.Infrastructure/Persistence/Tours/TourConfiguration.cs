@@ -9,6 +9,7 @@ internal static class TourConfiguration
     public static void ConfigureTours(this ModelBuilder modelBuilder)
     {
         ConfigureTour(modelBuilder.Entity<Tour>());
+        ConfigureKeyPoint(modelBuilder.Entity<KeyPoint>());
     }
 
     private static void ConfigureTour(EntityTypeBuilder<Tour> builder)
@@ -22,5 +23,23 @@ internal static class TourConfiguration
             transportTimes.ToJson();
             transportTimes.Property(time => time.Transport).HasConversion<string>();
         });
+
+        builder.OwnsOne(tour => tour.RecommendedGroupSize);
+
+        builder.HasMany(tour => tour.KeyPoints)
+            .WithOne()
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(tour => tour.KeyPoints).AutoInclude();
+    }
+
+    private static void ConfigureKeyPoint(EntityTypeBuilder<KeyPoint> builder)
+    {
+        builder.ToTable("KeyPoints");
+        builder.Property(keyPoint => keyPoint.Id).ValueGeneratedNever();
+
+        builder.OwnsOne(keyPoint => keyPoint.Location);
+        builder.Navigation(keyPoint => keyPoint.Location).IsRequired();
     }
 }

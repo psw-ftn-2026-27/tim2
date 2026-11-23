@@ -1,3 +1,8 @@
+using Exploration.Application.KeyPointAuthoring;
+using Exploration.Contracts;
+using Exploration.Application.TourBrowsing;
+using Exploration.Domain.TourLocationSearchRecords;
+using Exploration.Domain.Tours;
 using Shared.Domain;
 
 namespace Exploration.Application.Tours;
@@ -5,5 +10,12 @@ namespace Exploration.Application.Tours;
 public interface ITourReadRepository
 {
     Task<List<TourDto>> GetByAuthorAsync(Guid authorId);
-    Task<PageResult<TourDto>> GetPublishedAsync(int page, int pageSize);
+    Task<PageResult<TourDto>> GetPublishedAsync(TourSearchDto search, int page, int pageSize);
+    Task<PageResult<LocatedTourDto>> GetPublishedByLocationAsync(SearchArea area, TourSearchDto search, int page, int pageSize);
+    Task<PublishedTourSummary?> GetPublishedSummaryAsync(Guid id);
+    Task<List<PublishedTourSummary>> GetPublishedSummariesByAuthorAsync(Guid authorId);
+    Task<List<FeaturedTourDto>> GetFeaturedAsync(int count);
+    Task<TourKeyPointsDto?> GetKeyPointsAsync(Guid tourId, Guid authorId);
+    Task<TourAccessDto?> GetAccessAsync(Guid tourId);
+    Task<TourDetailsDto?> GetDetailsAsync(Guid tourId, bool isPurchased, bool isOwnTour);
 }

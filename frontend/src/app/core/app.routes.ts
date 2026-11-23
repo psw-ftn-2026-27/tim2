@@ -8,6 +8,15 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   {
+    path: 'map-demo',
+    loadChildren: () => import('./map-demo/map-demo.routes').then((m) => m.mapDemoRoutes),
+  },
+  {
+    path: 'my-position',
+    loadChildren: () =>
+      import('./my-position/my-position.routes').then((m) => m.myPositionRoutes),
+  },
+  {
     path: 'exploration',
     loadChildren: () =>
       import('../modules/exploration/exploration.routes').then((m) => m.explorationRoutes),

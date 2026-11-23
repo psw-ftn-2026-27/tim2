@@ -1,0 +1,14 @@
+.images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: var(--space-2);
+}
+
+// Every image gets the same 4:3 frame. object-fit: cover fills the frame and crops
+// the edges, so a tall or wide photo is never squashed or stretched.
+.images img {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  object-fit: cover;
+  width: 100%;
+}

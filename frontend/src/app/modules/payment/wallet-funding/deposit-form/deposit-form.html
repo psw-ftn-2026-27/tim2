@@ -1,0 +1,8 @@
+<form class="row deposit" (submit)="submit($event)">
+  <div class="field">
+    <input type="number" aria-label="Amount in EC" [formField]="form.amount" />
+  </div>
+  <button class="button button--primary" type="submit" [disabled]="!form().valid() || disabled()">
+    Deposit
+  </button>
+</form>

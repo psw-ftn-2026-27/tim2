@@ -1,0 +1,66 @@
+<div class="stack">
+  <p><a [routerLink]="['/exploration/tours', id()]">Back to the tour</a></p>
+
+  @if (progress.isLoading() && !progress.hasValue()) {
+    <p>Loading the active tour...</p>
+  } @else if (progress.error()) {
+    <p class="error">Could not load the tour.</p>
+  } @else if (progress.value(); as current) {
+    @if (current.status === 'Abandoned') {
+      <p>This tour is not active.</p>
+    } @else {
+      <header class="page-header">
+        <h1>{{ current.tourName }}</h1>
+      </header>
+
+      <app-map [locations]="pathLocations()" [showPath]="true" [pickLocation]="true"
+               [selectedLocation]="youAreHere()" (locationPicked)="save($event)" />
+
+      @if (saving()) {
+        <p>Saving position...</p>
+      }
+      @if (saved()) {
+        <p>Position saved</p>
+      }
+      @if (failed()) {
+        <p class="error">Position could not be saved</p>
+      }
+      @if (checkError()) {
+        <p class="error">{{ checkError() }}</p>
+      }
+
+      @if (current.nextKeyPoint; as next) {
+        <p>Next key point: {{ next.name }}</p>
+      }
+
+      @if (current.completedKeyPoints.length > 0) {
+        <section class="stack">
+          <h2>Reached key points</h2>
+          <ol class="stack">
+            @for (keyPoint of current.completedKeyPoints; track $index) {
+              <li>
+                <strong>{{ keyPoint.name }}</strong>
+                @if (keyPoint.secret) {
+                  <p>{{ keyPoint.secret }}</p>
+                }
+              </li>
+            }
+          </ol>
+        </section>
+      }
+
+      @if (current.status === 'Completed') {
+        <p>Tour completed</p>
+      } @else {
+        <p>
+          <button class="button button--danger" type="button" (click)="leave()">Leave tour</button>
+        </p>
+        @if (leaveError()) {
+          <p class="error">{{ leaveError() }}</p>
+        }
+      }
+    }
+  } @else {
+    <p>This tour is not active.</p>
+  }
+</div>

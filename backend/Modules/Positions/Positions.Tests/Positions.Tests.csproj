@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Host.Api\Host.Api.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Shared.Tests\Shared.Tests.csproj" />
+    <ProjectReference Include="..\Positions.Infrastructure\Positions.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Games.Tests" />
+    <InternalsVisibleTo Include="Exploration.Tests" />
+  </ItemGroup>
+
+</Project>

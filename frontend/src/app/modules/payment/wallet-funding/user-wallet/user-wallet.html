@@ -1,0 +1,95 @@
+<div class="stack">
+  <p><a routerLink="/payment/wallets">Back to the list</a></p>
+
+  @if (wallet.isLoading()) {
+    <p>Loading the wallet...</p>
+  } @else if (wallet.error()) {
+    <p class="error">Could not load the wallet. Log in as an administrator.</p>
+  } @else {
+    @if (wallet.value(); as userWallet) {
+      <h1>{{ userWallet.email }}</h1>
+      <p class="balance">Balance: <span class="amount">{{ userWallet.balance }} EC</span></p>
+    }
+  }
+
+  <h2>Transactions</h2>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (transactions.isLoading()) {
+    <p>Loading transactions...</p>
+  } @else if (transactions.error()) {
+    <p class="error">Could not load the transactions. Log in as an administrator.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Time</th>
+          <th scope="col">Administrator</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
+          <tr>
+            <td>{{ transaction.name ?? 'Deposit' }}</td>
+            <td><span class="amount">{{ transaction.amount }} EC</span></td>
+            <td>{{ formatTime(transaction.createdAt) }}</td>
+            <td>
+              @if (transaction.adminId !== null) {
+                {{ isOwnDeposit(transaction) ? 'You' : 'Another administrator' }}
+              }
+            </td>
+            <td>
+              @if (transaction.adminId === null) {
+              } @else if (transaction.isCancelled) {
+                <span class="badge badge--muted">Cancelled</span>
+              } @else if (!isOwnDeposit(transaction)) {
+                <span class="meta">Only the administrator who made the deposit can cancel it.</span>
+              } @else if (!isWithinCancellationWindow(transaction)) {
+                <span class="meta">The 24-hour cancellation window has expired.</span>
+              } @else {
+                <button
+                  class="button button--danger"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="cancelDeposit(transaction.id)"
+                >
+                  Cancel deposit
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="meta">No transactions yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button
+        class="button"
+        type="button"
+        [disabled]="page() === 1 || pending()"
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }}</span>
+      <button
+        class="button"
+        type="button"
+        [disabled]="!hasNextPage() || pending()"
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </p>
+  }
+</div>

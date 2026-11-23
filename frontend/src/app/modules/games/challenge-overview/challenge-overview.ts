@@ -1,0 +1,72 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+
+const SOCIAL_CHALLENGES_URL = '/api/games/challenges';
+const QUIZZES_URL = '/api/games/quizzes';
+const LOCATION_CHALLENGES_URL = '/api/games/location-challenges';
+
+@Injectable({ providedIn: 'root' })
+export class ChallengeOverview {
+  private readonly http = inject(HttpClient);
+
+  async delete(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${SOCIAL_CHALLENGES_URL}/${id}`));
+  }
+
+  async publish(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/publish`, null));
+  }
+
+  async retire(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/retire`, null));
+  }
+
+  async archive(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/archive`, null));
+  }
+
+  async repeat(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${SOCIAL_CHALLENGES_URL}/${id}/repeat`, null));
+  }
+
+  async deleteQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${QUIZZES_URL}/${id}`));
+  }
+
+  async publishQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/publish`, null));
+  }
+
+  async retireQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/retire`, null));
+  }
+
+  async archiveQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/archive`, null));
+  }
+
+  async repeatQuiz(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${QUIZZES_URL}/${id}/repeat`, null));
+  }
+
+  async deleteLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${LOCATION_CHALLENGES_URL}/${id}`));
+  }
+
+  async publishLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/publish`, null));
+  }
+
+  async retireLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/retire`, null));
+  }
+
+  async archiveLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/archive`, null));
+  }
+
+  async repeatLocationChallenge(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${LOCATION_CHALLENGES_URL}/${id}/repeat`, null));
+  }
+}

@@ -1,0 +1,58 @@
+.instructions {
+  white-space: pre-line;
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-5);
+}
+
+.question {
+  font-weight: 600;
+  margin: 0;
+}
+
+.options {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.correct {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+form.card {
+  max-width: 40rem;
+}
+
+.question-edit {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.answers {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.answer {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.answer input[type='radio'] {
+  margin-top: var(--space-3);
+}
+
+.answer-text {
+  flex: 1;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}

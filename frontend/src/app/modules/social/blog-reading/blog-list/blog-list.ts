@@ -16,6 +16,6 @@ export class BlogList {
   protected readonly auth = inject(Auth);
 
   protected readonly blogs = httpResource<PageResult<BlogDto>>(
-    () => '/api/social/blogs/published?page=1&pageSize=20',
+    () => '/api/social/blogs/visible?page=1&pageSize=20',
   );
 }

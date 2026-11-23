@@ -1,9 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { CreateCommentDto, UpdateCommentDto } from '../api/social-api-types';
+import {
+  CreateCommentDto,
+  SendFollowRequestDto,
+  UpdateCommentDto,
+} from '../api/social-api-types';
 
 const BASE_URL = '/api/social/blogs';
+const FOLLOW_REQUESTS_URL = '/api/social/follow-requests';
 
 @Injectable({ providedIn: 'root' })
 export class BlogReading {
@@ -19,5 +24,13 @@ export class BlogReading {
 
   async deleteComment(id: string, commentId: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${BASE_URL}/${id}/comments/${commentId}`));
+  }
+
+  async sendFollowRequest(dto: SendFollowRequestDto): Promise<void> {
+    await firstValueFrom(this.http.post<void>(FOLLOW_REQUESTS_URL, dto));
+  }
+
+  async withdrawFollowRequest(requestId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${FOLLOW_REQUESTS_URL}/${requestId}`));
   }
 }

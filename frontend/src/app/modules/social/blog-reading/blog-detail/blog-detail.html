@@ -13,13 +13,51 @@
     @if (detail.value(); as blog) {
       <h1>{{ blog.title }}</h1>
 
-      <p>{{ blog.description }}</p>
+      @if (relationship.value(); as relation) {
+        @if (followError()) {
+          <p class="error">{{ followError() }}</p>
+        }
 
-      <p class="meta">Status: {{ blog.status }}</p>
+        <p class="follow">
+          <span>Author: {{ blog.authorId }}</span>
+          @switch (relation.state) {
+            @case ('Follow') {
+              <button class="button button--primary" type="button" (click)="follow(blog.authorId)">
+                Follow
+              </button>
+            }
+            @case ('Pending') {
+              <span>Pending</span>
+              @if (relation.pendingRequestId; as requestId) {
+                <button class="button" type="button" (click)="cancelRequest(requestId)">
+                  Cancel request
+                </button>
+              }
+            }
+            @case ('Following') {
+              <span>Following</span>
+            }
+          }
+        </p>
+      }
+
+      <app-blog-description [description]="blog.description" />
+
+      @for (image of blog.images; track $index) {
+        <img class="image" [src]="image" [alt]="blog.title" />
+      }
+
+      <p class="meta">Created: {{ formatDate(blog.createdAt) }}</p>
+      <p class="meta">
+        Last modified: {{ blog.lastModifiedAt ? formatDate(blog.lastModifiedAt) : 'Not modified' }}
+      </p>
+
+      <p><span class="badge" [class.badge--muted]="blog.status !== 'Published'">{{ blog.status }}</span></p>
 
       <app-blog-comments
         [comments]="blog.comments"
         [currentUserId]="auth.user()?.id ?? null"
+        [commentingAllowed]="blog.status === 'Published'"
         (addComment)="add($event)"
         (editComment)="edit($event)"
         (deleteComment)="remove($event)"

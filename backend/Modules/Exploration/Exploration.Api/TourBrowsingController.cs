@@ -2,6 +2,7 @@ using Exploration.Application.TourBrowsing;
 using Exploration.Application.Tours;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Api;
 using Shared.Domain;
 
 namespace Exploration.Api;
@@ -19,8 +20,33 @@ public sealed class TourBrowsingController : ControllerBase
     }
 
     [HttpGet("published")]
-    public async Task<ActionResult<PageResult<TourDto>>> GetPublished([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<PageResult<TourDto>>> GetPublished(
+        [FromQuery] TourSearchDto search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-        return await _browsingQueries.GetPublishedAsync(page, pageSize);
+        return await _browsingQueries.GetPublishedAsync(search, page, pageSize);
+    }
+
+    [HttpGet("published/by-location")]
+    public async Task<ActionResult<PageResult<LocatedTourDto>>> GetPublishedByLocation(
+        [FromQuery] TourLocationSearchDto search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        return await _browsingQueries.GetPublishedByLocationAsync(search, page, pageSize);
+    }
+
+    [HttpGet("featured")]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<FeaturedTourDto>>> GetFeatured()
+    {
+        return await _browsingQueries.GetFeaturedAsync();
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<TourDetailsDto>> GetDetails(Guid id)
+    {
+        return await _browsingQueries.GetTourDetailsAsync(id, User.GetUserId());
     }
 }

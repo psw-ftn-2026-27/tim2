@@ -7,10 +7,14 @@ using Games.Infrastructure;
 using Host.Api;
 using Identity.Api;
 using Identity.Infrastructure;
+using Images.Api;
+using Images.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Payment.Api;
 using Payment.Infrastructure;
+using Positions.Api;
+using Positions.Infrastructure;
 using Scalar.AspNetCore;
 using Social.Api;
 using Social.Infrastructure;
@@ -25,7 +29,9 @@ builder.Services.AddControllers()
     .AddExplorationControllers()
     .AddGamesControllers()
     .AddSocialControllers()
-    .AddPaymentControllers();
+    .AddPaymentControllers()
+    .AddPositionsControllers()
+    .AddImagesControllers();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -45,7 +51,9 @@ builder.Services
     .AddExplorationModule(builder.Configuration)
     .AddGamesModule(builder.Configuration)
     .AddSocialModule(builder.Configuration)
-    .AddPaymentModule(builder.Configuration);
+    .AddPaymentModule(builder.Configuration)
+    .AddPositionsModule(builder.Configuration)
+    .AddImagesModule(builder.Configuration);
 
 var app = builder.Build();
 
@@ -56,6 +64,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options => options.AddPreferredSecuritySchemes("Bearer"));
 }
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

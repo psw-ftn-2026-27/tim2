@@ -9,7 +9,7 @@ namespace Host.Tests;
 
 public abstract class BaseArchitectureTests
 {
-    protected static readonly string[] Modules = ["Exploration", "Games", "Social", "Payment"];
+    protected static readonly string[] Modules = ["Exploration", "Games", "Social", "Payment", "Positions"];
     protected static readonly string[] Layers = ["Api", "Application", "Contracts", "Domain", "Infrastructure"];
     protected static readonly string[] SharedProjects = ["Shared.Domain", "Shared.Api", "Shared.Infrastructure"];
 
@@ -17,6 +17,8 @@ public abstract class BaseArchitectureTests
         .LoadAssemblies(Modules
             .SelectMany(module => Layers.Select(layer => Assembly.Load($"{module}.{layer}")))
             .Append(Assembly.Load("Identity"))
+            .Append(Assembly.Load("Identity.Contracts"))
+            .Append(Assembly.Load("Images"))
             .Append(Assembly.Load("Host.Api"))
             .Concat(SharedProjects.Select(Assembly.Load))
             .ToArray())

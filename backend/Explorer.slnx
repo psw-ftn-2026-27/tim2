@@ -17,8 +17,13 @@
     <Project Path="Modules/Games/Games.Tests/Games.Tests.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/">
+    <Project Path="Modules/Identity/Identity.Contracts/Identity.Contracts.csproj" />
     <Project Path="Modules/Identity/Identity.Tests/Identity.Tests.csproj" />
     <Project Path="Modules/Identity/Identity/Identity.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Images/">
+    <Project Path="Modules/Images/Images.Tests/Images.Tests.csproj" />
+    <Project Path="Modules/Images/Images/Images.csproj" />
   </Folder>
   <Folder Name="/Modules/Payment/">
     <Project Path="Modules/Payment/Payment.Api/Payment.Api.csproj" />
@@ -27,6 +32,14 @@
     <Project Path="Modules/Payment/Payment.Domain/Payment.Domain.csproj" />
     <Project Path="Modules/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj" />
     <Project Path="Modules/Payment/Payment.Tests/Payment.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Positions/">
+    <Project Path="Modules/Positions/Positions.Api/Positions.Api.csproj" />
+    <Project Path="Modules/Positions/Positions.Application/Positions.Application.csproj" />
+    <Project Path="Modules/Positions/Positions.Contracts/Positions.Contracts.csproj" />
+    <Project Path="Modules/Positions/Positions.Domain/Positions.Domain.csproj" />
+    <Project Path="Modules/Positions/Positions.Infrastructure/Positions.Infrastructure.csproj" />
+    <Project Path="Modules/Positions/Positions.Tests/Positions.Tests.csproj" />
   </Folder>
   <Folder Name="/Modules/Social/">
     <Project Path="Modules/Social/Social.Api/Social.Api.csproj" />

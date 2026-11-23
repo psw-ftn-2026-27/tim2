@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { CreateTourDto, TourDto, TransportTimeDto } from '../api/exploration-api-types';
+import {
+  CreateTourDto,
+  RecommendedGroupSizeDto,
+  TourDto,
+  TourPriceDto,
+  TransportTimeDto,
+} from '../api/exploration-api-types';
 
 const BASE_URL = '/api/exploration/tours';
 
@@ -17,7 +23,23 @@ export class TourAuthoring {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, {}));
   }
 
+  async archive(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/archive`, {}));
+  }
+
+  async reactivate(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/reactivate`, {}));
+  }
+
   async addTransportTime(id: string, dto: TransportTimeDto): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/transport-times`, dto));
+  }
+
+  async changeRecommendedGroupSize(id: string, dto: RecommendedGroupSizeDto): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}/recommended-group-size`, dto));
+  }
+
+  async changePrice(id: string, dto: TourPriceDto): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${BASE_URL}/${id}/price`, dto));
   }
 }

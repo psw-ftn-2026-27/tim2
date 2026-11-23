@@ -1,0 +1,58 @@
+<div class="stack">
+  <h1>My wallet</h1>
+
+  @if (balance.isLoading()) {
+    <p>Loading the balance...</p>
+  } @else if (balance.error()) {
+    <p class="error">Could not load the balance. Log in and try again.</p>
+  } @else {
+    <p class="balance">Balance: <span class="amount">{{ balance.value()?.balance ?? 0 }} EC</span></p>
+  }
+
+  <h2>Transactions</h2>
+
+  @if (transactions.isLoading()) {
+    <p>Loading transactions...</p>
+  } @else if (transactions.error()) {
+    <p class="error">Could not load the transactions. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Time</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (transaction of transactions.value()?.items ?? []; track transaction.id) {
+          <tr>
+            <td>{{ transaction.name ?? 'Deposit' }}</td>
+            <td><span class="amount">{{ transaction.amount }} EC</span></td>
+            <td>{{ formatTime(transaction.createdAt) }}</td>
+            <td>
+              @if (transaction.isCancelled) {
+                <span class="badge badge--muted">Cancelled</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="meta">No transactions yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button class="button" type="button" [disabled]="page() === 1" (click)="previousPage()">
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }}</span>
+      <button class="button" type="button" [disabled]="!hasNextPage()" (click)="nextPage()">
+        Next
+      </button>
+    </p>
+  }
+</div>

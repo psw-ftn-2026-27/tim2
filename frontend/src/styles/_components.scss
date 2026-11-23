@@ -1,17 +1,51 @@
+// A secondary action. A link that looks like a button gets the same class.
 .button {
+  align-items: center;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-accent);
   border-radius: var(--radius);
-  color: var(--color-text);
+  color: var(--color-accent);
   cursor: pointer;
+  display: inline-flex;
   font: inherit;
-  padding: var(--space-2) var(--space-4);
+  font-weight: 600;
+  gap: var(--space-2);
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  text-decoration: none;
 }
 
+.button:hover {
+  background: var(--color-bg);
+  color: var(--color-accent-hover);
+}
+
+// The one main action of a page or form.
 .button--primary {
   background: var(--color-accent);
-  border-color: var(--color-accent);
   color: var(--color-accent-text);
+}
+
+.button--primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-accent-text);
+}
+
+// An action that deletes, archives or cancels something.
+.button--danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.button--danger:hover {
+  color: var(--color-danger);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .card {
@@ -36,13 +70,31 @@
 .field select,
 .field textarea {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-field-border);
   border-radius: var(--radius);
+  color: var(--color-text);
   font: inherit;
   padding: var(--space-2);
 }
 
+.field input:not([type='checkbox'], [type='radio']),
+.field select {
+  min-height: var(--control-height);
+}
+
+// Checkboxes or radio buttons in one row, inside a fieldset with a legend.
+.checkbox-group {
+  border: none;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
 .table {
+  background: var(--color-surface);
   border-collapse: collapse;
   width: 100%;
 }
@@ -52,6 +104,54 @@
   border-bottom: 1px solid var(--color-border);
   padding: var(--space-2) var(--space-3);
   text-align: left;
+}
+
+.table th {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+// On a phone a wide table scrolls sideways inside itself instead of widening the page.
+@media (max-width: 40rem) {
+  .table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+// The state of something, always written as a word: Published, Draft, Archived.
+.badge {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  color: var(--color-accent-text);
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0 var(--space-2);
+  white-space: nowrap;
+}
+
+// A state that is not active: Draft, Archived, Retired, Cancelled.
+.badge--muted {
+  background: var(--color-surface);
+  border-color: var(--color-field-border);
+  color: var(--color-text-muted);
+}
+
+// Money and points: a price or balance in EC, XP.
+.amount {
+  color: var(--color-highlight);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// Previous / Page N / Next under a list.
+.paging {
+  align-items: center;
+  display: flex;
+  gap: var(--space-4);
 }
 
 .error {
@@ -64,4 +164,17 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   margin: 0;
+}
+
+// Set by app-map on a pin that has a label; pages never use it.
+.map-label {
+  align-items: center;
+  background: var(--color-accent);
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  color: var(--color-accent-text);
+  display: flex;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  justify-content: center;
 }

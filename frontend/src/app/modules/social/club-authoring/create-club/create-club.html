@@ -1,0 +1,42 @@
+<div class="card stack form-page">
+  <h1>Create club</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" [formField]="form.name" />
+      @if (form.name().touched()) {
+        @for (message of form.name().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" rows="6" [formField]="form.description"></textarea>
+      @if (form.description().touched()) {
+        @for (message of form.description().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <app-club-image-list
+      [images]="form.images().value()"
+      (addImage)="addImage($event)"
+      (removeImage)="removeImage($event)"
+    />
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="row">
+      <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+        Create
+      </button>
+      <a class="button" routerLink="/social/clubs/mine">Cancel</a>
+    </div>
+  </form>
+</div>

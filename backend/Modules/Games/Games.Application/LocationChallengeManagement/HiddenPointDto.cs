@@ -1,0 +1,5 @@
+using Games.Application.Locations;
+
+namespace Games.Application.LocationChallengeManagement;
+
+public sealed record HiddenPointDto(string ImageUrl, LocationDto Location);

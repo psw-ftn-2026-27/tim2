@@ -1,0 +1,178 @@
+<div class="card stack form-page form-page--lg">
+  <h1>New quiz</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <section class="stack">
+      <h2>Basics</h2>
+
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" type="text" [formField]="form.name" />
+        @if (form.name().touched()) {
+          @for (message of form.name().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="instructions">Instructions</label>
+        <textarea id="instructions" rows="6" [formField]="form.instructions"></textarea>
+        @if (form.instructions().touched()) {
+          @for (message of form.instructions().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="xp">XP</label>
+        <input id="xp" type="number" step="1" [formField]="form.xp" />
+        @if (form.xp().touched()) {
+          @for (message of form.xp().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="stack">
+      <h2>Location</h2>
+
+      <app-quiz-location-fields
+        [location]="form.location().value()"
+        (locationPicked)="pickLocation($event)"
+        (locationRemoved)="removeLocation()"
+      />
+
+      <div class="field">
+        <label for="range">Range (m)</label>
+        <input id="range" type="number" step="1" [formField]="form.rangeInMeters" />
+        @if (form.rangeInMeters().touched()) {
+          @for (message of form.rangeInMeters().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="stack">
+      <h2>Questions</h2>
+
+      @for (question of form.questions; track $index; let questionIndex = $index) {
+        <div class="question stack">
+          <div class="field">
+            <label for="question-{{ questionIndex }}-text">Question {{ questionIndex + 1 }}</label>
+            <input id="question-{{ questionIndex }}-text" type="text" [formField]="question.text" />
+            @if (question.text().touched()) {
+              @for (message of question.text().errors(); track $index) {
+                <p class="error">{{ message.message }}</p>
+              }
+            }
+          </div>
+
+          <fieldset class="answers stack">
+            <legend>Answers (mark the correct one)</legend>
+
+            @for (answer of question.answers; track $index; let answerIndex = $index) {
+              <div class="answer">
+                <input
+                  type="radio"
+                  value="{{ answerIndex }}"
+                  aria-label="Correct answer"
+                  [formField]="question.correct"
+                />
+                <div class="field answer-text">
+                  <input
+                    type="text"
+                    aria-label="Answer {{ answerIndex + 1 }}"
+                    [formField]="answer.text"
+                  />
+                  @if (answer.text().touched()) {
+                    @for (message of answer.text().errors(); track $index) {
+                      <p class="error">{{ message.message }}</p>
+                    }
+                  }
+                </div>
+                <button
+                  class="button button--danger"
+                  type="button"
+                  [disabled]="question.answers.length <= 2"
+                  (click)="removeAnswer(questionIndex, answerIndex)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
+
+            @if (question.answers.length <= 2) {
+
+              <p class="hint">A question needs at least 2 answers.</p>
+
+            }
+
+            @for (message of question.correct().errors(); track $index) {
+              <p class="error">{{ message.message }}</p>
+            }
+          </fieldset>
+
+          <div class="row">
+            <button
+              class="button"
+              type="button"
+              [disabled]="question.answers.length >= 6"
+              (click)="addAnswer(questionIndex)"
+            >
+              + Add answer
+            </button>
+            <button
+              class="button button--danger"
+              type="button"
+              [disabled]="form.questions.length <= 1"
+              (click)="removeQuestion(questionIndex)"
+            >
+              Remove question
+            </button>
+          </div>
+          @if (question.answers.length >= 6) {
+            <p class="hint">A question can have at most 6 answers.</p>
+          }
+          @if (form.questions.length <= 1) {
+            <p class="hint">A quiz needs at least 1 question.</p>
+          }
+        </div>
+      }
+
+      <p>
+        <button
+          class="button"
+          type="button"
+          [disabled]="form.questions.length >= 15"
+          (click)="addQuestion()"
+        >
+          + Add question
+        </button>
+      </p>
+      @if (form.questions.length >= 15) {
+        <p class="hint">A quiz can have at most 15 questions.</p>
+      }
+    </section>
+
+    @if (!form().valid()) {
+
+      <p class="hint">Saving is possible once every field is filled in correctly and each question has a correct answer.</p>
+
+    }
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="row">
+      <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+        Save as draft
+      </button>
+      <a class="button" routerLink="/games/challenges">Cancel</a>
+    </div>
+  </form>
+</div>

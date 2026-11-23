@@ -29,6 +29,7 @@ backend/
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
+      Identity.Contracts/          read-only surface for other modules       [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
       <Name>.Api/                  API controllers, speaking Application DTOs
@@ -49,6 +50,19 @@ Five source projects per module. That is deliberate: `<Name>.Api` referencing on
 usual novice shortcut of querying the database straight from an endpoint does not compile.
 The compiler enforces the layering instead of a reviewer having to spot it.
 
+**Value object placement.** A value object is born in the folder of the aggregate that
+holds it. When a second aggregate of the same module needs it, it moves to a module-level
+folder named after the concept (`Domain/Locations/`). Such a folder holds value objects
+only, never an entity or an aggregate. Its unit tests move with it, to `Unit/Locations/`
+in the module's test project. A value object of the same module that holds the same
+values plus its own contains the shared one instead of copying it, and stays in its
+aggregate's folder (`QuizLocation` holds a `Location` and its range in `Domain/Quizzes/`).
+Moving a value object changes its type name in the model snapshot, so the move needs a
+migration added through `dotnet ef` (see Migrations); when nothing else changes, its `Up`
+and `Down` are empty, and the conflict protocol applies to it like to any other
+migration. Similar value objects in two modules stay separate; moving one to
+`Shared.Domain` is a platform decision.
+
 ## Reference rules
 
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
@@ -59,7 +73,9 @@ The compiler enforces the layering instead of a reviewer having to spot it.
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
 - A module may reference another module's `Contracts` project and nothing else from it.
-- No module references `Identity`. Other modules carry a `UserId` as a plain ID.
+- No module references `Identity`. A module that needs user data references
+  `Identity.Contracts` and nothing else from it. Other modules carry a `UserId` as a
+  plain ID.
 - `Host.Api` references every module's `Infrastructure` (for DI) and `Api` (for controller
   discovery), plus the `Identity` project.
 
@@ -77,7 +93,7 @@ carry versionless `PackageReference` lines. `Directory.Build.props` turns on nul
 reference types and treats warnings as errors, solution-wide. Both files are
 platform-owned.
 
-AutoMapper is pinned to 16.1.1 and runs without a license key; this is a settled
+AutoMapper is pinned to 16.3.0 and runs without a license key; this is a settled
 platform decision. Do not change the version or add a license key.
 
 ## Identity
@@ -86,6 +102,13 @@ Identity is a deliberate exception to the module structure: one platform-owned p
 that students use but never modify or reference. It holds ASP.NET Core Identity on the
 `identity` schema, register/login endpoints issuing JWTs, and role seeding at startup
 (`administrator`, `explorer`); the details live in the project itself.
+
+`Identity.Contracts` is its only surface toward other modules: `IIdentityApi`, read-only
+and minimal, with a page of explorers and one explorer by ID or by email (`null` when
+there is none), each carrying only the user ID and email. It references nothing, like every
+`Contracts` project, and is implemented in `Identity/Infrastructure`. Accounts,
+passwords and `UserManager` stay behind it. Adding a member is a request to the
+platform team.
 
 What matters outside it: token validation is configured in `Host.Api`; role checks are
 `[Authorize(Roles = ...)]` attributes on controllers or actions. Controllers read the
@@ -114,7 +137,8 @@ Related use cases form a group with its own folder and use-case-named classes:
   injects `I<Aggregate>Repository` and `IUnitOfWork`. A command method loads the
   aggregate, calls a method on it, and saves once.
 - `<UseCaseGroup>Queries` for reads. Public sealed class, no interface. Constructor
-  injects `I<Aggregate>ReadRepository`, plus `I<Aggregate>Repository` when a read needs a
+  injects `I<Aggregate>ReadRepository` (or `I<Concept>ReadRepository` for a view spanning
+  aggregates, see Read side), plus `I<Aggregate>Repository` when a read needs a
   domain-computed value, plus other modules' contracts when it composes data across
   modules. Returns DTOs, never mutates, never saves (an architecture test forbids a
   `*Queries` class from depending on `IUnitOfWork`).
@@ -128,7 +152,9 @@ the two repository interfaces.
 **DTO placement.** A DTO is born in the use-case folder that accepts or returns it and
 moves to the aggregate-named folder (`Application/Tours/`, which also holds the two
 repository interfaces) only when a second group needs it — the same promotion rule as
-for `Shared`, one level down.
+for `Shared`, one level down. The DTO of a value object that several aggregates hold
+follows it into the folder of the same name (`Application/Locations/`), which holds DTOs
+only, never a repository.
 
 Business rules live in the domain, not in the service. A service method that contains an
 `if` about business state is a smell; move it into the aggregate.
@@ -142,7 +168,8 @@ Interfaces that do belong, all declared in `Application` and implemented in
 `Infrastructure`:
 
 - `I<Aggregate>Repository` for the write side, returning aggregates
-- `I<Aggregate>ReadRepository` for the read side, returning DTOs
+- `I<Aggregate>ReadRepository` for the read side, returning DTOs (or `I<Concept>ReadRepository`
+  for a view spanning aggregates, see Read side)
 - `IUnitOfWork`
 
 Plus `I<Name>Api` in `Contracts`, implemented in `Application`.
@@ -159,6 +186,17 @@ Commands call it exactly once, at the end. This is the transaction boundary.
 projecting directly to DTOs. Aggregates may also expose side-effect-free
 query methods that return values derived from their own state; commands use them as guards,
 and a read use case may reuse them instead of duplicating the derivation in SQL.
+
+When one view lists several aggregates of the same module together (Games lists quizzes and
+social challenges in one paged, filtered table), its rows come from one read repository
+that reads all of them, so paging, filtering and ordering happen in the database over the
+combined rows. It is named after the concept the aggregates share, not after any one of
+them, and lives in a folder of that name (`IChallengeReadRepository` in
+`Application/Challenges/`). No aggregate carries that name, so the folder holds the
+read repository and the types promoted there from several groups, never a write
+repository. It still projects directly to DTOs. It is
+injected by the queries class named after the view (`ChallengeOverviewQueries`). It is not
+a way to read another module's tables: across modules, compose through `Contracts`.
 
 Deciding how to answer a request, in order:
 

@@ -2,10 +2,13 @@
   <h1>Blogs</h1>
 
   @if (auth.isLoggedIn()) {
-    <p class="links">
+    <nav class="row row--wide">
       <a routerLink="/social/mine">My blogs</a>
       <a routerLink="/social/create">Create blog</a>
-    </p>
+      <a routerLink="/social/clubs">Clubs</a>
+      <a routerLink="/social/clubs/mine">My clubs</a>
+      <a routerLink="/social/connections">Connections</a>
+    </nav>
   }
 
   @if (blogs.isLoading()) {

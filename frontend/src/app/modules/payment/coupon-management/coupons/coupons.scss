@@ -1,0 +1,13 @@
+// The coupon list on the left, the new coupon form on the right; one column on a narrow screen.
+.coupons-layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 60rem) {
+  .coupons-layout {
+    grid-template-columns: 1fr;
+  }
+}

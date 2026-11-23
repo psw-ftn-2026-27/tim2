@@ -1,0 +1,58 @@
+<div class="stack">
+  <h1>User wallets</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (wallets.isLoading()) {
+    <p>Loading wallets...</p>
+  } @else if (wallets.error()) {
+    <p class="error">Could not load the wallets. Log in as an administrator.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Email</th>
+          <th scope="col">Balance</th>
+          <th scope="col">Deposit</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (wallet of wallets.value()?.items ?? []; track wallet.userId) {
+          <tr>
+            <td><a [routerLink]="[wallet.userId]">{{ wallet.email }}</a></td>
+            <td><span class="amount">{{ wallet.balance }} EC</span></td>
+            <td>
+              <app-deposit-form [disabled]="pending()" (deposit)="deposit(wallet.userId, $event)" />
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="meta">No registered users.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="paging">
+      <button
+        class="button"
+        type="button"
+        [disabled]="page() === 1 || pending()"
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+      <span class="meta">Page {{ page() }}</span>
+      <button
+        class="button"
+        type="button"
+        [disabled]="!hasNextPage() || pending()"
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </p>
+  }
+</div>

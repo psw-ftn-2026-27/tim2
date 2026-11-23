@@ -1,0 +1,28 @@
+<section class="stack">
+  <h1>Map demo</h1>
+  <p>
+    <button class="button" type="button" (click)="togglePath()">
+      {{ showPath() ? 'Hide path' : 'Show path' }}
+    </button>
+  </p>
+
+  <app-map [locations]="locations" [showPath]="showPath()" (pathLength)="pathLength.set($event)" />
+
+  @if (pathLength() !== null) {
+    <p>Length: {{ pathLength()?.toFixed(1) }} km</p>
+  }
+</section>
+
+<section class="stack">
+  <h2>Pick a location</h2>
+
+  <app-map [pickLocation]="true" [selectedLocation]="picked()" (locationPicked)="picked.set($event)" />
+
+  <p>Picked: {{ picked().latitude.toFixed(5) }}, {{ picked().longitude.toFixed(5) }}</p>
+</section>
+
+<section class="stack">
+  <h2>Search area</h2>
+
+  <app-map [locations]="locations" [circle]="searchArea" />
+</section>
